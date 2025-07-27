@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Edit } from "lucide-react";
 
 const Send = () => {
@@ -18,10 +19,10 @@ const Send = () => {
   });
 
   const fontOptions = [
-    { id: "inter", name: "Inter", class: "font-sans" },
-    { id: "playfair", name: "Playfair Display", class: "font-playfair" },
-    { id: "dancing", name: "Dancing Script", class: "font-dancing" },
-    { id: "arial", name: "Arial", class: "font-arial" }
+    { id: "inter", name: "Classic", class: "font-sans" },
+    { id: "playfair", name: "Eclectic", class: "font-playfair" },
+    { id: "dancing", name: "Fancy", class: "font-dancing" },
+    { id: "arial", name: "Simple", class: "font-arial" }
   ];
 
   const coverArtOptions = [
@@ -52,34 +53,47 @@ const Send = () => {
 
   return (
     <div className="min-h-screen bg-gradient-background">
+      {/* Logo */}
+      <div className="max-w-2xl mx-auto px-6 pt-6">
+        <button
+          onClick={() => navigate('/')}
+          className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors"
+        >
+          oowoo
+        </button>
+      </div>
+
       {/* Main Content */}
       <div className="max-w-2xl mx-auto px-6 py-8 pb-24">
-        {/* Font Selection */}
-        <div className="mb-6">
-          <div className="flex gap-2 flex-wrap">
-            {fontOptions.map((font) => (
-              <button
-                key={font.id}
-                onClick={() => setFormData({...formData, headerFont: font.id})}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  formData.headerFont === font.id
-                    ? 'bg-primary text-primary-foreground shadow-button'
-                    : 'bg-card hover:bg-accent text-foreground border border-border'
-                }`}
-              >
-                <span className={font.class}>{font.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Header Input */}
+        {/* Header Section */}
         <div className="mb-8">
+          <h2 className="text-2xl font-bold text-center mb-6">Header</h2>
+          
+          {/* Font Selection */}
+          <div className="mb-6">
+            <div className="flex gap-2 justify-center flex-wrap">
+              {fontOptions.map((font) => (
+                <button
+                  key={font.id}
+                  onClick={() => setFormData({...formData, headerFont: font.id})}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    formData.headerFont === font.id
+                      ? 'bg-primary text-primary-foreground shadow-button'
+                      : 'bg-card hover:bg-accent text-foreground border border-border'
+                  }`}
+                >
+                  <span className={font.class}>{font.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Header Input */}
           <input
             type="text"
             value={formData.headerText}
             onChange={(e) => setFormData({...formData, headerText: e.target.value})}
-            className={`w-full text-5xl font-bold bg-transparent border-none outline-none placeholder:text-muted-foreground ${selectedFont?.class}`}
+            className={`w-full text-5xl font-bold bg-transparent border-none outline-none placeholder:text-muted-foreground text-center ${selectedFont?.class}`}
             placeholder="Header"
           />
         </div>
@@ -100,54 +114,56 @@ const Send = () => {
           </button>
         </div>
 
-        {/* Message Box */}
+        {/* Sweet Message Section */}
         <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">Sweet message</h2>
           <Textarea
             value={formData.message}
             onChange={(e) => setFormData({...formData, message: e.target.value})}
-            placeholder="Write your message here"
+            placeholder="Hope you have a good week! ❣️"
             className="w-full min-h-[120px] text-lg resize-none border-2 border-border rounded-2xl p-6 bg-card focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </div>
 
         {/* Gift Section */}
-        <div className="space-y-4 mb-8">
-          <div className="flex items-center gap-4">
-            <span className="text-2xl">📩</span>
-            <span className="text-lg font-medium min-w-[40px]">To</span>
-            <Input
-              type="text"
-              value={formData.recipientName}
-              onChange={(e) => setFormData({...formData, recipientName: e.target.value})}
-              placeholder="Recipient's name"
-              className="flex-1 h-12 text-lg border-2 rounded-2xl"
-            />
-          </div>
+        <div className="space-y-6 mb-8">
+          <h2 className="text-2xl font-bold">Gift</h2>
           
-          <div className="flex items-center gap-4">
-            <span className="text-2xl">@</span>
-            <span className="text-lg font-medium min-w-[40px]"></span>
-            <Input
-              type="text"
-              value={formData.venmoHandle}
-              onChange={(e) => setFormData({...formData, venmoHandle: e.target.value})}
-              placeholder="Venmo username"
-              className="flex-1 h-12 text-lg border-2 rounded-2xl"
-            />
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <span className="text-2xl">💰</span>
-            <span className="text-lg font-medium min-w-[40px]">$</span>
-            <Input
-              type="number"
-              value={formData.amount}
-              onChange={(e) => setFormData({...formData, amount: e.target.value})}
-              placeholder="Amount"
-              className="flex-1 h-12 text-lg border-2 rounded-2xl"
-              min="1"
-              max="500"
-            />
+          <div className="space-y-4">
+            <div>
+              <Label className="text-lg font-medium mb-2 block">📩 To:</Label>
+              <Input
+                type="text"
+                value={formData.recipientName}
+                onChange={(e) => setFormData({...formData, recipientName: e.target.value})}
+                placeholder="Recipient's name"
+                className="w-full h-12 text-lg border-2 rounded-2xl"
+              />
+            </div>
+            
+            <div>
+              <Label className="text-lg font-medium mb-2 block">Venmo username</Label>
+              <Input
+                type="text"
+                value={formData.venmoHandle}
+                onChange={(e) => setFormData({...formData, venmoHandle: e.target.value})}
+                placeholder="@username"
+                className="w-full h-12 text-lg border-2 rounded-2xl"
+              />
+            </div>
+            
+            <div>
+              <Label className="text-lg font-medium mb-2 block">Amount</Label>
+              <Input
+                type="number"
+                value={formData.amount}
+                onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                placeholder="$0"
+                className="w-full h-12 text-lg border-2 rounded-2xl"
+                min="1"
+                max="500"
+              />
+            </div>
           </div>
         </div>
       </div>
