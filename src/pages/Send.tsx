@@ -15,7 +15,8 @@ const Send = () => {
     message: "",
     recipientName: "",
     venmoHandle: "",
-    amount: ""
+    amount: "",
+    senderName: ""
   });
 
   const fontOptions = [
@@ -37,8 +38,13 @@ const Send = () => {
   ];
 
   const handleSave = () => {
-    // Save form data to localStorage for demo
-    localStorage.setItem('treatData', JSON.stringify(formData));
+    // Save form data to localStorage for demo, mapping to expected structure
+    const treatData = {
+      ...formData,
+      recipientHandle: formData.venmoHandle,
+      treatType: formData.amount
+    };
+    localStorage.setItem('treatData', JSON.stringify(treatData));
     navigate('/send/complete');
   };
 
@@ -57,7 +63,7 @@ const Send = () => {
       <div className="max-w-2xl mx-auto px-6 pt-6">
         <button
           onClick={() => navigate('/')}
-          className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors"
+          className="text-2xl font-bold bg-gradient-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
         >
           oowoo
         </button>
@@ -70,9 +76,21 @@ const Send = () => {
           <input
             type="text"
             value={formData.headerText}
-            onChange={(e) => setFormData({...formData, headerText: e.target.value})}
-            className={`w-full text-5xl font-bold bg-transparent border-none outline-none placeholder:text-muted-foreground text-center ${selectedFont?.class}`}
+            onChange={(e) => {
+              if (e.target.value.length <= 40) {
+                setFormData({...formData, headerText: e.target.value});
+              }
+            }}
+            className={`w-full bg-transparent border-none outline-none placeholder:text-muted-foreground text-center resize-none leading-tight max-h-32 overflow-hidden ${selectedFont?.class} ${
+              formData.headerText === "Header" ? "text-muted-foreground" : "text-foreground"
+            } ${
+              formData.headerText.length > 20 ? "text-3xl" : "text-5xl"
+            } font-bold`}
             placeholder="Header"
+            style={{
+              wordWrap: "break-word",
+              whiteSpace: "pre-wrap"
+            }}
           />
         </div>
 
@@ -148,6 +166,17 @@ const Send = () => {
                 value={formData.recipientName}
                 onChange={(e) => setFormData({...formData, recipientName: e.target.value})}
                 placeholder="Recipient's name"
+                className="w-full h-12 text-lg border-2 rounded-2xl"
+              />
+            </div>
+            
+            <div>
+              <Label className="text-lg font-medium mb-2 block">👤 Your name</Label>
+              <Input
+                type="text"
+                value={formData.senderName}
+                onChange={(e) => setFormData({...formData, senderName: e.target.value})}
+                placeholder="Your name"
                 className="w-full h-12 text-lg border-2 rounded-2xl"
               />
             </div>
