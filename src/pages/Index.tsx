@@ -22,7 +22,7 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 py-4 md:py-0 relative z-10 min-h-0">
+      <div className="flex-1 flex items-start justify-center px-4 pt-8 md:pt-12 pb-4 relative z-10">
         <div className="text-center max-w-2xl mx-auto">
           {/* Card Container */}
           <div className="bg-gradient-card p-12 rounded-3xl shadow-card backdrop-blur-sm border border-white/20">
