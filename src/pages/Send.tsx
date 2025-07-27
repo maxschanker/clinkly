@@ -15,8 +15,7 @@ const Send = () => {
     message: "",
     recipientName: "",
     venmoHandle: "",
-    amount: "",
-    senderName: ""
+    amount: ""
   });
 
   const fontOptions = [
@@ -77,7 +76,7 @@ const Send = () => {
           <Input
             value={formData.headerText}
             onChange={(e) => {
-              if (e.target.value.length <= 25) {
+              if (e.target.value.length <= 28) {
                 setFormData({...formData, headerText: e.target.value});
               }
             }}
@@ -86,7 +85,7 @@ const Send = () => {
               formData.headerText.length > 20 ? "text-2xl" : 
               formData.headerText.length > 12 ? "text-4xl" : "text-5xl"
             } font-bold h-auto py-2`}
-            maxLength={25}
+            maxLength={28}
           />
         </div>
 
@@ -162,17 +161,6 @@ const Send = () => {
                 value={formData.recipientName}
                 onChange={(e) => setFormData({...formData, recipientName: e.target.value})}
                 placeholder="Recipient's name"
-                className="w-full h-12 text-lg border-2 rounded-2xl"
-              />
-            </div>
-            
-            <div>
-              <Label className="text-lg font-medium mb-2 block">👤 Your name</Label>
-              <Input
-                type="text"
-                value={formData.senderName}
-                onChange={(e) => setFormData({...formData, senderName: e.target.value})}
-                placeholder="Your name"
                 className="w-full h-12 text-lg border-2 rounded-2xl"
               />
             </div>
