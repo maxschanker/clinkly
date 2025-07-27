@@ -73,36 +73,20 @@ const Send = () => {
       <div className="max-w-2xl mx-auto px-6 py-8 pb-24">
         {/* Header Input */}
         <div className="mb-8">
-          <div
-            contentEditable
-            suppressContentEditableWarning={true}
-            onInput={(e) => {
-              const text = e.currentTarget.textContent || "";
-              if (text.length <= 28) {
-                setFormData({...formData, headerText: text});
-              } else {
-                e.currentTarget.textContent = formData.headerText;
+          <Input
+            value={formData.headerText}
+            onChange={(e) => {
+              if (e.target.value.length <= 28) {
+                setFormData({...formData, headerText: e.target.value});
               }
             }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-              }
-            }}
-            className={`w-full bg-transparent border-none outline-none placeholder:text-muted-foreground text-center resize-none leading-tight min-h-0 focus-visible:ring-0 focus-visible:ring-offset-0 white-space-nowrap overflow-hidden ${selectedFont?.class} ${
-              formData.headerText.length > 24 ? "text-xl" : 
+            placeholder="Header"
+            className={`w-full bg-transparent border-none outline-none placeholder:text-muted-foreground text-center resize-none leading-tight min-h-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${selectedFont?.class} ${
               formData.headerText.length > 20 ? "text-2xl" : 
-              formData.headerText.length > 16 ? "text-3xl" :
-              formData.headerText.length > 12 ? "text-4xl" : 
-              formData.headerText.length > 8 ? "text-5xl" : "text-6xl"
+              formData.headerText.length > 12 ? "text-4xl" : "text-5xl"
             } font-bold h-auto py-2`}
-            style={{
-              whiteSpace: 'nowrap',
-              textOverflow: 'ellipsis'
-            }}
-          >
-            {formData.headerText || <span className="text-muted-foreground">Header</span>}
-          </div>
+            maxLength={28}
+          />
         </div>
 
         {/* Font Selection */}
