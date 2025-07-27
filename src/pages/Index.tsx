@@ -41,7 +41,7 @@ const Index = () => {
             
             {/* Get Started Button */}
             <Button
-              onClick={() => navigate('/collect-phone')}
+              onClick={() => navigate('/send')}
               className="h-16 px-16 text-xl font-semibold rounded-full bg-gradient-primary hover:shadow-glow transition-all duration-500 transform hover:scale-110 hover:rotate-1 shadow-button border border-white/20"
             >
               Get Started
@@ -65,7 +65,6 @@ const Index = () => {
           </p>
         </div>
       </footer>
-
     </div>
   );
 };
