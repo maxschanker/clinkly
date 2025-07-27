@@ -1,13 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import FloatingEmojis from "@/components/FloatingEmojis";
 
 const Index = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-hero flex flex-col relative overflow-hidden">
-      <FloatingEmojis />
       {/* Sparkle Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-40 right-32 w-1 h-1 bg-sparkle-2 rounded-full animate-sparkle animation-delay-1000 opacity-70"></div>

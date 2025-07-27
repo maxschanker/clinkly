@@ -110,26 +110,6 @@ export default {
 				'bounce-gentle': {
 					'0%, 100%': { transform: 'translateY(0)' },
 					'50%': { transform: 'translateY(-5px)' }
-				},
-				'float-left': {
-					'0%': { transform: 'translate3d(0, 100vh, 0) rotate(0deg)', opacity: '0' },
-					'10%': { opacity: '1' },
-					'20%': { transform: 'translate3d(10vw, 60vh, 0) rotate(15deg)' },
-					'40%': { transform: 'translate3d(30vw, 30vh, 0) rotate(45deg)' },
-					'60%': { transform: 'translate3d(50vw, 40vh, 0) rotate(75deg)' },
-					'80%': { transform: 'translate3d(70vw, 60vh, 0) rotate(105deg)' },
-					'90%': { opacity: '1' },
-					'100%': { transform: 'translate3d(100vw, 100vh, 0) rotate(135deg)', opacity: '0' }
-				},
-				'float-right': {
-					'0%': { transform: 'translate3d(0, 100vh, 0) rotate(0deg)', opacity: '0' },
-					'10%': { opacity: '1' },
-					'20%': { transform: 'translate3d(-10vw, 60vh, 0) rotate(-15deg)' },
-					'40%': { transform: 'translate3d(-30vw, 30vh, 0) rotate(-45deg)' },
-					'60%': { transform: 'translate3d(-50vw, 40vh, 0) rotate(-75deg)' },
-					'80%': { transform: 'translate3d(-70vw, 60vh, 0) rotate(-105deg)' },
-					'90%': { opacity: '1' },
-					'100%': { transform: 'translate3d(-100vw, 100vh, 0) rotate(-135deg)', opacity: '0' }
 				}
 			},
 			animation: {
@@ -138,30 +118,7 @@ export default {
 				'sparkle': 'sparkle 2s ease-in-out infinite',
 				'float': 'float 3s ease-in-out infinite',
 				'shimmer': 'shimmer 2s linear infinite',
-				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
-				'float-left': 'float-left 8s linear infinite',
-				'float-right': 'float-right 8s linear infinite'
-			},
-			animationDelay: {
-				'0': '0ms',
-				'75': '75ms',
-				'100': '100ms',
-				'150': '150ms',
-				'200': '200ms',
-				'300': '300ms',
-				'500': '500ms',
-				'700': '700ms',
-				'1000': '1000ms',
-				'2000': '2000ms',
-				'3000': '3000ms',
-				'4000': '4000ms',
-				'5000': '5000ms'
-			},
-			backgroundImage: {
-				'gradient-primary': 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))',
-				'gradient-secondary': 'linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--secondary-glow)))',
-				'gradient-hero': 'var(--gradient-hero)',
-				'gradient-sparkle': 'linear-gradient(135deg, hsl(var(--sparkle-1)), hsl(var(--sparkle-2)))'
+				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite'
 			}
 		}
 	},
