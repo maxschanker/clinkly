@@ -10,11 +10,10 @@ const Index = () => {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-40 right-32 w-1 h-1 bg-sparkle-2 rounded-full animate-sparkle animation-delay-1000 opacity-70"></div>
         <div className="absolute top-60 right-16 w-1 h-1 bg-sparkle-1 rounded-full animate-sparkle animation-delay-3000 opacity-80"></div>
-        <div className="absolute bottom-40 right-40 w-2 h-2 bg-sparkle-2 rounded-full animate-sparkle animation-delay-1500 opacity-60"></div>
       </div>
 
       {/* Header */}
-      <header className="w-full p-6 relative z-10">
+      <header className="w-full p-4 md:p-6 relative z-10">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-2xl font-bold bg-gradient-secondary bg-clip-text text-transparent drop-shadow-sm">
             oowoo
@@ -23,7 +22,7 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 py-8 md:py-0 relative z-10">
+      <div className="flex-1 flex items-center justify-center px-4 py-4 md:py-0 relative z-10 min-h-0">
         <div className="text-center max-w-2xl mx-auto">
           {/* Card Container */}
           <div className="bg-gradient-card p-12 rounded-3xl shadow-card backdrop-blur-sm border border-white/20">
@@ -59,7 +58,7 @@ const Index = () => {
       </div>
       
       {/* Minimalist Footer */}
-      <footer className="w-full p-6">
+      <footer className="w-full p-4 md:p-6">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-sm text-muted-foreground">
             oowoo • 2024
