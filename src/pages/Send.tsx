@@ -20,7 +20,7 @@ const Send = () => {
 
   const fontOptions = [
     { id: "inter", name: "Classic", class: "font-sans" },
-    { id: "playfair", name: "Eclectic", class: "font-playfair" },
+    { id: "playfair", name: "Electric", class: "font-playfair" },
     { id: "dancing", name: "Fancy", class: "font-dancing" },
     { id: "arial", name: "Simple", class: "font-arial" }
   ];
@@ -65,30 +65,8 @@ const Send = () => {
 
       {/* Main Content */}
       <div className="max-w-2xl mx-auto px-6 py-8 pb-24">
-        {/* Header Section */}
+        {/* Header Input */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-center mb-6">Header</h2>
-          
-          {/* Font Selection */}
-          <div className="mb-6">
-            <div className="flex gap-2 justify-center flex-wrap">
-              {fontOptions.map((font) => (
-                <button
-                  key={font.id}
-                  onClick={() => setFormData({...formData, headerFont: font.id})}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    formData.headerFont === font.id
-                      ? 'bg-primary text-primary-foreground shadow-button'
-                      : 'bg-card hover:bg-accent text-foreground border border-border'
-                  }`}
-                >
-                  <span className={font.class}>{font.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Header Input */}
           <input
             type="text"
             value={formData.headerText}
@@ -96,6 +74,25 @@ const Send = () => {
             className={`w-full text-5xl font-bold bg-transparent border-none outline-none placeholder:text-muted-foreground text-center ${selectedFont?.class}`}
             placeholder="Header"
           />
+        </div>
+
+        {/* Font Selection */}
+        <div className="mb-8">
+          <div className="flex gap-2 justify-center flex-wrap">
+            {fontOptions.map((font) => (
+              <button
+                key={font.id}
+                onClick={() => setFormData({...formData, headerFont: font.id})}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  formData.headerFont === font.id
+                    ? 'bg-primary text-primary-foreground shadow-button'
+                    : 'bg-card hover:bg-accent text-foreground border border-border'
+                }`}
+              >
+                <span className={font.class}>{font.name}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Cover Art */}
@@ -116,18 +113,32 @@ const Send = () => {
 
         {/* Sweet Message Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Sweet message</h2>
-          <Textarea
-            value={formData.message}
-            onChange={(e) => setFormData({...formData, message: e.target.value})}
-            placeholder="Hope you have a good week! ❣️"
-            className="w-full min-h-[120px] text-lg resize-none border-2 border-border rounded-2xl p-6 bg-card focus:border-primary focus:ring-2 focus:ring-primary/20"
-          />
+          <h2 className="text-xl font-bold mb-4">Sweet message</h2>
+          <div className="relative">
+            <Textarea
+              value={formData.message}
+              onChange={(e) => {
+                if (e.target.value.length <= 300) {
+                  setFormData({...formData, message: e.target.value});
+                }
+              }}
+              placeholder="Hope you have a good week! ❣️"
+              className="w-full min-h-[120px] text-lg resize-none border-2 border-border rounded-2xl p-6 bg-card focus:border-primary focus:ring-2 focus:ring-primary/20"
+              maxLength={300}
+            />
+            <div className={`text-sm mt-2 text-right ${
+              formData.message.length >= 280 ? 'text-destructive' : 
+              formData.message.length >= 250 ? 'text-yellow-600' : 
+              'text-muted-foreground'
+            }`}>
+              {formData.message.length}/300
+            </div>
+          </div>
         </div>
 
         {/* Gift Section */}
         <div className="space-y-6 mb-8">
-          <h2 className="text-2xl font-bold">Gift</h2>
+          <h2 className="text-xl font-bold">Gift details</h2>
           
           <div className="space-y-4">
             <div>
@@ -142,18 +153,21 @@ const Send = () => {
             </div>
             
             <div>
-              <Label className="text-lg font-medium mb-2 block">Venmo username</Label>
-              <Input
-                type="text"
-                value={formData.venmoHandle}
-                onChange={(e) => setFormData({...formData, venmoHandle: e.target.value})}
-                placeholder="@username"
-                className="w-full h-12 text-lg border-2 rounded-2xl"
-              />
+              <Label className="text-lg font-medium mb-2 block">👤 Venmo username</Label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-lg text-foreground font-medium z-10">@</span>
+                <Input
+                  type="text"
+                  value={formData.venmoHandle}
+                  onChange={(e) => setFormData({...formData, venmoHandle: e.target.value})}
+                  placeholder="username"
+                  className="w-full h-12 text-lg border-2 rounded-2xl pl-8"
+                />
+              </div>
             </div>
             
             <div>
-              <Label className="text-lg font-medium mb-2 block">Amount</Label>
+              <Label className="text-lg font-medium mb-2 block">💲Amount</Label>
               <Input
                 type="number"
                 value={formData.amount}
