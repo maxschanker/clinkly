@@ -15,18 +15,18 @@ const Index = () => {
         <div className="absolute bottom-40 right-40 w-2 h-2 bg-sparkle-2 rounded-full animate-sparkle animation-delay-1500 opacity-60"></div>
       </div>
 
-      {/* Header */}
-      <header className="w-full p-6 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl font-bold bg-gradient-secondary bg-clip-text text-transparent drop-shadow-sm">
-            oowoo
-          </h1>
-        </div>
+      {/* Minimal Header */}
+      <header className="w-full p-4 relative z-10">
       </header>
 
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4 relative z-10">
         <div className="text-center max-w-2xl mx-auto">
+          {/* oowoo Branding */}
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-secondary bg-clip-text text-transparent drop-shadow-sm mb-8 animate-fade-in">
+            oowoo
+          </h1>
+          
           {/* Card Container */}
           <div className="bg-gradient-card p-12 rounded-3xl shadow-card backdrop-blur-sm border border-white/20">
             {/* Main Message */}
