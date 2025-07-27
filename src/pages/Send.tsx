@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,10 +8,6 @@ import { Edit } from "lucide-react";
 
 const Send = () => {
   const navigate = useNavigate();
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const hiddenMeasureRef = useRef<HTMLDivElement>(null);
-  const [isMultiLine, setIsMultiLine] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
   const [formData, setFormData] = useState({
     headerText: "",
     headerFont: "inter",
@@ -61,63 +57,6 @@ const Send = () => {
 
   const selectedFont = fontOptions.find(f => f.id === formData.headerFont);
 
-  // Enhanced text wrapping detection using hidden duplicate element
-  useEffect(() => {
-    if (hiddenMeasureRef.current && textareaRef.current) {
-      const hiddenElement = hiddenMeasureRef.current;
-      const textarea = textareaRef.current;
-      
-      // Copy styles to hidden element for accurate measurement
-      const computedStyle = getComputedStyle(textarea);
-      hiddenElement.style.fontSize = computedStyle.fontSize;
-      hiddenElement.style.fontFamily = computedStyle.fontFamily;
-      hiddenElement.style.fontWeight = computedStyle.fontWeight;
-      hiddenElement.style.letterSpacing = computedStyle.letterSpacing;
-      hiddenElement.style.width = computedStyle.width;
-      hiddenElement.style.padding = computedStyle.padding;
-      hiddenElement.style.border = computedStyle.border;
-      hiddenElement.style.boxSizing = computedStyle.boxSizing;
-      
-      // Set text content and measure
-      hiddenElement.textContent = formData.headerText || "Header";
-      const hiddenHeight = hiddenElement.scrollHeight;
-      const lineHeight = parseInt(computedStyle.lineHeight) || 24;
-      
-      // More accurate multi-line detection
-      const isWrapped = hiddenHeight > lineHeight * 1.5;
-      setIsMultiLine(isWrapped);
-      
-      // Update textarea height to fit content (max 2 lines)
-      const maxHeight = lineHeight * 2;
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.min(hiddenHeight, maxHeight) + 'px';
-    }
-  }, [formData.headerText, formData.headerFont]);
-
-  // Handle typing state for placeholder
-  const handleHeaderTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    if (value.length <= 60) {
-      setFormData({...formData, headerText: value});
-      setIsTyping(value.length > 0);
-    }
-  };
-
-  // Dynamic font sizing with better breakpoints for multi-line
-  const getHeaderFontSize = () => {
-    const length = formData.headerText.length;
-    if (isMultiLine) {
-      // Smaller sizes for multi-line text
-      if (length > 40) return "text-xl";
-      if (length > 25) return "text-2xl";
-      return "text-3xl";
-    } else {
-      // Original sizes for single line
-      if (length > 30) return "text-2xl";
-      if (length > 15) return "text-4xl";
-      return "text-5xl";
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-background">
@@ -134,44 +73,25 @@ const Send = () => {
       {/* Main Content */}
       <div className="max-w-2xl mx-auto px-6 py-8 pb-24">
         {/* Header Input */}
-        <div className={`relative ${isMultiLine ? "mb-6" : "mb-4"}`}>
-          {/* Hidden element for accurate text measurement */}
-          <div
-            ref={hiddenMeasureRef}
-            className={`absolute -top-[9999px] left-0 pointer-events-none whitespace-pre-wrap text-center font-bold ${selectedFont?.class} ${getHeaderFontSize()}`}
-            aria-hidden="true"
-          />
-          
-          {/* Custom placeholder overlay */}
-          {!isTyping && (
-            <div 
-              className={`absolute inset-0 flex items-center justify-center pointer-events-none text-muted-foreground text-center font-bold ${selectedFont?.class} ${getHeaderFontSize()}`}
-              style={{ 
-                lineHeight: textareaRef.current?.style.lineHeight || 'normal'
-              }}
-            >
-              Header
-            </div>
-          )}
-          
-          <Textarea
-            ref={textareaRef}
+        <div className="mb-8">
+          <Input
             value={formData.headerText}
-            onChange={handleHeaderTextChange}
-            className={`w-full bg-transparent border-none outline-none text-center resize-none leading-tight min-h-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${selectedFont?.class} ${getHeaderFontSize()} font-bold`}
-            style={{
-              wordWrap: "break-word",
-              whiteSpace: "pre-wrap",
-              overflow: "hidden",
-              color: isTyping ? 'inherit' : 'transparent'
+            onChange={(e) => {
+              if (e.target.value.length <= 25) {
+                setFormData({...formData, headerText: e.target.value});
+              }
             }}
-            onFocus={() => setIsTyping(formData.headerText.length > 0)}
-            onBlur={() => setIsTyping(formData.headerText.length > 0)}
+            placeholder="Header"
+            className={`w-full bg-transparent border-none outline-none placeholder:text-muted-foreground text-center resize-none leading-tight min-h-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${selectedFont?.class} ${
+              formData.headerText.length > 20 ? "text-2xl" : 
+              formData.headerText.length > 12 ? "text-4xl" : "text-5xl"
+            } font-bold h-auto py-2`}
+            maxLength={25}
           />
         </div>
 
         {/* Font Selection */}
-        <div className={`${isMultiLine ? "mb-6" : "mb-8"}`}>
+        <div className="mb-8">
           <div className="flex gap-2 justify-center flex-wrap">
             {fontOptions.map((font) => (
               <button
