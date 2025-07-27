@@ -3,166 +3,165 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
+import { Edit } from "lucide-react";
 
 const Send = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    senderName: "",
-    recipientHandle: "",
-    treatType: "5",
+    headerText: "Header",
+    headerFont: "inter",
+    coverArt: "photo-1500375592092-40eb2168fd21", // Default ocean wave
     message: "",
-    theme: "primary"
+    recipientName: "",
+    venmoHandle: "",
+    amount: ""
   });
 
-  const treatOptions = [
-    { value: "5", label: "$5", emoji: "☕️", description: "coffee" },
-    { value: "10", label: "$10", emoji: "🥗", description: "lunch" },
-    { value: "custom", label: "Custom", emoji: "💝", description: "surprise" }
+  const fontOptions = [
+    { id: "inter", name: "Inter", class: "font-sans" },
+    { id: "playfair", name: "Playfair Display", class: "font-playfair" },
+    { id: "dancing", name: "Dancing Script", class: "font-dancing" },
+    { id: "arial", name: "Arial", class: "font-arial" }
   ];
 
-  const themes = [
-    { id: "primary", name: "Sparkle Pink", bg: "bg-gradient-primary" },
-    { id: "secondary", name: "Sunny Yellow", bg: "bg-gradient-secondary" },
-    { id: "card", name: "Soft Cloud", bg: "bg-gradient-card" }
+  const coverArtOptions = [
+    "photo-1500375592092-40eb2168fd21", // Ocean wave
+    "photo-1465146344425-f00d5f5c8f07", // Orange flowers
+    "photo-1500673922987-e212871fec22", // Yellow lights
+    "photo-1582562124811-c09040d0a901", // Orange cat
+    "photo-1535268647677-300dbf3d78d1", // Grey kitten
+    "photo-1488590528505-98d2b5aba04b", // Laptop
+    "photo-1487058792275-0ad4aaf24ca7", // Code monitor
+    "photo-1649972904349-6e44c42644a7"  // Woman with laptop
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = () => {
     // Save form data to localStorage for demo
     localStorage.setItem('treatData', JSON.stringify(formData));
     navigate('/send/complete');
   };
 
+  const handleCoverArtEdit = () => {
+    // Cycle through cover art options for demo
+    const currentIndex = coverArtOptions.indexOf(formData.coverArt);
+    const nextIndex = (currentIndex + 1) % coverArtOptions.length;
+    setFormData({...formData, coverArt: coverArtOptions[nextIndex]});
+  };
+
+  const selectedFont = fontOptions.find(f => f.id === formData.headerFont);
+
   return (
-    <div className="min-h-screen bg-gradient-background p-4">
-      <div className="max-w-md mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8 pt-8">
-          <h1 className="text-3xl font-bold mb-2">Send a Treat 🎁</h1>
-          <p className="text-muted-foreground">Make someone's day with a little surprise</p>
+    <div className="min-h-screen bg-gradient-background">
+      {/* Main Content */}
+      <div className="max-w-2xl mx-auto px-6 py-8 pb-24">
+        {/* Font Selection */}
+        <div className="mb-6">
+          <div className="flex gap-2 flex-wrap">
+            {fontOptions.map((font) => (
+              <button
+                key={font.id}
+                onClick={() => setFormData({...formData, headerFont: font.id})}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  formData.headerFont === font.id
+                    ? 'bg-primary text-primary-foreground shadow-button'
+                    : 'bg-card hover:bg-accent text-foreground border border-border'
+                }`}
+              >
+                <span className={font.class}>{font.name}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Sender Name */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">Your name</label>
+        {/* Header Input */}
+        <div className="mb-8">
+          <input
+            type="text"
+            value={formData.headerText}
+            onChange={(e) => setFormData({...formData, headerText: e.target.value})}
+            className={`w-full text-5xl font-bold bg-transparent border-none outline-none placeholder:text-muted-foreground ${selectedFont?.class}`}
+            placeholder="Header"
+          />
+        </div>
+
+        {/* Cover Art */}
+        <div className="relative mb-8 rounded-3xl overflow-hidden shadow-card">
+          <img
+            src={`https://images.unsplash.com/${formData.coverArt}?w=800&h=400&fit=crop`}
+            alt="Cover art"
+            className="w-full h-80 object-cover"
+          />
+          <button
+            onClick={handleCoverArtEdit}
+            className="absolute bottom-4 right-4 bg-card/90 backdrop-blur-sm hover:bg-card text-foreground px-4 py-2 rounded-full flex items-center gap-2 transition-all shadow-soft"
+          >
+            <Edit size={16} />
+            Edit
+          </button>
+        </div>
+
+        {/* Message Box */}
+        <div className="mb-8">
+          <Textarea
+            value={formData.message}
+            onChange={(e) => setFormData({...formData, message: e.target.value})}
+            placeholder="Write your message here"
+            className="w-full min-h-[120px] text-lg resize-none border-2 border-border rounded-2xl p-6 bg-card focus:border-primary focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+
+        {/* Gift Section */}
+        <div className="space-y-4 mb-8">
+          <div className="flex items-center gap-4">
+            <span className="text-2xl">📩</span>
+            <span className="text-lg font-medium min-w-[40px]">To</span>
             <Input
               type="text"
-              placeholder="Your beautiful name ✨"
-              value={formData.senderName}
-              onChange={(e) => setFormData({...formData, senderName: e.target.value})}
-              className="rounded-2xl border-2 h-12"
-              required
+              value={formData.recipientName}
+              onChange={(e) => setFormData({...formData, recipientName: e.target.value})}
+              placeholder="Recipient's name"
+              className="flex-1 h-12 text-lg border-2 rounded-2xl"
             />
           </div>
-
-          {/* Recipient Handle */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">Send to</label>
+          
+          <div className="flex items-center gap-4">
+            <span className="text-2xl">@</span>
+            <span className="text-lg font-medium min-w-[40px]"></span>
             <Input
               type="text"
-              placeholder="@username (Venmo or CashApp)"
-              value={formData.recipientHandle}
-              onChange={(e) => setFormData({...formData, recipientHandle: e.target.value})}
-              className="rounded-2xl border-2 h-12"
-              required
+              value={formData.venmoHandle}
+              onChange={(e) => setFormData({...formData, venmoHandle: e.target.value})}
+              placeholder="Venmo username"
+              className="flex-1 h-12 text-lg border-2 rounded-2xl"
             />
           </div>
-
-          {/* Treat Type */}
-          <div>
-            <label className="text-sm font-medium mb-3 block">Pick a treat</label>
-            <div className="grid grid-cols-3 gap-3">
-              {treatOptions.map((option) => (
-                <Card
-                  key={option.value}
-                  className={`p-4 cursor-pointer transition-all border-2 rounded-2xl ${
-                    formData.treatType === option.value
-                      ? 'border-primary bg-primary/10 shadow-glow'
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                  onClick={() => setFormData({...formData, treatType: option.value})}
-                >
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">{option.emoji}</div>
-                    <div className="font-bold text-sm">{option.label}</div>
-                    <div className="text-xs text-muted-foreground">{option.description}</div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* Custom Amount */}
-          {formData.treatType === "custom" && (
-            <div>
-              <Input
-                type="number"
-                placeholder="$25"
-                className="rounded-2xl border-2 h-12"
-                min="1"
-                max="100"
-              />
-            </div>
-          )}
-
-          {/* Message */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">Sweet message</label>
-            <Textarea
-              placeholder="congrats on the new job! 🎉"
-              value={formData.message}
-              onChange={(e) => setFormData({...formData, message: e.target.value})}
-              className="rounded-2xl border-2 min-h-[80px] resize-none"
-              maxLength={100}
+          
+          <div className="flex items-center gap-4">
+            <span className="text-2xl">💰</span>
+            <span className="text-lg font-medium min-w-[40px]">$</span>
+            <Input
+              type="number"
+              value={formData.amount}
+              onChange={(e) => setFormData({...formData, amount: e.target.value})}
+              placeholder="Amount"
+              className="flex-1 h-12 text-lg border-2 rounded-2xl"
+              min="1"
+              max="500"
             />
-            <div className="text-xs text-muted-foreground mt-1">
-              {formData.message.length}/100 characters
-            </div>
           </div>
+        </div>
+      </div>
 
-          {/* Card Theme */}
-          <div>
-            <label className="text-sm font-medium mb-3 block">Choose a vibe</label>
-            <div className="grid grid-cols-3 gap-3">
-              {themes.map((theme) => (
-                <div
-                  key={theme.id}
-                  className={`relative cursor-pointer transition-all rounded-2xl overflow-hidden ${
-                    formData.theme === theme.id ? 'ring-2 ring-primary ring-offset-2' : ''
-                  }`}
-                  onClick={() => setFormData({...formData, theme: theme.id})}
-                >
-                  <div className={`h-16 ${theme.bg}`}></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-white font-medium text-sm drop-shadow-lg">
-                      {theme.name}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Submit Button */}
+      {/* Sticky Save Button */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-background to-background/80 backdrop-blur-sm p-6">
+        <div className="max-w-2xl mx-auto">
           <Button
-            type="submit"
+            onClick={handleSave}
             className="w-full h-14 text-lg font-bold rounded-2xl bg-gradient-primary hover:shadow-glow transition-all duration-300 border-0"
           >
-            Continue to Send 🎁
+            Save
           </Button>
-        </form>
-
-        {/* Back button */}
-        <Button
-          variant="outline"
-          onClick={() => navigate('/')}
-          className="w-full mt-4 rounded-2xl border-2"
-        >
-          ← Back to Home
-        </Button>
+        </div>
       </div>
     </div>
   );
