@@ -13,6 +13,7 @@ const Send = () => {
     headerFont: "inter",
     coverArt: "photo-1500375592092-40eb2168fd21", // Default ocean wave
     message: "",
+    senderName: "",
     recipientName: "",
     venmoHandle: "",
     amount: ""
@@ -155,6 +156,17 @@ const Send = () => {
           
           <div className="space-y-4">
             <div>
+              <Label className="text-lg font-medium mb-2 block">🫶 From:</Label>
+              <Input
+                type="text"
+                value={formData.senderName}
+                onChange={(e) => setFormData({...formData, senderName: e.target.value})}
+                placeholder="Your name"
+                className="w-full h-12 text-lg border-2 rounded-2xl"
+              />
+            </div>
+            
+            <div>
               <Label className="text-lg font-medium mb-2 block">📩 To:</Label>
               <Input
                 type="text"
@@ -173,7 +185,7 @@ const Send = () => {
                   type="text"
                   value={formData.venmoHandle}
                   onChange={(e) => setFormData({...formData, venmoHandle: e.target.value})}
-                  placeholder="username"
+                  placeholder="recipient's username"
                   className="w-full h-12 text-lg border-2 rounded-2xl pl-8"
                 />
               </div>
