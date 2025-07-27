@@ -141,6 +141,27 @@ export default {
 				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
 				'float-left': 'float-left 8s linear infinite',
 				'float-right': 'float-right 8s linear infinite'
+			},
+			animationDelay: {
+				'0': '0ms',
+				'75': '75ms',
+				'100': '100ms',
+				'150': '150ms',
+				'200': '200ms',
+				'300': '300ms',
+				'500': '500ms',
+				'700': '700ms',
+				'1000': '1000ms',
+				'2000': '2000ms',
+				'3000': '3000ms',
+				'4000': '4000ms',
+				'5000': '5000ms'
+			},
+			backgroundImage: {
+				'gradient-primary': 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))',
+				'gradient-secondary': 'linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--secondary-glow)))',
+				'gradient-hero': 'var(--gradient-hero)',
+				'gradient-sparkle': 'linear-gradient(135deg, hsl(var(--sparkle-1)), hsl(var(--sparkle-2)))'
 			}
 		}
 	},

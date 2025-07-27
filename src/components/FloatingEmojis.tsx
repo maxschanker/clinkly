@@ -38,7 +38,7 @@ const FloatingEmojis = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0">
+    <div className="fixed inset-0 pointer-events-none z-10">
       {emojis.map((emoji) => (
         <div
           key={emoji.id}
