@@ -5,36 +5,58 @@ const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-background flex flex-col">
+    <div className="min-h-screen bg-gradient-hero flex flex-col relative overflow-hidden">
+      {/* Sparkle Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-20 w-2 h-2 bg-sparkle-1 rounded-full animate-sparkle opacity-60"></div>
+        <div className="absolute top-40 right-32 w-1 h-1 bg-sparkle-2 rounded-full animate-sparkle animation-delay-1000 opacity-70"></div>
+        <div className="absolute bottom-60 left-16 w-1.5 h-1.5 bg-sparkle-3 rounded-full animate-sparkle animation-delay-2000 opacity-50"></div>
+        <div className="absolute top-60 right-16 w-1 h-1 bg-sparkle-1 rounded-full animate-sparkle animation-delay-3000 opacity-80"></div>
+        <div className="absolute bottom-40 right-40 w-2 h-2 bg-sparkle-2 rounded-full animate-sparkle animation-delay-1500 opacity-60"></div>
+      </div>
+
       {/* Header */}
-      <header className="w-full p-6">
+      <header className="w-full p-6 relative z-10">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold bg-gradient-secondary bg-clip-text text-transparent drop-shadow-sm">
             oowoo
           </h1>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4">
+      <div className="flex-1 flex items-center justify-center px-4 relative z-10">
         <div className="text-center max-w-2xl mx-auto">
-          {/* Main Message */}
-          <h2 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight animate-fade-in">
-            Show someone you love them
-          </h2>
-          
-          {/* Emoji with gentle animation */}
-          <div className="text-6xl mb-12 animate-bounce-gentle">
-            🫶
+          {/* Card Container */}
+          <div className="bg-gradient-card p-12 rounded-3xl shadow-card backdrop-blur-sm border border-white/20">
+            {/* Main Message */}
+            <h2 className="text-5xl md:text-6xl font-bold text-foreground mb-8 leading-tight animate-fade-in">
+              Show someone you love them
+            </h2>
+            
+            {/* Emoji with glow effect */}
+            <div className="relative mb-12">
+              <div className="text-7xl animate-bounce-gentle relative">
+                🫶
+                <div className="absolute inset-0 bg-gradient-primary rounded-full blur-xl opacity-30 animate-pulse"></div>
+              </div>
+            </div>
+            
+            {/* Get Started Button */}
+            <Button
+              onClick={() => navigate('/send')}
+              className="h-16 px-16 text-xl font-semibold rounded-full bg-gradient-primary hover:shadow-glow transition-all duration-500 transform hover:scale-110 hover:rotate-1 shadow-button border border-white/20"
+            >
+              Get Started
+            </Button>
+            
+            {/* Decorative elements */}
+            <div className="flex justify-center space-x-4 mt-8 opacity-60">
+              <div className="w-2 h-2 bg-sparkle-1 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-sparkle-2 rounded-full animate-pulse animation-delay-500"></div>
+              <div className="w-2 h-2 bg-sparkle-3 rounded-full animate-pulse animation-delay-1000"></div>
+            </div>
           </div>
-          
-          {/* Get Started Button */}
-          <Button
-            onClick={() => navigate('/send')}
-            className="h-16 px-16 text-xl font-semibold rounded-full bg-gradient-primary hover:shadow-glow transition-all duration-300 transform hover:scale-105"
-          >
-            Get Started
-          </Button>
         </div>
       </div>
       
