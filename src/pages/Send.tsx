@@ -76,7 +76,7 @@ const Send = () => {
           <Input
             value={formData.headerText}
             onChange={(e) => {
-              if (e.target.value.length <= 28) {
+              if (e.target.value.length <= 25) {
                 setFormData({...formData, headerText: e.target.value});
               }
             }}
@@ -85,7 +85,7 @@ const Send = () => {
               formData.headerText.length > 20 ? "text-2xl" : 
               formData.headerText.length > 12 ? "text-4xl" : "text-5xl"
             } font-bold h-auto py-2`}
-            maxLength={28}
+            maxLength={25}
           />
         </div>
 
