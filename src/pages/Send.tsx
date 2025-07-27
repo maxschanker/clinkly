@@ -9,7 +9,7 @@ import { Edit } from "lucide-react";
 const Send = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    headerText: "Header",
+    headerText: "",
     headerFont: "inter",
     coverArt: "photo-1500375592092-40eb2168fd21", // Default ocean wave
     message: "",
@@ -73,24 +73,24 @@ const Send = () => {
       <div className="max-w-2xl mx-auto px-6 py-8 pb-24">
         {/* Header Input */}
         <div className="mb-8">
-          <input
-            type="text"
+          <Textarea
             value={formData.headerText}
             onChange={(e) => {
-              if (e.target.value.length <= 40) {
+              if (e.target.value.length <= 60) {
                 setFormData({...formData, headerText: e.target.value});
               }
             }}
-            className={`w-full bg-transparent border-none outline-none placeholder:text-muted-foreground text-center resize-none leading-tight max-h-32 overflow-hidden ${selectedFont?.class} ${
-              formData.headerText === "Header" ? "text-muted-foreground" : "text-foreground"
-            } ${
-              formData.headerText.length > 20 ? "text-3xl" : "text-5xl"
-            } font-bold`}
             placeholder="Header"
+            className={`w-full bg-transparent border-none outline-none placeholder:text-muted-foreground text-center resize-none leading-tight min-h-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 ${selectedFont?.class} ${
+              formData.headerText.length > 30 ? "text-2xl" : 
+              formData.headerText.length > 15 ? "text-4xl" : "text-5xl"
+            } font-bold`}
             style={{
               wordWrap: "break-word",
-              whiteSpace: "pre-wrap"
+              whiteSpace: "pre-wrap",
+              overflow: "hidden"
             }}
+            rows={2}
           />
         </div>
 
