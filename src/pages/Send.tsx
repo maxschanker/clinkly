@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,8 @@ import { Edit } from "lucide-react";
 
 const Send = () => {
   const navigate = useNavigate();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isMultiLine, setIsMultiLine] = useState(false);
   const [formData, setFormData] = useState({
     headerText: "",
     headerFont: "inter",
@@ -57,6 +59,19 @@ const Send = () => {
 
   const selectedFont = fontOptions.find(f => f.id === formData.headerFont);
 
+  // Check if textarea content wraps to multiple lines
+  useEffect(() => {
+    if (textareaRef.current) {
+      const textarea = textareaRef.current;
+      // Reset height to measure scrollHeight accurately
+      textarea.style.height = 'auto';
+      const scrollHeight = textarea.scrollHeight;
+      const lineHeight = parseInt(getComputedStyle(textarea).lineHeight);
+      const isWrapped = scrollHeight > lineHeight * 1.2; // Account for slight variations
+      setIsMultiLine(isWrapped);
+    }
+  }, [formData.headerText, formData.headerFont]);
+
   return (
     <div className="min-h-screen bg-gradient-background">
       {/* Logo */}
@@ -72,8 +87,9 @@ const Send = () => {
       {/* Main Content */}
       <div className="max-w-2xl mx-auto px-6 py-8 pb-24">
         {/* Header Input */}
-        <div className="mb-8">
+        <div className={isMultiLine ? "mb-8" : "mb-4"}>
           <Textarea
+            ref={textareaRef}
             value={formData.headerText}
             onChange={(e) => {
               if (e.target.value.length <= 60) {
@@ -90,7 +106,7 @@ const Send = () => {
               whiteSpace: "pre-wrap",
               overflow: "hidden"
             }}
-            rows={2}
+            rows={1}
           />
         </div>
 
