@@ -8,9 +8,7 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-hero flex flex-col relative overflow-hidden">
       {/* Sparkle Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-20 w-2 h-2 bg-sparkle-1 rounded-full animate-sparkle opacity-60"></div>
         <div className="absolute top-40 right-32 w-1 h-1 bg-sparkle-2 rounded-full animate-sparkle animation-delay-1000 opacity-70"></div>
-        <div className="absolute bottom-60 left-16 w-1.5 h-1.5 bg-sparkle-3 rounded-full animate-sparkle animation-delay-2000 opacity-50"></div>
         <div className="absolute top-60 right-16 w-1 h-1 bg-sparkle-1 rounded-full animate-sparkle animation-delay-3000 opacity-80"></div>
         <div className="absolute bottom-40 right-40 w-2 h-2 bg-sparkle-2 rounded-full animate-sparkle animation-delay-1500 opacity-60"></div>
       </div>
@@ -25,7 +23,7 @@ const Index = () => {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 relative z-10">
+      <div className="flex-1 flex items-center justify-center px-4 py-8 md:py-0 relative z-10">
         <div className="text-center max-w-2xl mx-auto">
           {/* Card Container */}
           <div className="bg-gradient-card p-12 rounded-3xl shadow-card backdrop-blur-sm border border-white/20">
