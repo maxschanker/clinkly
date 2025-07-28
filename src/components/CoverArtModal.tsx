@@ -461,7 +461,7 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl w-full max-h-[90vh] p-0 flex flex-col">
+      <DialogContent className="max-w-5xl w-full h-[90vh] p-0 flex flex-col">
         <DialogHeader className="p-6 pb-0 flex-shrink-0">
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-primary" />
@@ -568,11 +568,11 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
             <div className="flex-1 min-h-0 px-6 pb-6">
               {/* Curated Posters Tab */}
               <TabsContent value="posters" className="mt-4 h-full">
-                <ScrollArea className="h-full">
+                <ScrollArea className="h-[500px]">
                   <div className="pr-4">
                     {filteredPosters.length > 0 ? (
                       <div className="space-y-4">
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-full overflow-hidden">
                           {filteredPosters.slice(0, posterPage * ITEMS_PER_PAGE).map((poster) => (
                             <div
                               key={poster.id}
@@ -615,7 +615,7 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
                         )}
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center h-full text-center">
+                      <div className="flex flex-col items-center justify-center h-[300px] text-center">
                         <FileImage className="w-12 h-12 text-muted-foreground mb-4" />
                         <p className="text-lg font-medium">No posters found</p>
                         <p className="text-muted-foreground">Try a different search term</p>
@@ -627,17 +627,17 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
               
               {/* Photos Tab */}
               <TabsContent value="photos" className="mt-4 h-full">
-                <ScrollArea className="h-full">
+                <ScrollArea className="h-[500px]">
                   <div className="pr-4">
                     {isSearchingPhotos ? (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-full overflow-hidden">
                         {Array.from({ length: 6 }).map((_, i) => (
                           <Skeleton key={i} className="aspect-[2/1] rounded-lg" />
                         ))}
                       </div>
                     ) : unsplashPhotos.length > 0 ? (
                       <div className="space-y-4">
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-full overflow-hidden">
                           {unsplashPhotos.map((photo) => (
                             <div
                               key={photo.id}
@@ -674,7 +674,7 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
                         )}
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center h-full text-center">
+                      <div className="flex flex-col items-center justify-center h-[300px] text-center">
                         <Image className="w-12 h-12 text-muted-foreground mb-4" />
                         <p className="text-lg font-medium">Beautiful photos loaded!</p>
                         <p className="text-muted-foreground">Search above to find specific themes</p>
@@ -686,17 +686,17 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
               
               {/* GIFs Tab */}
               <TabsContent value="gifs" className="mt-4 h-full">
-                <ScrollArea className="h-full">
+                <ScrollArea className="h-[500px]">
                   <div className="pr-4">
                     {isLoadingGifs ? (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-full overflow-hidden">
                         {Array.from({ length: 6 }).map((_, i) => (
                           <Skeleton key={i} className="aspect-[2/1] rounded-lg" />
                         ))}
                       </div>
                     ) : tenorGifs.length > 0 ? (
                       <div className="space-y-4">
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-full overflow-hidden">
                           {tenorGifs.map((gif) => (
                             <div
                               key={gif.id}
@@ -733,7 +733,7 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
                         )}
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center h-full text-center">
+                      <div className="flex flex-col items-center justify-center h-[300px] text-center">
                         <Sparkles className="w-12 h-12 text-muted-foreground mb-4" />
                         <p className="text-lg font-medium">Search for GIFs</p>
                         <p className="text-muted-foreground">Try searching for "celebration", "cute", or "funny"</p>
