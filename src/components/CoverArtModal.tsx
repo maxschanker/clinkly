@@ -465,7 +465,7 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
         <DialogHeader className="p-6 pb-0 flex-shrink-0">
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-primary" />
-              Choose Cover Art
+              Choose Art
             </DialogTitle>
         </DialogHeader>
         
@@ -475,15 +475,15 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="posters" className="flex items-center gap-2">
                   <FileImage className="w-4 h-4" />
-                  Curated
-                </TabsTrigger>
-                <TabsTrigger value="photos" className="flex items-center gap-2">
-                  <Image className="w-4 h-4" />
-                  Photos
+                  Posters
                 </TabsTrigger>
                 <TabsTrigger value="gifs" className="flex items-center gap-2">
                   <Sparkles className="w-4 h-4" />
                   GIFs
+                </TabsTrigger>
+                <TabsTrigger value="photos" className="flex items-center gap-2">
+                  <Image className="w-4 h-4" />
+                  Photos
                 </TabsTrigger>
               </TabsList>
               
@@ -493,7 +493,7 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
                     placeholder={
-                      activeTab === "posters" ? "Search curated posters..." :
+                      activeTab === "posters" ? "Search posters..." :
                       activeTab === "photos" ? "Search photos..." : 
                       "Search GIFs..."
                     }
