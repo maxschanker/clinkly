@@ -512,28 +512,14 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
                 </div>
                 
                 {activeTab !== "posters" && (
-                  <>
-                    <Button 
-                      onClick={handleSearch} 
-                      disabled={isSearchingPhotos || isLoadingGifs}
-                      size="default"
-                    >
-                      {(isSearchingPhotos || isLoadingGifs) ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Search className="w-4 h-4" />
-                      )}
-                    </Button>
-                    
-                    <Button 
-                      variant="outline" 
-                      onClick={handleRandomSearch}
-                      size="default"
-                      title="Random search"
-                    >
-                      <Shuffle className="w-4 h-4" />
-                    </Button>
-                  </>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleRandomSearch}
+                    size="default"
+                    title="Random search"
+                  >
+                    <Shuffle className="w-4 h-4" />
+                  </Button>
                 )}
                 
                 {/* Custom Upload */}
