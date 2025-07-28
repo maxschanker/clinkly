@@ -507,6 +507,7 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
                     }}
                     onKeyPress={handleKeyPress}
                     className="pl-10"
+                    tabIndex={-1}
                   />
                 </div>
                 
