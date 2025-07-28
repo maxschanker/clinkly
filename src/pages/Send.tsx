@@ -5,19 +5,22 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Edit } from "lucide-react";
+import { CoverArtModal } from "@/components/CoverArtModal";
 
 const Send = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     headerText: "",
     headerFont: "inter",
-    coverArt: "photo-1500375592092-40eb2168fd21", // Default ocean wave
+    coverArt: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?w=800&h=400&fit=crop", // Default ocean wave
+    coverArtType: "poster" as 'photo' | 'gif' | 'poster',
     message: "",
     senderName: "",
     recipientName: "",
     venmoHandle: "",
     amount: ""
   });
+  const [showCoverArtModal, setShowCoverArtModal] = useState(false);
 
   const fontOptions = [
     { id: "inter", name: "Classic", class: "font-sans" },
@@ -26,16 +29,6 @@ const Send = () => {
     { id: "arial", name: "Simple", class: "font-arial" }
   ];
 
-  const coverArtOptions = [
-    "photo-1500375592092-40eb2168fd21", // Ocean wave
-    "photo-1465146344425-f00d5f5c8f07", // Orange flowers
-    "photo-1500673922987-e212871fec22", // Yellow lights
-    "photo-1582562124811-c09040d0a901", // Orange cat
-    "photo-1535268647677-300dbf3d78d1", // Grey kitten
-    "photo-1488590528505-98d2b5aba04b", // Laptop
-    "photo-1487058792275-0ad4aaf24ca7", // Code monitor
-    "photo-1649972904349-6e44c42644a7"  // Woman with laptop
-  ];
 
   const handleSave = () => {
     // Save form data to localStorage for demo, mapping to expected structure
@@ -48,11 +41,9 @@ const Send = () => {
     navigate('/send/complete');
   };
 
-  const handleCoverArtEdit = () => {
-    // Cycle through cover art options for demo
-    const currentIndex = coverArtOptions.indexOf(formData.coverArt);
-    const nextIndex = (currentIndex + 1) % coverArtOptions.length;
-    setFormData({...formData, coverArt: coverArtOptions[nextIndex]});
+  const handleCoverArtSelect = (url: string, type: 'photo' | 'gif' | 'poster') => {
+    setFormData({...formData, coverArt: url, coverArtType: type});
+    setShowCoverArtModal(false);
   };
 
   const selectedFont = fontOptions.find(f => f.id === formData.headerFont);
@@ -111,13 +102,21 @@ const Send = () => {
 
         {/* Cover Art */}
         <div className="relative mb-8 rounded-3xl overflow-hidden shadow-card">
-          <img
-            src={`https://images.unsplash.com/${formData.coverArt}?w=800&h=400&fit=crop`}
-            alt="Cover art"
-            className="w-full h-80 object-cover"
-          />
+          {formData.coverArtType === 'gif' ? (
+            <img
+              src={formData.coverArt}
+              alt="Cover art GIF"
+              className="w-full h-80 object-cover"
+            />
+          ) : (
+            <img
+              src={formData.coverArt}
+              alt="Cover art"
+              className="w-full h-80 object-cover"
+            />
+          )}
           <button
-            onClick={handleCoverArtEdit}
+            onClick={() => setShowCoverArtModal(true)}
             className="absolute bottom-4 right-4 bg-card/90 backdrop-blur-sm hover:bg-card text-foreground px-4 py-2 rounded-full flex items-center gap-2 transition-all shadow-soft"
           >
             <Edit size={16} />
@@ -218,6 +217,14 @@ const Send = () => {
           </Button>
         </div>
       </div>
+
+      {/* Cover Art Modal */}
+      <CoverArtModal
+        open={showCoverArtModal}
+        onOpenChange={setShowCoverArtModal}
+        onSelect={handleCoverArtSelect}
+        currentSelection={formData.coverArt}
+      />
     </div>
   );
 };
