@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 interface CoverArtModalProps {
   open: boolean;
@@ -202,10 +203,15 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
     setPosterPage(1); // Reset to first page when search changes
   }, [posterSearchQuery]);
 
-  // Load trending GIFs on modal open
+  // Load default content when modal opens or tab changes
   useEffect(() => {
-    if (open && activeTab === "gifs" && tenorGifs.length === 0) {
-      searchGifs();
+    if (open) {
+      if (activeTab === "gifs" && tenorGifs.length === 0) {
+        searchGifs();
+      } else if (activeTab === "photos" && unsplashPhotos.length === 0) {
+        // Load default photos with popular search terms
+        searchPhotos("celebration", 1, false);
+      }
     }
   }, [open, activeTab]);
 
@@ -368,25 +374,49 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
     }
   };
 
-  // Load more functions
-  const loadMorePhotos = () => {
-    const nextPage = unsplashPage + 1;
-    setUnsplashPage(nextPage);
-    searchPhotos(searchQuery, nextPage, true);
-  };
+  // Load more functions for infinite scroll
+  const loadMorePhotos = useCallback(() => {
+    if (hasMorePhotos && !isLoadingMorePhotos) {
+      const nextPage = unsplashPage + 1;
+      setUnsplashPage(nextPage);
+      searchPhotos(searchQuery || "celebration", nextPage, true);
+    }
+  }, [hasMorePhotos, isLoadingMorePhotos, unsplashPage, searchQuery, searchPhotos]);
 
-  const loadMoreGifs = () => {
-    searchGifs(searchQuery || "celebration", tenorPos, true);
-  };
+  const loadMoreGifs = useCallback(() => {
+    if (hasMoreGifs && !isLoadingMoreGifs) {
+      searchGifs(searchQuery || "celebration", tenorPos, true);
+    }
+  }, [hasMoreGifs, isLoadingMoreGifs, searchQuery, tenorPos, searchGifs]);
 
-  const loadMorePosters = () => {
-    setIsLoadingMorePosters(true);
-    // Simulate loading delay for smooth UX
-    setTimeout(() => {
-      setPosterPage(prev => prev + 1);
-      setIsLoadingMorePosters(false);
-    }, 300);
-  };
+  const loadMorePosters = useCallback(() => {
+    if (hasMorePosters && !isLoadingMorePosters) {
+      setIsLoadingMorePosters(true);
+      setTimeout(() => {
+        setPosterPage(prev => prev + 1);
+        setIsLoadingMorePosters(false);
+      }, 300);
+    }
+  }, [hasMorePosters, isLoadingMorePosters]);
+
+  // Infinite scroll hooks
+  const photosSentinelRef = useInfiniteScroll({
+    hasMore: hasMorePhotos,
+    loading: isLoadingMorePhotos,
+    onLoadMore: loadMorePhotos
+  });
+
+  const gifsSentinelRef = useInfiniteScroll({
+    hasMore: hasMoreGifs,
+    loading: isLoadingMoreGifs,
+    onLoadMore: loadMoreGifs
+  });
+
+  const postersSentinelRef = useInfiniteScroll({
+    hasMore: hasMorePosters,
+    loading: isLoadingMorePosters,
+    onLoadMore: loadMorePosters
+  });
 
   // Handle file upload
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -431,17 +461,17 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[85vh] p-0">
-        <DialogHeader className="p-6 pb-0">
+      <DialogContent className="max-w-5xl w-full max-h-[90vh] p-0 flex flex-col">
+        <DialogHeader className="p-6 pb-0 flex-shrink-0">
             <DialogTitle className="text-2xl font-bold flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-primary" />
               Choose Cover Art
             </DialogTitle>
         </DialogHeader>
         
-        <div className="flex flex-col h-[70vh]">
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col">
-            <div className="px-6">
+        <div className="flex flex-col flex-1 min-h-0">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col min-h-0">
+            <div className="px-6 flex-shrink-0">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="posters" className="flex items-center gap-2">
                   <FileImage className="w-4 h-4" />
@@ -535,199 +565,181 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
               )}
             </div>
             
-            <div className="flex-1 px-6 pb-6">
+            <div className="flex-1 min-h-0 px-6 pb-6">
               {/* Curated Posters Tab */}
               <TabsContent value="posters" className="mt-4 h-full">
                 <ScrollArea className="h-full">
-                  {filteredPosters.length > 0 ? (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {filteredPosters.slice(0, posterPage * ITEMS_PER_PAGE).map((poster) => (
-                          <div
-                            key={poster.id}
-                            className={cn(
-                              "group relative aspect-[2/1] rounded-lg overflow-hidden cursor-pointer border-2 transition-all",
-                              currentSelection === poster.url
-                                ? "border-primary shadow-glow"
-                                : "border-transparent hover:border-border"
-                            )}
-                            onClick={() => onSelect(poster.url, 'poster')}
-                          >
-                            <img
-                              src={poster.url}
-                              alt={poster.title}
-                              loading="lazy"
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="absolute bottom-2 left-2">
-                                <p className="text-white font-medium text-sm">{poster.title}</p>
-                                <div className="flex items-center gap-1 mt-1">
-                                  <Badge variant="secondary" className="text-xs">
-                                    {poster.category}
-                                  </Badge>
-                                  <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                  <div className="pr-4">
+                    {filteredPosters.length > 0 ? (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {filteredPosters.slice(0, posterPage * ITEMS_PER_PAGE).map((poster) => (
+                            <div
+                              key={poster.id}
+                              className={cn(
+                                "group relative aspect-[2/1] rounded-lg overflow-hidden cursor-pointer border-2 transition-all",
+                                currentSelection === poster.url
+                                  ? "border-primary shadow-glow"
+                                  : "border-transparent hover:border-border"
+                              )}
+                              onClick={() => onSelect(poster.url, 'poster')}
+                            >
+                              <img
+                                src={poster.url}
+                                alt={poster.title}
+                                loading="lazy"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="absolute bottom-2 left-2">
+                                  <p className="text-white font-medium text-sm">{poster.title}</p>
+                                  <div className="flex items-center gap-1 mt-1">
+                                    <Badge variant="secondary" className="text-xs">
+                                      {poster.category}
+                                    </Badge>
+                                    <Star className="w-3 h-3 text-yellow-400 fill-current" />
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Load More Button for Posters */}
-                      {hasMorePosters && (
-                        <div className="flex justify-center mt-6">
-                          <Button 
-                            onClick={loadMorePosters}
-                            disabled={isLoadingMorePosters}
-                            variant="outline"
-                            className="w-full max-w-xs"
-                          >
-                            {isLoadingMorePosters ? (
-                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            ) : null}
-                            Load More Posters
-                          </Button>
+                          ))}
                         </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center">
-                      <FileImage className="w-12 h-12 text-muted-foreground mb-4" />
-                      <p className="text-lg font-medium">No posters found</p>
-                      <p className="text-muted-foreground">Try a different search term</p>
-                    </div>
-                  )}
+                        
+                        {/* Infinite scroll sentinel */}
+                        {hasMorePosters && (
+                          <div ref={postersSentinelRef} className="flex justify-center py-4">
+                            {isLoadingMorePosters && (
+                              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full text-center">
+                        <FileImage className="w-12 h-12 text-muted-foreground mb-4" />
+                        <p className="text-lg font-medium">No posters found</p>
+                        <p className="text-muted-foreground">Try a different search term</p>
+                      </div>
+                    )}
+                  </div>
                 </ScrollArea>
               </TabsContent>
               
               {/* Photos Tab */}
               <TabsContent value="photos" className="mt-4 h-full">
                 <ScrollArea className="h-full">
-                  {isSearchingPhotos ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {Array.from({ length: 6 }).map((_, i) => (
-                        <Skeleton key={i} className="aspect-[2/1] rounded-lg" />
-                      ))}
-                    </div>
-                  ) : unsplashPhotos.length > 0 ? (
-                    <div className="space-y-4">
+                  <div className="pr-4">
+                    {isSearchingPhotos ? (
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {unsplashPhotos.map((photo) => (
-                          <div
-                            key={photo.id}
-                            className={cn(
-                              "group relative aspect-[2/1] rounded-lg overflow-hidden cursor-pointer border-2 transition-all",
-                              currentSelection === photo.urls.regular
-                                ? "border-primary shadow-glow"
-                                : "border-transparent hover:border-border"
-                            )}
-                            onClick={() => onSelect(photo.urls.regular, 'photo')}
-                          >
-                            <img
-                              src={photo.urls.small}
-                              alt={photo.alt_description || photo.description || "Photo"}
-                              loading="lazy"
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="absolute bottom-2 left-2">
-                                <p className="text-white/90 text-xs">by {photo.user.name}</p>
-                              </div>
-                            </div>
-                          </div>
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <Skeleton key={i} className="aspect-[2/1] rounded-lg" />
                         ))}
                       </div>
-                      
-                      {/* Load More Button for Photos */}
-                      {hasMorePhotos && (
-                        <div className="flex justify-center mt-6">
-                          <Button 
-                            onClick={loadMorePhotos}
-                            disabled={isLoadingMorePhotos}
-                            variant="outline"
-                            className="w-full max-w-xs"
-                          >
-                            {isLoadingMorePhotos ? (
-                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            ) : null}
-                            Load More Photos
-                          </Button>
+                    ) : unsplashPhotos.length > 0 ? (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {unsplashPhotos.map((photo) => (
+                            <div
+                              key={photo.id}
+                              className={cn(
+                                "group relative aspect-[2/1] rounded-lg overflow-hidden cursor-pointer border-2 transition-all",
+                                currentSelection === photo.urls.regular
+                                  ? "border-primary shadow-glow"
+                                  : "border-transparent hover:border-border"
+                              )}
+                              onClick={() => onSelect(photo.urls.regular, 'photo')}
+                            >
+                              <img
+                                src={photo.urls.small}
+                                alt={photo.alt_description || photo.description || "Photo"}
+                                loading="lazy"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="absolute bottom-2 left-2">
+                                  <p className="text-white/90 text-xs">by {photo.user.name}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center">
-                      <Image className="w-12 h-12 text-muted-foreground mb-4" />
-                      <p className="text-lg font-medium">Search for photos</p>
-                      <p className="text-muted-foreground">Try searching for themes like "nature", "city", or "abstract"</p>
-                    </div>
-                  )}
+                        
+                        {/* Infinite scroll sentinel */}
+                        {hasMorePhotos && (
+                          <div ref={photosSentinelRef} className="flex justify-center py-4">
+                            {isLoadingMorePhotos && (
+                              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full text-center">
+                        <Image className="w-12 h-12 text-muted-foreground mb-4" />
+                        <p className="text-lg font-medium">Beautiful photos loaded!</p>
+                        <p className="text-muted-foreground">Search above to find specific themes</p>
+                      </div>
+                    )}
+                  </div>
                 </ScrollArea>
               </TabsContent>
               
               {/* GIFs Tab */}
               <TabsContent value="gifs" className="mt-4 h-full">
                 <ScrollArea className="h-full">
-                  {isLoadingGifs ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {Array.from({ length: 6 }).map((_, i) => (
-                        <Skeleton key={i} className="aspect-[2/1] rounded-lg" />
-                      ))}
-                    </div>
-                  ) : tenorGifs.length > 0 ? (
-                    <div className="space-y-4">
+                  <div className="pr-4">
+                    {isLoadingGifs ? (
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {tenorGifs.map((gif) => (
-                          <div
-                            key={gif.id}
-                            className={cn(
-                              "group relative aspect-[2/1] rounded-lg overflow-hidden cursor-pointer border-2 transition-all",
-                              currentSelection === gif.media_formats?.gif?.url
-                                ? "border-primary shadow-glow"
-                                : "border-transparent hover:border-border"
-                            )}
-                            onClick={() => onSelect(gif.media_formats?.gif?.url, 'gif')}
-                          >
-                            <img
-                              src={gif.media_formats?.gif?.url || gif.media_formats?.mediumgif?.url || gif.media_formats?.tinygif?.url}
-                              alt={gif.content_description || gif.title}
-                              loading="lazy"
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="absolute bottom-2 left-2">
-                                <p className="text-white/90 text-xs truncate max-w-32">{gif.title}</p>
-                              </div>
-                            </div>
-                          </div>
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <Skeleton key={i} className="aspect-[2/1] rounded-lg" />
                         ))}
                       </div>
-                      
-                      {/* Load More Button for GIFs */}
-                      {hasMoreGifs && (
-                        <div className="flex justify-center mt-6">
-                          <Button 
-                            onClick={loadMoreGifs}
-                            disabled={isLoadingMoreGifs}
-                            variant="outline"
-                            className="w-full max-w-xs"
-                          >
-                            {isLoadingMoreGifs ? (
-                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            ) : null}
-                            Load More GIFs
-                          </Button>
+                    ) : tenorGifs.length > 0 ? (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {tenorGifs.map((gif) => (
+                            <div
+                              key={gif.id}
+                              className={cn(
+                                "group relative aspect-[2/1] rounded-lg overflow-hidden cursor-pointer border-2 transition-all",
+                                currentSelection === gif.media_formats?.gif?.url
+                                  ? "border-primary shadow-glow"
+                                  : "border-transparent hover:border-border"
+                              )}
+                              onClick={() => onSelect(gif.media_formats?.gif?.url, 'gif')}
+                            >
+                              <img
+                                src={gif.media_formats?.gif?.url || gif.media_formats?.mediumgif?.url || gif.media_formats?.tinygif?.url}
+                                alt={gif.content_description || gif.title}
+                                loading="lazy"
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="absolute bottom-2 left-2">
+                                  <p className="text-white/90 text-xs truncate max-w-32">{gif.title}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center">
-                      <Sparkles className="w-12 h-12 text-muted-foreground mb-4" />
-                      <p className="text-lg font-medium">Search for GIFs</p>
-                      <p className="text-muted-foreground">Try searching for "celebration", "cute", or "funny"</p>
-                    </div>
-                  )}
+                        
+                        {/* Infinite scroll sentinel */}
+                        {hasMoreGifs && (
+                          <div ref={gifsSentinelRef} className="flex justify-center py-4">
+                            {isLoadingMoreGifs && (
+                              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full text-center">
+                        <Sparkles className="w-12 h-12 text-muted-foreground mb-4" />
+                        <p className="text-lg font-medium">Search for GIFs</p>
+                        <p className="text-muted-foreground">Try searching for "celebration", "cute", or "funny"</p>
+                      </div>
+                    )}
+                  </div>
                 </ScrollArea>
               </TabsContent>
             </div>
