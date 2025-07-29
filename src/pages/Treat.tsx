@@ -115,49 +115,60 @@ const Treat = () => {
   return (
     <div className="min-h-screen bg-gradient-background p-4">
       <div className="max-w-md mx-auto">
-        {/* Magic Header */}
-        <div className="text-center mb-8 pt-12">
+        {/* 1. "[From] sent you something 💌" */}
+        <div className="text-center mb-6 pt-8">
+          <p className="text-lg text-muted-foreground">
+            <span className="font-medium">{treatData.senderName}</span> sent you something 💌
+          </p>
+        </div>
+
+        {/* 2. Header */}
+        <div className="text-center mb-8">
           <div className="relative">
             <div className="text-2xl animate-sparkle absolute -top-2 -left-2">✨</div>
             <div className="text-2xl animate-sparkle absolute -top-2 -right-2" style={{animationDelay: '0.5s'}}>✨</div>
             <div className="text-2xl animate-sparkle absolute -bottom-2 left-1/2 transform -translate-x-1/2" style={{animationDelay: '1s'}}>✨</div>
-            <h1 className="text-2xl font-bold mb-2">You've got a treat!</h1>
+            <h1 className="text-3xl font-bold mb-2">
+              ${treatData.treatType === "custom" ? "25" : treatData.treatType} {getTreatDescription(treatData.treatType)} treat
+            </h1>
           </div>
-          <p className="text-muted-foreground">Someone's thinking of you</p>
         </div>
 
-        {/* Main Treat Card */}
-        <Card className={`p-8 mb-6 ${getThemeGradient(treatData.theme)} shadow-glow rounded-3xl border-0 relative overflow-hidden`}>
-          {/* Floating sparkles */}
-          <div className="absolute top-4 right-4 text-white/70 animate-float">✨</div>
-          <div className="absolute bottom-4 left-4 text-white/70 animate-float" style={{animationDelay: '1s'}}>💫</div>
-          
-          <div className="text-center text-white relative z-10">
-            <div className="text-6xl mb-4 animate-bounce-gentle">
-              {getTreatEmoji(treatData.treatType)}
-            </div>
+        {/* 3. Cover Art Image */}
+        <div className="mb-8">
+          <Card className={`${getThemeGradient(treatData.theme)} shadow-glow rounded-3xl border-0 relative overflow-hidden aspect-square`}>
+            {/* Floating sparkles */}
+            <div className="absolute top-4 right-4 text-white/70 animate-float">✨</div>
+            <div className="absolute bottom-4 left-4 text-white/70 animate-float" style={{animationDelay: '1s'}}>💫</div>
             
-            <h2 className="text-2xl font-bold mb-2">
-              ${treatData.treatType === "custom" ? "25" : treatData.treatType} for {getTreatDescription(treatData.treatType)}
-            </h2>
-            
-            <p className="text-white/90 mb-4 text-lg">
-              from {treatData.senderName}
-            </p>
-            
-            {treatData.message && (
-              <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 mb-4">
-                <p className="text-white font-medium">
-                  "{treatData.message}"
-                </p>
+            <div className="flex items-center justify-center h-full text-white relative z-10">
+              <div className="text-8xl animate-bounce-gentle">
+                {getTreatEmoji(treatData.treatType)}
               </div>
-            )}
-            
-            <div className="text-white/70 text-sm">
-              Sent with love via OnMe 💖
             </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
+
+        {/* 4. "check your venmo 😉" */}
+        <div className="text-center mb-6">
+          <p className="text-lg font-medium text-foreground">
+            check your venmo 😉
+          </p>
+        </div>
+
+        {/* 5. Sweet message */}
+        {treatData.message && (
+          <Card className="mb-8 p-6 rounded-3xl bg-white/80 border-0 shadow-card">
+            <div className="text-center">
+              <p className="text-lg font-medium text-foreground italic">
+                "{treatData.message}"
+              </p>
+              <div className="mt-3 text-sm text-muted-foreground">
+                💖 Sent with love via OnMe
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Action Buttons */}
         <div className="space-y-3">
@@ -168,23 +179,13 @@ const Treat = () => {
             💖 Send One Back
           </Button>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              onClick={copyVenmoHandle}
-              variant="outline"
-              className="h-12 rounded-2xl border-2 bg-white/70 hover:bg-white"
-            >
-              📋 Copy Their Venmo
-            </Button>
-
-            <Button
-              onClick={shareThis}
-              variant="outline"
-              className="h-12 rounded-2xl border-2 bg-white/70 hover:bg-white"
-            >
-              📤 Share This
-            </Button>
-          </div>
+          <Button
+            onClick={shareThis}
+            variant="outline"
+            className="w-full h-12 rounded-2xl border-2 bg-white/70 hover:bg-white"
+          >
+            📤 Share This
+          </Button>
         </div>
 
         {/* Fun Stats */}
