@@ -53,6 +53,15 @@ const Treat = () => {
     }
   };
 
+  const getFontClass = (fontId: string) => {
+    switch (fontId) {
+      case "playfair": return "font-playfair";
+      case "dancing": return "font-dancing";
+      case "arial": return "font-arial";
+      default: return "font-sans";
+    }
+  };
+
   const copyVenmoHandle = async () => {
     if (!treatData) return;
     try {
@@ -132,7 +141,7 @@ const Treat = () => {
             <div className="text-2xl animate-sparkle absolute -top-2 -left-2">✨</div>
             <div className="text-2xl animate-sparkle absolute -top-2 -right-2" style={{animationDelay: '0.5s'}}>✨</div>
             <div className="text-2xl animate-sparkle absolute -bottom-2 left-1/2 transform -translate-x-1/2" style={{animationDelay: '1s'}}>✨</div>
-            <h1 className={`text-3xl font-bold mb-2 ${treatData.headerFont || 'font-sans'}`}>
+            <h1 className={`text-3xl font-bold mb-2 ${getFontClass(treatData.headerFont)}`}>
               {treatData.headerText || `$${treatData.treatType === "custom" ? "25" : treatData.treatType} ${getTreatDescription(treatData.treatType)} treat`}
             </h1>
           </div>
