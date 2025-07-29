@@ -456,6 +456,8 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
+      // Remove focus from search input to dismiss keyboard on mobile
+      (e.target as HTMLInputElement).blur();
     }
   };
 
