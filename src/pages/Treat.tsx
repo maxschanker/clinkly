@@ -176,7 +176,7 @@ const Treat = () => {
                 "{treatData.message}"
               </p>
               <div className="mt-3 text-sm text-muted-foreground">
-                💖 Sent with love via OnMe
+                💖 Sent with love via oowoo
               </div>
             </div>
           </Card>
@@ -185,28 +185,30 @@ const Treat = () => {
         {/* Action Buttons */}
         <div className="space-y-3">
           <Button
-            onClick={() => navigate('/send')}
-            className="w-full h-14 text-lg font-bold rounded-2xl bg-white hover:bg-white/90 text-primary shadow-card transition-all duration-300"
-          >
-            💖 Send One Back
-          </Button>
-
-          <Button
             onClick={shareThis}
-            variant="outline"
-            className="w-full h-12 rounded-2xl border-2 bg-white/70 hover:bg-white"
+            className="w-full h-14 text-lg font-bold rounded-2xl bg-white hover:bg-white/90 text-primary shadow-card transition-all duration-300"
           >
             📤 Share This
           </Button>
+
+          <Button
+            onClick={() => navigate('/send')}
+            variant="outline"
+            className="w-full h-12 rounded-2xl border-2 bg-white/70 hover:bg-white"
+          >
+            💖 Send One Back
+          </Button>
         </div>
 
-        {/* Fun Stats */}
-        <Card className="mt-6 p-4 rounded-2xl bg-white/50 border-0">
-          <div className="text-center text-sm text-muted-foreground">
-            <p>This treat was created with ✨ magic</p>
-            <p className="mt-1">Share the love → onme.to</p>
-          </div>
-        </Card>
+        {/* Footer Logo */}
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => navigate('/')}
+            className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
+          >
+            oowoo
+          </button>
+        </div>
 
         {/* Bottom Navigation */}
         <div className="mt-8 text-center">
@@ -215,7 +217,7 @@ const Treat = () => {
             onClick={() => navigate('/')}
             className="text-muted-foreground hover:text-foreground"
           >
-            ← Discover OnMe
+            ← Discover oowoo
           </Button>
         </div>
       </div>
