@@ -11,8 +11,8 @@ const Treat = () => {
   const [treatData, setTreatData] = useState<any>(null);
 
   useEffect(() => {
-    // Try to get treat data from localStorage (for demo)
-    const data = localStorage.getItem('currentTreat');
+    // Try to get treat data from localStorage
+    const data = localStorage.getItem('treatData');
     if (data) {
       const parsed = JSON.parse(data);
       if (parsed.slug === slug) {
@@ -23,10 +23,14 @@ const Treat = () => {
 
     // Fallback demo data if no localStorage data
     setTreatData({
+      headerText: "$5 coffee treat",
+      headerFont: "font-sans",
       senderName: "Sarah ✨",
       recipientHandle: "@friend",
       treatType: "5",
       message: "congrats on the new job! you deserve this 🎉",
+      coverArt: "",
+      coverArtType: "gradient",
       theme: "primary",
       slug: slug,
       createdAt: new Date().toISOString()
@@ -128,24 +132,32 @@ const Treat = () => {
             <div className="text-2xl animate-sparkle absolute -top-2 -left-2">✨</div>
             <div className="text-2xl animate-sparkle absolute -top-2 -right-2" style={{animationDelay: '0.5s'}}>✨</div>
             <div className="text-2xl animate-sparkle absolute -bottom-2 left-1/2 transform -translate-x-1/2" style={{animationDelay: '1s'}}>✨</div>
-            <h1 className="text-3xl font-bold mb-2">
-              ${treatData.treatType === "custom" ? "25" : treatData.treatType} {getTreatDescription(treatData.treatType)} treat
+            <h1 className={`text-3xl font-bold mb-2 ${treatData.headerFont || 'font-sans'}`}>
+              {treatData.headerText || `$${treatData.treatType === "custom" ? "25" : treatData.treatType} ${getTreatDescription(treatData.treatType)} treat`}
             </h1>
           </div>
         </div>
 
         {/* 3. Cover Art Image */}
         <div className="mb-8">
-          <Card className={`${getThemeGradient(treatData.theme)} shadow-glow rounded-3xl border-0 relative overflow-hidden aspect-square`}>
+          <Card className={`shadow-glow rounded-3xl border-0 relative overflow-hidden aspect-square ${treatData.coverArt ? 'bg-black' : getThemeGradient(treatData.theme)}`}>
             {/* Floating sparkles */}
-            <div className="absolute top-4 right-4 text-white/70 animate-float">✨</div>
-            <div className="absolute bottom-4 left-4 text-white/70 animate-float" style={{animationDelay: '1s'}}>💫</div>
+            <div className="absolute top-4 right-4 text-white/70 animate-float z-20">✨</div>
+            <div className="absolute bottom-4 left-4 text-white/70 animate-float z-20" style={{animationDelay: '1s'}}>💫</div>
             
-            <div className="flex items-center justify-center h-full text-white relative z-10">
-              <div className="text-8xl animate-bounce-gentle">
-                {getTreatEmoji(treatData.treatType)}
+            {treatData.coverArt ? (
+              <img 
+                src={treatData.coverArt} 
+                alt="Cover art" 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-white relative z-10">
+                <div className="text-8xl animate-bounce-gentle">
+                  {getTreatEmoji(treatData.treatType)}
+                </div>
               </div>
-            </div>
+            )}
           </Card>
         </div>
 
