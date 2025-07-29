@@ -11,8 +11,8 @@ const Treat = () => {
   const [treatData, setTreatData] = useState<any>(null);
 
   useEffect(() => {
-    // Try to get treat data from localStorage
-    const data = localStorage.getItem('treatData');
+    // Try to get treat data from localStorage (preview data from Confirmation page)
+    const data = localStorage.getItem('currentTreat');
     if (data) {
       const parsed = JSON.parse(data);
       if (parsed.slug === slug) {
