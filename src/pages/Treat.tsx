@@ -201,7 +201,7 @@ const Treat = () => {
           </Button>
 
           <Button
-            onClick={() => navigate('/send')}
+            onClick={() => navigate('/')}
             variant="outline"
             className="w-full h-12 rounded-2xl border-2 bg-white/70 hover:bg-white"
           >
