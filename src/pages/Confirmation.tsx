@@ -3,18 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Share2, Copy, Eye } from "lucide-react";
 
 const Confirmation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [treatData, setTreatData] = useState<any>(null);
   const [treatSlug] = useState(() => Math.random().toString(36).substring(7));
-  
-  const [completedSteps, setCompletedSteps] = useState({
-    shared: false,
-    venmoSent: false
-  });
 
   useEffect(() => {
     const data = localStorage.getItem('treatData');
@@ -48,58 +42,28 @@ const Confirmation = () => {
     return `${description} on me ${emoji} → onme.to/t/${treatSlug}`;
   };
 
-  const shareOowoo = async () => {
-    const shareUrl = `${window.location.origin}/t/${treatSlug}`;
-    const shareText = `${treatData?.senderName || 'Someone'} sent you an oowoo! 💝`;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: shareText,
-          url: shareUrl
-        });
-        setCompletedSteps(prev => ({ ...prev, shared: true }));
-        toast({
-          title: "Shared! ✨",
-          description: "Your oowoo is on its way"
-        });
-      } catch (err) {
-        // User cancelled sharing
-      }
-    } else {
-      // Fallback to copy link
-      copyLink();
-    }
-  };
-
-  const copyLink = async () => {
-    const shareUrl = `${window.location.origin}/t/${treatSlug}`;
+  const copyMessage = async () => {
+    const message = generateVenmoMessage();
     try {
-      await navigator.clipboard.writeText(shareUrl);
-      setCompletedSteps(prev => ({ ...prev, shared: true }));
+      await navigator.clipboard.writeText(message);
       toast({
-        title: "Link copied! 🔗",
-        description: "Share it with your recipient"
+        title: "Copied! 📋",
+        description: "Message copied to clipboard"
       });
     } catch (err) {
       toast({
         title: "Oops!",
-        description: "Couldn't copy link"
+        description: "Couldn't copy message"
       });
     }
   };
 
   const openVenmo = () => {
     if (!treatData) return;
-    const amount = treatData.amount || treatData.treatType === "custom" ? "25" : treatData.treatType;
+    const amount = treatData.treatType === "custom" ? "25" : treatData.treatType;
     const note = generateVenmoMessage();
     const venmoUrl = `venmo://paycharge?txn=pay&recipients=${treatData.recipientHandle}&amount=${amount}&note=${encodeURIComponent(note)}`;
     window.open(venmoUrl, '_blank');
-    setCompletedSteps(prev => ({ ...prev, venmoSent: true }));
-    toast({
-      title: "Venmo opened! 💜",
-      description: "Complete your payment to deliver the oowoo"
-    });
   };
 
   const previewTreat = () => {
@@ -116,117 +80,84 @@ const Confirmation = () => {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
-  const getFontClass = (fontId: string) => {
-    switch (fontId) {
-      case "playfair": return "font-playfair";
-      case "dancing": return "font-dancing";
-      case "arial": return "font-arial";
-      default: return "font-sans";
-    }
-  };
-
-  const allStepsCompleted = completedSteps.shared && completedSteps.venmoSent;
-
   return (
-    <div className="min-h-screen bg-gradient-background p-4 flex items-center justify-center">
-      <div className="max-w-md mx-auto w-full max-h-[80vh] overflow-y-auto">
-        {/* Compact Header */}
-        <div className="text-center mb-6">
-          <div className="text-3xl mb-2">🎉</div>
-          <h1 className="text-xl font-bold">Oowoo Ready!</h1>
+    <div className="min-h-screen bg-gradient-background p-4">
+      <div className="max-w-md mx-auto">
+        {/* Success Header */}
+        <div className="text-center mb-8 pt-12">
+          <div className="text-6xl mb-4 animate-bounce-gentle">🎉</div>
+          <h1 className="text-3xl font-bold mb-2">Your treat is ready!</h1>
+          <p className="text-muted-foreground">Time to spread some joy</p>
         </div>
 
-        {/* Mini Summary with Preview */}
-        <Card className="p-4 mb-6 bg-gradient-card shadow-card rounded-3xl border-0">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <p className="text-sm text-muted-foreground">
-                ${treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType)} {getTreatDescription(treatData.treatType || treatData.amount)} → @{treatData.recipientHandle}
-              </p>
-            </div>
-            <Button
-              onClick={previewTreat}
-              variant="outline"
-              size="sm"
-              className="rounded-2xl border-primary/30 bg-white/50 hover:bg-white/70"
-            >
-              <Eye className="w-4 h-4 mr-1" />
-              View
-            </Button>
-          </div>
-        </Card>
-
-        {/* Single Unified Action Card */}
-        <Card className="p-6 mb-6 rounded-3xl border-0 bg-card/50 backdrop-blur-sm">
-          <div className="space-y-4">
-            {/* Action Buttons */}
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                onClick={shareOowoo}
-                className="h-12 rounded-2xl bg-gradient-primary hover:shadow-glow transition-all duration-300 relative"
-                disabled={completedSteps.shared}
-              >
-                <div className="flex flex-col items-center">
-                  <Share2 className="w-4 h-4 mb-1" />
-                  <span className="text-xs">Share Link</span>
-                </div>
-                {completedSteps.shared && (
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                    <Check className="w-3 h-3 text-white" />
-                  </div>
-                )}
-              </Button>
-              
-              <Button
-                onClick={openVenmo}
-                className="h-12 rounded-2xl bg-gradient-primary hover:shadow-glow transition-all duration-300 relative"
-                disabled={completedSteps.venmoSent}
-              >
-                <div className="flex flex-col items-center">
-                  <span className="text-sm mb-1">💜</span>
-                  <span className="text-xs">Venmo</span>
-                </div>
-                {completedSteps.venmoSent && (
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                    <Check className="w-3 h-3 text-white" />
-                  </div>
-                )}
-              </Button>
-            </div>
-
-            {/* Copy Link Alternative */}
-            {!completedSteps.shared && (
-              <Button
-                onClick={copyLink}
-                variant="outline"
-                size="sm"
-                className="w-full rounded-2xl border-primary/30 bg-white/70 hover:bg-primary/10"
-              >
-                <Copy className="w-4 h-4 mr-2" />
-                Copy Link Instead
-              </Button>
+        {/* Treat Preview Card */}
+        <Card className="p-6 mb-6 bg-gradient-card shadow-card rounded-3xl border-0">
+          <div className="text-center">
+            <div className="text-4xl mb-3">{getTreatEmoji(treatData.treatType)}</div>
+            <h3 className="font-bold text-lg mb-2">
+              ${treatData.treatType === "custom" ? "25" : treatData.treatType} for {getTreatDescription(treatData.treatType)}
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              From {treatData.senderName} to {treatData.recipientHandle}
+            </p>
+            {treatData.message && (
+              <div className="bg-white/50 rounded-2xl p-3 text-sm">
+                "{treatData.message}"
+              </div>
             )}
           </div>
         </Card>
 
-        {/* Smart Success State */}
-        {allStepsCompleted && (
-          <div className="text-center mb-4">
-            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2">
-              <span className="text-lg">✨</span>
-              <span className="text-sm font-medium text-primary">Oowoo delivered!</span>
-            </div>
+        {/* Generated Message */}
+        <Card className="p-4 mb-6 rounded-2xl border-2 border-primary/20 bg-primary/5">
+          <div className="text-sm text-muted-foreground mb-2">Copy this for Venmo:</div>
+          <div className="font-mono text-sm bg-white/70 rounded-xl p-3 break-all">
+            {generateVenmoMessage()}
           </div>
-        )}
+        </Card>
 
-        {/* Minimized Footer */}
-        <div className="text-center">
+        {/* Action Buttons */}
+        <div className="space-y-3">
+          <Button
+            onClick={copyMessage}
+            className="w-full h-14 text-lg font-bold rounded-2xl bg-gradient-primary hover:shadow-glow transition-all duration-300"
+          >
+            📋 Copy Message
+          </Button>
+
+          <Button
+            onClick={openVenmo}
+            variant="outline"
+            className="w-full h-12 rounded-2xl border-2 border-primary/30 bg-white/70 hover:bg-primary/10"
+          >
+            💜 Open Venmo
+          </Button>
+
+          <Button
+            onClick={previewTreat}
+            variant="outline"
+            className="w-full h-12 rounded-2xl border-2"
+          >
+            👀 Preview Treat
+          </Button>
+        </div>
+
+        {/* Bottom Actions */}
+        <div className="mt-8 text-center space-y-3">
           <Button
             variant="ghost"
             onClick={() => navigate('/send')}
-            className="text-muted-foreground hover:text-foreground text-sm"
+            className="text-muted-foreground hover:text-foreground"
           >
-            Send Another ✨
+            Send Another Treat ✨
+          </Button>
+          
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            ← Back to Home
           </Button>
         </div>
       </div>
