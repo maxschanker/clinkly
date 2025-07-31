@@ -84,62 +84,82 @@ const Confirmation = () => {
     <div className="min-h-screen bg-gradient-background p-4">
       <div className="max-w-md mx-auto">
         {/* Success Header */}
-        <div className="text-center mb-8 pt-12">
+        <div className="text-center mb-6 pt-12">
           <div className="text-6xl mb-4 animate-bounce-gentle">🎉</div>
-          <h1 className="text-3xl font-bold mb-2">Your treat is ready!</h1>
-          <p className="text-muted-foreground">Time to spread some joy</p>
+          <h1 className="text-3xl font-bold mb-2">You made someone's day!</h1>
+          <p className="text-muted-foreground">Your oowoo is wrapped and ready to go</p>
         </div>
 
-        {/* Treat Preview Card */}
-        <Card className="p-6 mb-6 bg-gradient-card shadow-card rounded-3xl border-0">
+        {/* Envelope Card */}
+        <Card className="p-6 mb-4 bg-gradient-card shadow-card rounded-3xl border-0 relative">
           <div className="text-center">
-            <div className="text-4xl mb-3">{getTreatEmoji(treatData.treatType)}</div>
-            <h3 className="font-bold text-lg mb-2">
-              ${treatData.treatType === "custom" ? "25" : treatData.treatType} for {getTreatDescription(treatData.treatType)}
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              From {treatData.senderName} to {treatData.recipientHandle}
-            </p>
-            {treatData.message && (
-              <div className="bg-white/50 rounded-2xl p-3 text-sm">
-                "{treatData.message}"
-              </div>
-            )}
+            <div className="text-5xl mb-4">💌</div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">To: <span className="font-semibold text-foreground">{treatData.recipientHandle}</span></p>
+              <p className="text-sm text-muted-foreground">From: <span className="font-semibold text-foreground">{treatData.senderName}</span></p>
+            </div>
           </div>
         </Card>
 
-        {/* Generated Message */}
-        <Card className="p-4 mb-6 rounded-2xl border-2 border-primary/20 bg-primary/5">
-          <div className="text-sm text-muted-foreground mb-2">Copy this for Venmo:</div>
-          <div className="font-mono text-sm bg-white/70 rounded-xl p-3 break-all">
-            {generateVenmoMessage()}
-          </div>
-        </Card>
-
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          <Button
-            onClick={copyMessage}
-            className="w-full h-14 text-lg font-bold rounded-2xl bg-gradient-primary hover:shadow-glow transition-all duration-300"
-          >
-            📋 Copy Message
-          </Button>
-
-          <Button
-            onClick={openVenmo}
-            variant="outline"
-            className="w-full h-12 rounded-2xl border-2 border-primary/30 bg-white/70 hover:bg-primary/10"
-          >
-            💜 Open Venmo
-          </Button>
-
+        {/* Preview Button */}
+        <div className="text-center mb-6">
           <Button
             onClick={previewTreat}
             variant="outline"
-            className="w-full h-12 rounded-2xl border-2"
+            size="sm"
+            className="rounded-xl border-2 border-primary/30 bg-white/70 hover:bg-primary/10"
           >
-            👀 Preview Treat
+            👀 Preview oowoo
           </Button>
+        </div>
+
+        {/* Two-Step Process */}
+        <div className="space-y-6">
+          {/* Step 1 */}
+          <div>
+            <h3 className="text-lg font-bold mb-3 text-center">Step 1: Share your Oowoo</h3>
+            <div className="space-y-3">
+              <Button
+                onClick={copyMessage}
+                className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow transition-all duration-300"
+              >
+                📤 Send It
+              </Button>
+              <Button
+                onClick={async () => {
+                  const link = `${window.location.origin}/t/${treatSlug}`;
+                  try {
+                    await navigator.clipboard.writeText(link);
+                    toast({
+                      title: "Copied! 📋",
+                      description: "Link copied to clipboard"
+                    });
+                  } catch (err) {
+                    toast({
+                      title: "Oops!",
+                      description: "Couldn't copy link"
+                    });
+                  }
+                }}
+                variant="outline"
+                className="w-full h-12 rounded-2xl border-2 border-primary/30 bg-white/70 hover:bg-primary/10"
+              >
+                🔗 Copy Link
+              </Button>
+            </div>
+          </div>
+
+          {/* Step 2 */}
+          <div>
+            <h3 className="text-lg font-bold mb-3 text-center">Step 2: Send the $$ with Venmo</h3>
+            <Button
+              onClick={openVenmo}
+              variant="outline"
+              className="w-full h-12 rounded-2xl border-2 border-primary/30 bg-white/70 hover:bg-primary/10"
+            >
+              💜 Open Venmo
+            </Button>
+          </div>
         </div>
 
         {/* Bottom Actions */}
