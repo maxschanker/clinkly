@@ -151,7 +151,7 @@ const Treat = () => {
               }}
               className="text-muted-foreground hover:text-foreground"
             >
-              ← Back to Complete
+              ← Exit Preview
             </Button>
           )}
         </div>
@@ -251,7 +251,7 @@ const Treat = () => {
               }}
               className="text-muted-foreground hover:text-foreground"
             >
-              ← Back to Complete
+              ← Exit Preview
             </Button>
           ) : (
             <div className="space-y-3">
