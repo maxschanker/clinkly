@@ -167,7 +167,7 @@ const Confirmation = () => {
         </div>
 
         {/* Success Header */}
-        <div className="text-center mb-6 pt-12">
+        <div className="text-center mb-6 pt-6">
           <div className={`text-6xl mb-4 ${allStepsComplete ? 'animate-sparkle' : 'animate-bounce-gentle'}`}>
             {allStepsComplete ? '✨' : '🎉'}
           </div>
