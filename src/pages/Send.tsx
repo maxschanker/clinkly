@@ -68,7 +68,7 @@ const Send = () => {
       </header>
 
       {/* Main Content */}
-      <div className="max-w-2xl mx-auto px-6 pt-8 md:pt-12 pb-24">
+      <div className="max-w-2xl mx-auto px-6 py-2 pb-24">
         {/* Header Input */}
         <div className="mb-8">
           <Input
