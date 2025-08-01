@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { encodeTreatData } from "@/lib/utils";
 
 const Confirmation = () => {
   const navigate = useNavigate();
@@ -47,7 +48,8 @@ const Confirmation = () => {
   };
 
   const shareOowoo = async () => {
-    const link = `${window.location.origin}/t/${treatSlug}`;
+    const encodedData = encodeTreatData({ ...treatData, slug: treatSlug, createdAt: new Date().toISOString() });
+    const link = `${window.location.origin}/t/${treatSlug}${encodedData ? `?data=${encodedData}` : ''}`;
     const message = "I sent you a treat! ✨ Check it out:";
     
     if (navigator.share) {
@@ -91,7 +93,8 @@ const Confirmation = () => {
   };
 
   const handleCopyLink = async () => {
-    const link = `${window.location.origin}/t/${treatSlug}`;
+    const encodedData = encodeTreatData({ ...treatData, slug: treatSlug, createdAt: new Date().toISOString() });
+    const link = `${window.location.origin}/t/${treatSlug}${encodedData ? `?data=${encodedData}` : ''}`;
     try {
       await navigator.clipboard.writeText(link);
       setStepCompleted(prev => ({ ...prev, share: true }));

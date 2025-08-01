@@ -1,18 +1,32 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { decodeTreatData } from "@/lib/utils";
 
 const Treat = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [treatData, setTreatData] = useState<any>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   useEffect(() => {
-    // Try to get treat data from localStorage (preview data from Confirmation page)
+    // 1. First, try to decode data from URL parameters
+    const urlParams = new URLSearchParams(location.search);
+    const encodedData = urlParams.get('data');
+    if (encodedData) {
+      const decodedData = decodeTreatData(encodedData);
+      if (decodedData && decodedData.slug === slug) {
+        setTreatData(decodedData);
+        setIsPreviewMode(false);
+        return;
+      }
+    }
+
+    // 2. Try to get treat data from localStorage (preview data from Confirmation page)
     const data = localStorage.getItem('currentTreat');
     if (data) {
       const parsed = JSON.parse(data);
@@ -23,7 +37,7 @@ const Treat = () => {
       }
     }
 
-    // Fallback demo data if no localStorage data
+    // 3. Fallback demo data if no URL data or localStorage data
     setTreatData({
       headerText: "$5 coffee treat",
       headerFont: "font-sans",
@@ -37,7 +51,7 @@ const Treat = () => {
       slug: slug,
       createdAt: new Date().toISOString()
     });
-  }, [slug]);
+  }, [slug, location.search]);
 
   const getTreatEmoji = (type: string) => {
     switch (type) {
