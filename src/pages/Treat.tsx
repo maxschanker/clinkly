@@ -201,7 +201,10 @@ const Treat = () => {
           </Button>
 
           <Button
-            onClick={() => navigate('/')}
+            onClick={() => {
+              window.scrollTo(0, 0);
+              navigate('/');
+            }}
             variant="outline"
             className="w-full h-12 rounded-2xl border-2 bg-white/70 hover:bg-white"
           >
@@ -212,7 +215,10 @@ const Treat = () => {
         {/* Footer Logo */}
         <div className="mt-6 text-center">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => {
+              window.scrollTo(0, 0);
+              navigate('/');
+            }}
             className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
           >
             oowoo
@@ -223,7 +229,10 @@ const Treat = () => {
         <div className="mt-8 text-center">
           <Button
             variant="ghost"
-            onClick={() => navigate('/')}
+            onClick={() => {
+              window.scrollTo(0, 0);
+              navigate('/');
+            }}
             className="text-muted-foreground hover:text-foreground"
           >
             ← Discover oowoo

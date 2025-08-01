@@ -38,6 +38,7 @@ const Send = () => {
       treatType: formData.amount
     };
     localStorage.setItem('treatData', JSON.stringify(treatData));
+    window.scrollTo(0, 0);
     navigate('/send/complete');
   };
 
@@ -54,7 +55,10 @@ const Send = () => {
       {/* Logo */}
       <div className="max-w-2xl mx-auto px-6 pt-6">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => {
+            window.scrollTo(0, 0);
+            navigate('/');
+          }}
           className="text-2xl font-bold bg-gradient-secondary bg-clip-text text-transparent hover:opacity-80 transition-opacity"
         >
           oowoo

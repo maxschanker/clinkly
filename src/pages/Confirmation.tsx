@@ -183,7 +183,10 @@ const Confirmation = () => {
         <div className="mt-8 text-center space-y-3">
           <Button
             variant="ghost"
-            onClick={() => navigate('/send')}
+            onClick={() => {
+              window.scrollTo(0, 0);
+              navigate('/send');
+            }}
             className="text-muted-foreground hover:text-foreground"
           >
             Send Another Treat ✨
@@ -191,7 +194,10 @@ const Confirmation = () => {
           
           <Button
             variant="ghost"
-            onClick={() => navigate('/')}
+            onClick={() => {
+              window.scrollTo(0, 0);
+              navigate('/');
+            }}
             className="text-muted-foreground hover:text-foreground"
           >
             ← Back to Home
