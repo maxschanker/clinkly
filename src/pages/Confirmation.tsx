@@ -9,6 +9,14 @@ const Confirmation = () => {
   const { toast } = useToast();
   const [treatData, setTreatData] = useState<any>(null);
   const [treatSlug] = useState(() => Math.random().toString(36).substring(7));
+  
+  // Step completion state
+  const [stepCompleted, setStepCompleted] = useState({
+    share: false,
+    venmo: false
+  });
+  
+  const allStepsComplete = stepCompleted.share && stepCompleted.venmo;
 
   useEffect(() => {
     const data = localStorage.getItem('treatData');
@@ -49,6 +57,7 @@ const Confirmation = () => {
           text: message,
           url: link
         });
+        setStepCompleted(prev => ({ ...prev, share: true }));
         return;
     } catch (err) {
       console.log('Share cancelled or failed');
@@ -59,6 +68,7 @@ const Confirmation = () => {
     // Fallback to copying link
     try {
       await navigator.clipboard.writeText(`${message} ${link}`);
+      setStepCompleted(prev => ({ ...prev, share: true }));
       toast({
         title: "Copied! 📋",
         description: "Treat link copied to clipboard"
@@ -77,7 +87,43 @@ const Confirmation = () => {
     const note = generateVenmoMessage();
     const venmoUrl = `venmo://paycharge?txn=pay&recipients=${treatData.recipientHandle}&amount=${amount}&note=${encodeURIComponent(note)}`;
     window.open(venmoUrl, '_blank');
+    setStepCompleted(prev => ({ ...prev, venmo: true }));
   };
+
+  const handleCopyLink = async () => {
+    const link = `${window.location.origin}/t/${treatSlug}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setStepCompleted(prev => ({ ...prev, share: true }));
+      toast({
+        title: "Copied! 📋",
+        description: "Link copied to clipboard"
+      });
+    } catch (err) {
+      toast({
+        title: "Oops!",
+        description: "Couldn't copy link"
+      });
+    }
+  };
+
+  // Progress Pill Component
+  const ProgressPill = ({ step, completed }: { step: string; completed: boolean }) => (
+    <div className="flex items-center gap-3 mb-3">
+      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+        <div 
+          className={`h-full bg-gradient-primary transition-all duration-700 ease-out ${
+            completed ? 'w-full' : 'w-0'
+          }`}
+        />
+      </div>
+      <div className={`text-xs font-medium transition-colors duration-300 ${
+        completed ? 'text-primary' : 'text-muted-foreground'
+      }`}>
+        {step}
+      </div>
+    </div>
+  );
 
   const previewTreat = () => {
     // Save treat data for the treat page
@@ -99,9 +145,15 @@ const Confirmation = () => {
       <div className="max-w-md mx-auto">
         {/* Success Header */}
         <div className="text-center mb-6 pt-12">
-          <div className="text-6xl mb-4 animate-bounce-gentle">🎉</div>
-          <h1 className="text-2xl font-bold mb-2">You made someone's day!</h1>
-          <p className="text-muted-foreground">Your oowoo is wrapped and ready to go</p>
+          <div className={`text-6xl mb-4 ${allStepsComplete ? 'animate-sparkle' : 'animate-bounce-gentle'}`}>
+            {allStepsComplete ? '✨' : '🎉'}
+          </div>
+          <h1 className="text-2xl font-bold mb-2">
+            {allStepsComplete ? 'Perfect! All done!' : 'You made someone\'s day!'}
+          </h1>
+          <p className="text-muted-foreground">
+            {allStepsComplete ? 'Your treat is on its way!' : 'Your oowoo is wrapped and ready to go'}
+          </p>
         </div>
 
         {/* Envelope Card */}
@@ -132,33 +184,30 @@ const Confirmation = () => {
           {/* Step 1 */}
           <div>
             <h3 className="text-lg font-bold mb-3 text-center">Step 1: Share your Oowoo</h3>
+            <ProgressPill step="Share" completed={stepCompleted.share} />
             <div className="space-y-3">
               <Button
                 onClick={shareOowoo}
-                className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow transition-all duration-300"
+                disabled={stepCompleted.share}
+                className={`w-full h-12 text-base font-bold rounded-2xl transition-all duration-300 ${
+                  stepCompleted.share 
+                    ? 'bg-primary/20 text-primary border-primary/30 cursor-default' 
+                    : 'bg-gradient-primary hover:shadow-glow'
+                }`}
               >
-                📤 Send It
+                {stepCompleted.share ? '✅ Done!' : '📤 Send It'}
               </Button>
               <Button
-                onClick={async () => {
-                  const link = `${window.location.origin}/t/${treatSlug}`;
-                  try {
-                    await navigator.clipboard.writeText(link);
-                    toast({
-                      title: "Copied! 📋",
-                      description: "Link copied to clipboard"
-                    });
-                  } catch (err) {
-                    toast({
-                      title: "Oops!",
-                      description: "Couldn't copy link"
-                    });
-                  }
-                }}
+                onClick={handleCopyLink}
+                disabled={stepCompleted.share}
                 variant="outline"
-                className="w-full h-12 rounded-2xl border-2 border-primary/30 bg-white/70 hover:bg-primary/10"
+                className={`w-full h-12 rounded-2xl border-2 transition-all duration-300 ${
+                  stepCompleted.share
+                    ? 'border-primary/30 bg-primary/10 text-primary cursor-default'
+                    : 'border-primary/30 bg-white/70 hover:bg-primary/10'
+                }`}
               >
-                🔗 Copy Link
+                {stepCompleted.share ? '✅ Done!' : '🔗 Copy Link'}
               </Button>
             </div>
           </div>
@@ -166,11 +215,17 @@ const Confirmation = () => {
           {/* Step 2 */}
           <div>
             <h3 className="text-lg font-bold mb-3 text-center">Step 2: Send the $$ with Venmo</h3>
+            <ProgressPill step="Venmo" completed={stepCompleted.venmo} />
             <Button
               onClick={openVenmo}
-              className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow transition-all duration-300"
+              disabled={stepCompleted.venmo}
+              className={`w-full h-12 text-base font-bold rounded-2xl transition-all duration-300 ${
+                stepCompleted.venmo
+                  ? 'bg-primary/20 text-primary border-primary/30 cursor-default'
+                  : 'bg-gradient-primary hover:shadow-glow'
+              }`}
             >
-              💰 Open Venmo
+              {stepCompleted.venmo ? '✅ Done!' : '💰 Open Venmo'}
             </Button>
           </div>
         </div>
