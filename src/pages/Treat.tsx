@@ -273,7 +273,10 @@ const Treat = () => {
             <div className="space-y-3">
               <div className="text-center">
                 <button
-                  onClick={() => window.open('https://oowoo.app', '_blank')}
+                  onClick={() => {
+                    window.scrollTo(0, 0);
+                    navigate('/');
+                  }}
                   className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
                 >
                   oowoo
