@@ -29,7 +29,7 @@ const Confirmation = () => {
   }, [navigate]);
 
   const getTreatEmoji = (type: string) => {
-    return "💝";
+    return "✨";
   };
 
   const getTreatDescription = (type: string) => {
@@ -50,7 +50,7 @@ const Confirmation = () => {
   const shareOowoo = async () => {
     const encodedData = encodeTreatData({ ...treatData, slug: treatSlug, createdAt: new Date().toISOString() });
     const link = `${window.location.origin}/t/${treatSlug}${encodedData ? `?data=${encodedData}` : ''}`;
-    const message = "I sent you a treat! ✨ Check it out:";
+    const message = `${treatData.headerText || getTreatDescription(treatData.treatType) + " on me"} ✨`;
     
     if (navigator.share) {
       try {
