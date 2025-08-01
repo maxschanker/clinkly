@@ -54,9 +54,10 @@ const Confirmation = () => {
           url: link
         });
         return;
-      } catch (err) {
-        console.log('Share cancelled or failed');
-      }
+    } catch (err) {
+      console.log('Share cancelled or failed');
+      return;
+    }
     }
     
     // Fallback to copying link
