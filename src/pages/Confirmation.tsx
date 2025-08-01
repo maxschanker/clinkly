@@ -107,30 +107,28 @@ const Confirmation = () => {
     }
   };
 
-  // Step Indicator Component with circular checkmarks
+  // Step Indicator Component with circular checkmarks (inline version)
   const StepIndicator = ({ completed }: { completed: boolean }) => (
-    <div className="flex justify-center mb-4">
-      <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
-        completed 
-          ? 'bg-green-500 border-green-500' 
-          : 'bg-muted border-muted-foreground/30'
-      }`}>
-        {completed && (
-          <svg 
-            className="w-5 h-5 text-white" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M5 13l4 4L19 7" 
-            />
-          </svg>
-        )}
-      </div>
+    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+      completed 
+        ? 'bg-green-500 border-green-500' 
+        : 'bg-muted border-muted-foreground/30'
+    }`}>
+      {completed && (
+        <svg 
+          className="w-4 h-4 text-white" 
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M5 13l4 4L19 7" 
+          />
+        </svg>
+      )}
     </div>
   );
 
@@ -192,8 +190,10 @@ const Confirmation = () => {
         <div className="space-y-6">
           {/* Step 1 */}
           <div>
-            <h3 className="text-lg font-bold mb-3 text-center">Step 1: Share your Oowoo</h3>
-            <StepIndicator completed={stepCompleted.share} />
+            <div className="flex items-center gap-3 mb-3 justify-center">
+              <StepIndicator completed={stepCompleted.share} />
+              <h3 className="text-lg font-bold">Step 1: Share your Oowoo</h3>
+            </div>
             <div className="space-y-3">
               <Button
                 onClick={shareOowoo}
@@ -213,8 +213,10 @@ const Confirmation = () => {
 
           {/* Step 2 */}
           <div>
-            <h3 className="text-lg font-bold mb-3 text-center">Step 2: Send the $$ with Venmo</h3>
-            <StepIndicator completed={stepCompleted.venmo} />
+            <div className="flex items-center gap-3 mb-3 justify-center">
+              <StepIndicator completed={stepCompleted.venmo} />
+              <h3 className="text-lg font-bold">Step 2: Send the $$ with Venmo</h3>
+            </div>
             <Button
               onClick={openVenmo}
               className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
