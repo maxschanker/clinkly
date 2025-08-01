@@ -9,6 +9,7 @@ const Treat = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [treatData, setTreatData] = useState<any>(null);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   useEffect(() => {
     // Try to get treat data from localStorage (preview data from Confirmation page)
@@ -17,6 +18,7 @@ const Treat = () => {
       const parsed = JSON.parse(data);
       if (parsed.slug === slug) {
         setTreatData(parsed);
+        setIsPreviewMode(true);
         return;
       }
     }
@@ -128,8 +130,34 @@ const Treat = () => {
   return (
     <div className="min-h-screen bg-gradient-background p-4">
       <div className="max-w-md mx-auto">
+        {/* Header with Logo and Back Button for Preview Mode */}
+        <div className="flex justify-between items-center mb-6 pt-4">
+          <button
+            onClick={() => {
+              window.scrollTo(0, 0);
+              navigate('/');
+            }}
+            className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
+          >
+            oowoo
+          </button>
+          
+          {isPreviewMode && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                window.scrollTo(0, 0);
+                navigate('/send/complete');
+              }}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              ← Back to Complete
+            </Button>
+          )}
+        </div>
+
         {/* 1. "[From] sent you something 💌" */}
-        <div className="text-center mb-6 pt-8">
+        <div className="text-center mb-6">
           <p className="text-lg text-muted-foreground">
             <span className="font-medium">{treatData.senderName}</span> sent you something 💌
           </p>
@@ -212,31 +240,34 @@ const Treat = () => {
           </Button>
         </div>
 
-        {/* Footer Logo */}
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => {
-              window.scrollTo(0, 0);
-              navigate('/');
-            }}
-            className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
-          >
-            oowoo
-          </button>
-        </div>
-
         {/* Bottom Navigation */}
         <div className="mt-8 text-center">
-          <Button
-            variant="ghost"
-            onClick={() => {
-              window.scrollTo(0, 0);
-              navigate('/');
-            }}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            ← Discover oowoo
-          </Button>
+          {isPreviewMode ? (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                window.scrollTo(0, 0);
+                navigate('/send/complete');
+              }}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              ← Back to Complete
+            </Button>
+          ) : (
+            <div className="space-y-3">
+              <div className="text-center">
+                <button
+                  onClick={() => {
+                    window.scrollTo(0, 0);
+                    navigate('/');
+                  }}
+                  className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
+                >
+                  oowoo
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -150,6 +150,19 @@ const Confirmation = () => {
   return (
     <div className="min-h-screen bg-gradient-background p-4">
       <div className="max-w-md mx-auto">
+        {/* Header with Logo */}
+        <div className="flex justify-start mb-6 pt-4">
+          <button
+            onClick={() => {
+              window.scrollTo(0, 0);
+              navigate('/');
+            }}
+            className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
+          >
+            oowoo
+          </button>
+        </div>
+
         {/* Success Header */}
         <div className="text-center mb-6 pt-12">
           <div className={`text-6xl mb-4 ${allStepsComplete ? 'animate-sparkle' : 'animate-bounce-gentle'}`}>
@@ -192,7 +205,7 @@ const Confirmation = () => {
           <div>
             <div className="flex items-center gap-3 mb-3 justify-center">
               <StepIndicator completed={stepCompleted.share} />
-              <h3 className="text-lg font-bold">Step 1: Share your Oowoo</h3>
+              <h3 className="text-lg font-bold">Step 1: Share your oowoo</h3>
             </div>
             <div className="space-y-3">
               <Button
@@ -236,7 +249,7 @@ const Confirmation = () => {
             }}
             className="text-muted-foreground hover:text-foreground"
           >
-            Send Another Treat ✨
+            Send Another ✨
           </Button>
           
           <Button
