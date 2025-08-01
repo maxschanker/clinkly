@@ -233,41 +233,32 @@ const Treat = () => {
           </Card>
         )}
 
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          <Button
-            onClick={shareThis}
-            className="w-full h-14 text-lg font-bold rounded-2xl bg-white hover:bg-white/90 text-primary shadow-card transition-all duration-300"
-          >
-            📤 Share This
-          </Button>
-
-          <Button
-            onClick={() => {
-              window.scrollTo(0, 0);
-              navigate('/');
-            }}
-            variant="outline"
-            className="w-full h-12 rounded-2xl border-2 bg-white/70 hover:bg-white"
-          >
-            💖 Send One Back
-          </Button>
-        </div>
-
-        {/* Bottom Navigation */}
-        <div className="mt-8 text-center">
-          {isPreviewMode ? (
+        {/* Action Buttons - Only show in non-preview mode */}
+        {!isPreviewMode && (
+          <div className="space-y-3">
             <Button
-              variant="ghost"
+              onClick={shareThis}
+              className="w-full h-14 text-lg font-bold rounded-2xl bg-white hover:bg-white/90 text-primary shadow-card transition-all duration-300"
+            >
+              📤 Share This
+            </Button>
+
+            <Button
               onClick={() => {
                 window.scrollTo(0, 0);
-                navigate('/send/complete');
+                navigate('/');
               }}
-              className="text-muted-foreground hover:text-foreground"
+              variant="outline"
+              className="w-full h-12 rounded-2xl border-2 bg-white/70 hover:bg-white"
             >
-              ← Exit Preview
+              💖 Send One Back
             </Button>
-          ) : (
+          </div>
+        )}
+
+        {/* Bottom Navigation - Only show logo in non-preview mode */}
+        {!isPreviewMode && (
+          <div className="mt-8 text-center">
             <div className="space-y-3">
               <div className="text-center">
                 <button
@@ -281,8 +272,8 @@ const Treat = () => {
                 </button>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
