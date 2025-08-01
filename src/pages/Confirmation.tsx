@@ -20,11 +20,7 @@ const Confirmation = () => {
   }, [navigate]);
 
   const getTreatEmoji = (type: string) => {
-    switch (type) {
-      case "5": return "☕️";
-      case "10": return "🥗";
-      default: return "💝";
-    }
+    return "💝";
   };
 
   const getTreatDescription = (type: string) => {
