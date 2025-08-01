@@ -38,8 +38,8 @@ const Confirmation = () => {
   const generateVenmoMessage = () => {
     if (!treatData) return "";
     const emoji = getTreatEmoji(treatData.treatType);
-    const description = getTreatDescription(treatData.treatType);
-    return `${description} on me ${emoji} → onme.to/t/${treatSlug}`;
+    const message = treatData.headerText || getTreatDescription(treatData.treatType) + " on me";
+    return `${message} ${emoji} → oowoo.me/t/${treatSlug}`;
   };
 
   const shareOowoo = async () => {
@@ -104,7 +104,7 @@ const Confirmation = () => {
         {/* Success Header */}
         <div className="text-center mb-6 pt-12">
           <div className="text-6xl mb-4 animate-bounce-gentle">🎉</div>
-          <h1 className="text-3xl font-bold mb-2">You made someone's day!</h1>
+          <h1 className="text-2xl font-bold mb-2">You made someone's day!</h1>
           <p className="text-muted-foreground">Your oowoo is wrapped and ready to go</p>
         </div>
 
@@ -172,10 +172,9 @@ const Confirmation = () => {
             <h3 className="text-lg font-bold mb-3 text-center">Step 2: Send the $$ with Venmo</h3>
             <Button
               onClick={openVenmo}
-              variant="outline"
-              className="w-full h-12 rounded-2xl border-2 border-primary/30 bg-white/70 hover:bg-primary/10"
+              className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow transition-all duration-300"
             >
-              💜 Open Venmo
+              💰 Open Venmo
             </Button>
           </div>
         </div>
