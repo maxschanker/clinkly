@@ -15,7 +15,7 @@ const Index = () => {
       {/* Header */}
       <header className="w-full p-4 md:p-6 relative z-10">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl font-bold bg-gradient-secondary bg-clip-text text-transparent drop-shadow-sm">
+          <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200 drop-shadow-sm">
             oowoo
           </h1>
         </div>

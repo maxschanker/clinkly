@@ -153,18 +153,20 @@ const Confirmation = () => {
   return (
     <div className="min-h-screen bg-gradient-background p-4">
       <div className="max-w-md mx-auto">
-        {/* Header with Logo */}
-        <div className="flex justify-start mb-6 pt-4">
-          <button
-            onClick={() => {
-              window.scrollTo(0, 0);
-              navigate('/');
-            }}
-            className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
-          >
-            oowoo
-          </button>
-        </div>
+        {/* Header */}
+        <header className="w-full p-4 md:p-6 relative z-10">
+          <div className="max-w-6xl mx-auto">
+            <button
+              onClick={() => {
+                window.scrollTo(0, 0);
+                navigate('/');
+              }}
+              className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
+            >
+              oowoo
+            </button>
+          </div>
+        </header>
 
         {/* Success Header */}
         <div className="text-center mb-6 pt-2">

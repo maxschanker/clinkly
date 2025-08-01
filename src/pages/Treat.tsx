@@ -144,31 +144,33 @@ const Treat = () => {
   return (
     <div className="min-h-screen bg-gradient-background p-4">
       <div className="max-w-md mx-auto">
-        {/* Header with Logo and Back Button for Preview Mode */}
-        <div className="flex justify-between items-center mb-6 pt-4">
-          <button
-            onClick={() => {
-              window.scrollTo(0, 0);
-              navigate('/');
-            }}
-            className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
-          >
-            oowoo
-          </button>
-          
-          {isPreviewMode && (
-            <Button
-              variant="ghost"
+        {/* Header */}
+        <header className="w-full p-4 md:p-6 relative z-10">
+          <div className="max-w-6xl mx-auto flex justify-between items-center">
+            <button
               onClick={() => {
                 window.scrollTo(0, 0);
-                navigate('/send/complete');
+                navigate('/');
               }}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
             >
-              ← Exit Preview
-            </Button>
-          )}
-        </div>
+              oowoo
+            </button>
+            
+            {isPreviewMode && (
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  window.scrollTo(0, 0);
+                  navigate('/send/complete');
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                ← Exit Preview
+              </Button>
+            )}
+          </div>
+        </header>
 
         {/* 1. "[From] sent you something 💌" */}
         <div className="text-center mb-6">
