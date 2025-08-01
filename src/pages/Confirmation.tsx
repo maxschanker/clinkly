@@ -180,7 +180,7 @@ const Confirmation = () => {
         </div>
 
         {/* Envelope Card */}
-        <Card className="p-6 mb-4 bg-gradient-card shadow-card rounded-3xl border-0 relative">
+        <Card className="p-6 mb-4 bg-gradient-card shadow-card rounded-3xl border-0 relative" onClick={previewTreat}>
           <div className="text-center">
             <div className="text-5xl mb-4">💌</div>
             <div className="space-y-2">
