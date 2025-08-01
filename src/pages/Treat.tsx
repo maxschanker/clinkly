@@ -256,24 +256,32 @@ const Treat = () => {
           </div>
         )}
 
-        {/* Bottom Navigation - Only show logo in non-preview mode */}
-        {!isPreviewMode && (
-          <div className="mt-8 text-center">
+        {/* Bottom Navigation */}
+        <div className="mt-8 text-center">
+          {isPreviewMode ? (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                window.scrollTo(0, 0);
+                navigate('/send/complete');
+              }}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              ← Exit Preview
+            </Button>
+          ) : (
             <div className="space-y-3">
               <div className="text-center">
                 <button
-                  onClick={() => {
-                    window.scrollTo(0, 0);
-                    navigate('/');
-                  }}
-                  className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
+                  onClick={() => window.open('https://oowoo.app', '_blank')}
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
                 >
                   oowoo
                 </button>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
