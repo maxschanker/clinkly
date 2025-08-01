@@ -274,7 +274,7 @@ const Treat = () => {
               <div className="text-center">
                 <button
                   onClick={() => window.open('https://oowoo.app', '_blank')}
-                  className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
+                  className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
                 >
                   oowoo
                 </button>
