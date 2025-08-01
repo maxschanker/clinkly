@@ -107,20 +107,29 @@ const Confirmation = () => {
     }
   };
 
-  // Progress Pill Component
-  const ProgressPill = ({ step, completed }: { step: string; completed: boolean }) => (
-    <div className="flex items-center gap-3 mb-3">
-      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-        <div 
-          className={`h-full bg-gradient-primary transition-all duration-700 ease-out ${
-            completed ? 'w-full' : 'w-0'
-          }`}
-        />
-      </div>
-      <div className={`text-xs font-medium transition-colors duration-300 ${
-        completed ? 'text-primary' : 'text-muted-foreground'
+  // Step Indicator Component with circular checkmarks
+  const StepIndicator = ({ completed }: { completed: boolean }) => (
+    <div className="flex justify-center mb-4">
+      <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+        completed 
+          ? 'bg-green-500 border-green-500' 
+          : 'bg-muted border-muted-foreground/30'
       }`}>
-        {step}
+        {completed && (
+          <svg 
+            className="w-5 h-5 text-white" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M5 13l4 4L19 7" 
+            />
+          </svg>
+        )}
       </div>
     </div>
   );
@@ -184,30 +193,20 @@ const Confirmation = () => {
           {/* Step 1 */}
           <div>
             <h3 className="text-lg font-bold mb-3 text-center">Step 1: Share your Oowoo</h3>
-            <ProgressPill step="Share" completed={stepCompleted.share} />
+            <StepIndicator completed={stepCompleted.share} />
             <div className="space-y-3">
               <Button
                 onClick={shareOowoo}
-                disabled={stepCompleted.share}
-                className={`w-full h-12 text-base font-bold rounded-2xl transition-all duration-300 ${
-                  stepCompleted.share 
-                    ? 'bg-primary/20 text-primary border-primary/30 cursor-default' 
-                    : 'bg-gradient-primary hover:shadow-glow'
-                }`}
+                className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
               >
-                {stepCompleted.share ? '✅ Done!' : '📤 Send It'}
+                📤 Send It
               </Button>
               <Button
                 onClick={handleCopyLink}
-                disabled={stepCompleted.share}
                 variant="outline"
-                className={`w-full h-12 rounded-2xl border-2 transition-all duration-300 ${
-                  stepCompleted.share
-                    ? 'border-primary/30 bg-primary/10 text-primary cursor-default'
-                    : 'border-primary/30 bg-white/70 hover:bg-primary/10'
-                }`}
+                className="w-full h-12 rounded-2xl border-2 border-primary/30 bg-white/70 hover:bg-primary/10"
               >
-                {stepCompleted.share ? '✅ Done!' : '🔗 Copy Link'}
+                🔗 Copy Link
               </Button>
             </div>
           </div>
@@ -215,17 +214,12 @@ const Confirmation = () => {
           {/* Step 2 */}
           <div>
             <h3 className="text-lg font-bold mb-3 text-center">Step 2: Send the $$ with Venmo</h3>
-            <ProgressPill step="Venmo" completed={stepCompleted.venmo} />
+            <StepIndicator completed={stepCompleted.venmo} />
             <Button
               onClick={openVenmo}
-              disabled={stepCompleted.venmo}
-              className={`w-full h-12 text-base font-bold rounded-2xl transition-all duration-300 ${
-                stepCompleted.venmo
-                  ? 'bg-primary/20 text-primary border-primary/30 cursor-default'
-                  : 'bg-gradient-primary hover:shadow-glow'
-              }`}
+              className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
             >
-              {stepCompleted.venmo ? '✅ Done!' : '💰 Open Venmo'}
+              💰 Open Venmo
             </Button>
           </div>
         </div>
