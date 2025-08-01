@@ -42,18 +42,34 @@ const Confirmation = () => {
     return `${description} on me ${emoji} → onme.to/t/${treatSlug}`;
   };
 
-  const copyMessage = async () => {
-    const message = generateVenmoMessage();
+  const shareOowoo = async () => {
+    const link = `${window.location.origin}/t/${treatSlug}`;
+    const message = "I sent you a treat! ✨ Check it out:";
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Oowoo Treat',
+          text: message,
+          url: link
+        });
+        return;
+      } catch (err) {
+        console.log('Share cancelled or failed');
+      }
+    }
+    
+    // Fallback to copying link
     try {
-      await navigator.clipboard.writeText(message);
+      await navigator.clipboard.writeText(`${message} ${link}`);
       toast({
         title: "Copied! 📋",
-        description: "Message copied to clipboard"
+        description: "Treat link copied to clipboard"
       });
     } catch (err) {
       toast({
         title: "Oops!",
-        description: "Couldn't copy message"
+        description: "Couldn't copy link"
       });
     }
   };
@@ -73,6 +89,7 @@ const Confirmation = () => {
       slug: treatSlug,
       createdAt: new Date().toISOString()
     }));
+    window.scrollTo(0, 0);
     navigate(`/t/${treatSlug}`);
   };
 
@@ -95,7 +112,7 @@ const Confirmation = () => {
           <div className="text-center">
             <div className="text-5xl mb-4">💌</div>
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">To: <span className="font-semibold text-foreground">{treatData.recipientHandle}</span></p>
+              <p className="text-sm text-muted-foreground">To: <span className="font-semibold text-foreground">{treatData.recipientName}</span></p>
               <p className="text-sm text-muted-foreground">From: <span className="font-semibold text-foreground">{treatData.senderName}</span></p>
             </div>
           </div>
@@ -120,7 +137,7 @@ const Confirmation = () => {
             <h3 className="text-lg font-bold mb-3 text-center">Step 1: Share your Oowoo</h3>
             <div className="space-y-3">
               <Button
-                onClick={copyMessage}
+                onClick={shareOowoo}
                 className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow transition-all duration-300"
               >
                 📤 Send It
