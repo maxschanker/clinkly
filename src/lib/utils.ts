@@ -9,6 +9,28 @@ export function cn(...inputs: ClassValue[]) {
 const MAX_URL_LENGTH = 2000; // Conservative limit for browser compatibility
 const MAX_ENCODED_DATA_LENGTH = 1500; // Leave room for base URL and parameters
 
+// Unicode-safe base64 encoding helpers
+function unicodeSafeBase64Encode(str: string): string {
+  const encoder = new TextEncoder();
+  const uint8Array = encoder.encode(str);
+  let binary = '';
+  const len = uint8Array.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(uint8Array[i]);
+  }
+  return btoa(binary);
+}
+
+function unicodeSafeBase64Decode(base64: string): string {
+  const binary = atob(base64);
+  const uint8Array = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    uint8Array[i] = binary.charCodeAt(i);
+  }
+  const decoder = new TextDecoder();
+  return decoder.decode(uint8Array);
+}
+
 // Utility functions for encoding/decoding treat data in URLs
 export function encodeTreatData(data: any): string {
   try {
@@ -19,14 +41,20 @@ export function encodeTreatData(data: any): string {
     }
     
     const jsonString = JSON.stringify(data);
-    console.log('JSON string to encode:', jsonString);
+    console.log('JSON string to encode (length: %d, preview: %s)', jsonString.length, jsonString.substring(0, 100));
     
-    const encoded = btoa(jsonString).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    // Use Unicode-safe encoding
+    const encoded = unicodeSafeBase64Encode(jsonString)
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+    
     console.log('Encoded data length:', encoded.length);
     
     return encoded;
   } catch (error) {
-    console.error('Error encoding treat data:', error, data);
+    console.error('Error encoding treat data:', error);
+    console.error('Data that caused error:', JSON.stringify(data, null, 2));
     return '';
   }
 }
@@ -38,7 +66,7 @@ export function decodeTreatData(encoded: string): any | null {
       return null;
     }
     
-    console.log('Attempting to decode:', { encoded: encoded.substring(0, 50) + '...', length: encoded.length });
+    console.log('Attempting to decode (length: %d, preview: %s)', encoded.length, encoded.substring(0, 50));
     
     // Add padding back if needed
     let base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
@@ -46,10 +74,11 @@ export function decodeTreatData(encoded: string): any | null {
       base64 += '=';
     }
     
-    console.log('Base64 after padding:', { base64: base64.substring(0, 50) + '...', length: base64.length });
+    console.log('Base64 after padding (length: %d)', base64.length);
     
-    const jsonString = atob(base64);
-    console.log('Decoded JSON string:', { jsonString: jsonString.substring(0, 100) + '...', length: jsonString.length });
+    // Use Unicode-safe decoding
+    const jsonString = unicodeSafeBase64Decode(base64);
+    console.log('Decoded JSON string (length: %d, preview: %s)', jsonString.length, jsonString.substring(0, 100));
     
     const decoded = JSON.parse(jsonString);
     console.log('Successfully decoded treat data:', { 
@@ -61,7 +90,8 @@ export function decodeTreatData(encoded: string): any | null {
     
     return decoded;
   } catch (error) {
-    console.error('Error decoding treat data:', error, { encoded: encoded.substring(0, 50) + '...', encodedLength: encoded.length });
+    console.error('Error decoding treat data:', error);
+    console.error('Encoded string that caused error (length: %d): %s', encoded.length, encoded.substring(0, 100));
     return null;
   }
 }
