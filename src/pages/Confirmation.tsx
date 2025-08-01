@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { createShareableURL } from "@/lib/utils";
+import { recordShare } from "@/lib/treatService";
 
 const Confirmation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [treatData, setTreatData] = useState<any>(null);
-  const [treatSlug] = useState(() => Math.random().toString(36).substring(7));
+  const [treatSlug, setTreatSlug] = useState<string>("");
   
   // Step completion state
   const [stepCompleted, setStepCompleted] = useState({
@@ -22,7 +22,13 @@ const Confirmation = () => {
   useEffect(() => {
     const data = localStorage.getItem('treatData');
     if (data) {
-      setTreatData(JSON.parse(data));
+      const parsedData = JSON.parse(data);
+      setTreatData(parsedData);
+      
+      // Set the slug from the backend response
+      if (parsedData.slug) {
+        setTreatSlug(parsedData.slug);
+      }
     } else {
       navigate('/send');
     }
@@ -42,53 +48,47 @@ const Confirmation = () => {
 
   const generateVenmoMessage = () => {
     if (!treatData) return "";
-    const emoji = getTreatEmoji(treatData.treatType);
-    const message = treatData.headerText || getTreatDescription(treatData.treatType) + " on me";
-    return `${message} ${emoji} → oowoo.me/t/${treatSlug}`;
+    const emoji = getTreatEmoji(treatData.treat_type || treatData.treatType);
+    const message = treatData.header_text || treatData.headerText || getTreatDescription(treatData.treat_type || treatData.treatType) + " on me";
+    return `${message} ${emoji} → ${window.location.origin}/t/${treatSlug}`;
   };
 
   const shareOowoo = async () => {
-    const treatDataWithSlug = { 
-      ...treatData, 
-      slug: treatSlug, 
-      createdAt: new Date().toISOString() 
-    };
-    
-    console.log('🔄 Preparing to share treat with data:', {
-      slug: treatDataWithSlug.slug,
-      senderName: treatDataWithSlug.senderName,
-      recipientName: treatDataWithSlug.recipientName,
-      treatType: treatDataWithSlug.treatType,
-      hasMessage: !!treatDataWithSlug.message
-    });
-    
-    const { url: link, success, usedFallback } = createShareableURL(treatDataWithSlug, window.location.origin);
-    
-    if (!success) {
-      console.error('❌ Failed to create shareable URL');
+    if (!treatData || !treatSlug) {
       toast({
         title: "Error",
-        description: "Couldn't prepare the treat link"
+        description: "Treat data not available"
       });
       return;
     }
+
+    // Use the shareUrl from backend if available, otherwise construct it
+    const shareUrl = treatData.shareUrl || `${window.location.origin}/t/${treatSlug}`;
+    const message = `${treatData.header_text || treatData.headerText || "Someone sent you a treat"} ✨`;
     
-    const message = `${treatData.headerText || getTreatDescription(treatData.treatType) + " on me"} ✨`;
+    console.log('✅ Sharing treat with URL:', shareUrl);
     
-    console.log('✅ Generated shareable link:', {
-      link: link.substring(0, 100) + '...',
-      linkLength: link.length,
-      usedFallback
-    });
+    // Record sharing analytics
+    if (treatData.id) {
+      try {
+        await recordShare(treatData.id, navigator.share ? 'native_share' : 'clipboard');
+      } catch (error) {
+        console.error('Failed to record share:', error);
+      }
+    }
     
     if (navigator.share) {
       try {
         await navigator.share({
           title: 'Oowoo Treat',
           text: message,
-          url: link
+          url: shareUrl
         });
         setStepCompleted(prev => ({ ...prev, share: true }));
+        toast({
+          title: "Shared! 📤",
+          description: "Thanks for sharing the love!"
+        });
         return;
       } catch (err) {
         console.log('Share cancelled or failed');
@@ -98,7 +98,7 @@ const Confirmation = () => {
     
     // Fallback to copying link
     try {
-      await navigator.clipboard.writeText(`${message} ${link}`);
+      await navigator.clipboard.writeText(`${message} ${shareUrl}`);
       setStepCompleted(prev => ({ ...prev, share: true }));
       toast({
         title: "Copied! 📋",
@@ -114,45 +114,30 @@ const Confirmation = () => {
 
   const openVenmo = () => {
     if (!treatData) return;
-    const amount = treatData.treatType === "custom" ? "25" : treatData.treatType;
+    const amount = treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType);
     const note = generateVenmoMessage();
-    const venmoUrl = `venmo://paycharge?txn=pay&recipients=${treatData.recipientHandle}&amount=${amount}&note=${encodeURIComponent(note)}`;
+    const venmoHandle = treatData.venmo_handle || treatData.venmoHandle || treatData.recipientHandle;
+    const venmoUrl = `venmo://paycharge?txn=pay&recipients=${venmoHandle}&amount=${amount}&note=${encodeURIComponent(note)}`;
     window.open(venmoUrl, '_blank');
     setStepCompleted(prev => ({ ...prev, venmo: true }));
   };
 
   const handleCopyLink = async () => {
-    const treatDataWithSlug = { 
-      ...treatData, 
-      slug: treatSlug, 
-      createdAt: new Date().toISOString() 
-    };
-    
-    console.log('🔗 Copying link with data:', {
-      slug: treatDataWithSlug.slug,
-      senderName: treatDataWithSlug.senderName,
-      hasAllRequiredFields: !!(treatDataWithSlug.senderName && treatDataWithSlug.recipientName && treatDataWithSlug.treatType)
-    });
-    
-    const { url: link, success, usedFallback } = createShareableURL(treatDataWithSlug, window.location.origin);
-    
-    if (!success) {
-      console.error('❌ Failed to create shareable URL for copying');
+    if (!treatData || !treatSlug) {
       toast({
         title: "Error",
-        description: "Couldn't prepare the treat link"
+        description: "Treat data not available"
       });
       return;
     }
+
+    // Use the shareUrl from backend if available, otherwise construct it
+    const shareUrl = treatData.shareUrl || `${window.location.origin}/t/${treatSlug}`;
     
-    console.log('✅ Generated link for copying:', {
-      link: link.substring(0, 100) + '...',
-      linkLength: link.length,
-      usedFallback
-    });
+    console.log('🔗 Copying link:', shareUrl);
     
     try {
-      await navigator.clipboard.writeText(link);
+      await navigator.clipboard.writeText(shareUrl);
       setStepCompleted(prev => ({ ...prev, share: true }));
       toast({
         title: "Copied! 📋",
@@ -242,8 +227,8 @@ const Confirmation = () => {
           <div className="text-center">
             <div className="text-5xl mb-4">💌</div>
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">To: <span className="font-semibold text-foreground">{treatData.recipientName}</span></p>
-              <p className="text-sm text-muted-foreground">From: <span className="font-semibold text-foreground">{treatData.senderName}</span></p>
+              <p className="text-sm text-muted-foreground">To: <span className="font-semibold text-foreground">{treatData.recipient_name || treatData.recipientName}</span></p>
+              <p className="text-sm text-muted-foreground">From: <span className="font-semibold text-foreground">{treatData.sender_name || treatData.senderName}</span></p>
             </div>
           </div>
         </Card>

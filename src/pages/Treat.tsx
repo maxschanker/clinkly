@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { getTreat, recordShare, type TreatResponse } from "@/lib/treatService";
 import { retrieveTreatData } from "@/lib/utils";
 
 const Treat = () => {
@@ -10,65 +11,104 @@ const Treat = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const [treatData, setTreatData] = useState<any>(null);
+  const [treatData, setTreatData] = useState<TreatResponse | any>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log('Treat page loading, slug:', slug, 'full URL:', window.location.href);
-    console.log('Search params:', location.search);
-    
-    // 1. First, try to retrieve data from URL (both direct and fallback storage)
-    const urlParams = new URLSearchParams(location.search);
-    const retrievedData = retrieveTreatData(urlParams);
-    
-    if (retrievedData && retrievedData.senderName) {
-      console.log('✅ Successfully retrieved data from URL/storage');
-      setTreatData({
-        ...retrievedData,
-        slug: slug // Use the slug from the URL
-      });
-      setIsPreviewMode(false);
-      return;
-    } else {
-      console.log('⚠️ No valid data found from URL, trying localStorage fallback');
-    }
-
-    // 2. Try to get treat data from localStorage (preview data from Confirmation page)
-    const data = localStorage.getItem('currentTreat');
-    console.log('LocalStorage currentTreat:', data ? 'found' : 'not found');
-    
-    if (data) {
+    const loadTreat = async () => {
+      if (!slug) return;
+      
+      console.log('Treat page loading, slug:', slug);
+      setIsLoading(true);
+      
       try {
-        const parsed = JSON.parse(data);
-        console.log('Parsed localStorage data, slug match:', parsed.slug === slug);
+        // 1. First check if this is preview mode (localStorage data)
+        const previewData = localStorage.getItem('currentTreat');
+        if (previewData) {
+          try {
+            const parsed = JSON.parse(previewData);
+            if (parsed.slug === slug) {
+              console.log('✅ Using localStorage data (preview mode)');
+              setTreatData(parsed);
+              setIsPreviewMode(true);
+              setIsLoading(false);
+              return;
+            }
+          } catch (error) {
+            console.error('Error parsing localStorage data:', error);
+          }
+        }
+
+        // 2. Try to fetch from backend using the new service
+        console.log('Fetching treat from backend...');
+        const result = await getTreat(slug);
         
-        if (parsed.slug === slug) {
-          console.log('✅ Using localStorage data (preview mode)');
-          setTreatData(parsed);
-          setIsPreviewMode(true);
-          return;
+        if (result.success && result.treat) {
+          console.log('✅ Successfully fetched treat from backend');
+          
+          // Map backend response to expected format
+          const mappedData = {
+            id: result.treat.id,
+            slug: result.treat.slug,
+            headerText: result.treat.header_text,
+            headerFont: result.treat.font_id.replace('font-', ''),
+            senderName: result.treat.sender_name,
+            recipientName: result.treat.recipient_name,
+            venmoHandle: result.treat.venmo_handle,
+            amount: result.treat.amount,
+            treatType: result.treat.treat_type,
+            message: result.treat.message,
+            coverArt: result.treat.cover_art_content,
+            coverArtType: result.treat.cover_art_type,
+            theme: result.treat.theme,
+            createdAt: result.treat.created_at,
+            isPublic: result.treat.is_public
+          };
+          
+          setTreatData(mappedData);
+          setIsPreviewMode(false);
+        } else {
+          throw new Error('Treat not found');
         }
       } catch (error) {
-        console.error('Error parsing localStorage data:', error);
+        console.error('Error loading treat:', error);
+        
+        // 3. Fallback to URL params (backwards compatibility)
+        const urlParams = new URLSearchParams(location.search);
+        const retrievedData = retrieveTreatData(urlParams);
+        
+        if (retrievedData && retrievedData.senderName) {
+          console.log('✅ Successfully retrieved data from URL/storage (fallback)');
+          setTreatData({
+            ...retrievedData,
+            slug: slug
+          });
+          setIsPreviewMode(false);
+        } else {
+          // 4. Show error state
+          console.warn('❌ No valid treat data found');
+          setTreatData({
+            headerText: "Oops! Something went wrong",
+            headerFont: "font-sans",
+            senderName: "Oowoo System",
+            recipientHandle: "@you",
+            treatType: "5",
+            message: "We couldn't load this treat. The link might be expired or invalid. Ask the sender to send it again!",
+            coverArt: "",
+            coverArtType: "gradient",
+            theme: "primary",
+            slug: slug,
+            createdAt: new Date().toISOString(),
+            isError: true
+          });
+        }
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
 
-    // 3. Show error message instead of demo data for shared links
-    console.warn('❌ No valid treat data found - this treat may have expired or the link is invalid');
-    setTreatData({
-      headerText: "Oops! Something went wrong",
-      headerFont: "font-sans",
-      senderName: "Oowoo System",
-      recipientHandle: "@you",
-      treatType: "5",
-      message: "We couldn't load this treat. The link might be expired or invalid. Ask the sender to send it again!",
-      coverArt: "",
-      coverArtType: "gradient",
-      theme: "primary",
-      slug: slug,
-      createdAt: new Date().toISOString(),
-      isError: true
-    });
+    loadTreat();
   }, [slug, location.search]);
 
   const getTreatEmoji = (type: string) => {
@@ -116,12 +156,25 @@ const Treat = () => {
     const url = window.location.href;
     const text = `Someone sent me a treat! Check it out ✨`;
     
+    // Record sharing analytics
+    if (treatData?.id) {
+      try {
+        await recordShare(treatData.id, navigator.share ? 'native_share' : 'clipboard');
+      } catch (error) {
+        console.error('Failed to record share:', error);
+      }
+    }
+    
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'OnMe Treat',
+          title: 'Oowoo Treat',
           text: text,
           url: url
+        });
+        toast({
+          title: "Shared! 📤",
+          description: "Thanks for sharing the love!"
         });
       } catch (err) {
         // Fallback to clipboard
@@ -140,7 +193,7 @@ const Treat = () => {
     }
   };
 
-  if (!treatData) {
+  if (isLoading || !treatData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-background">
         <div className="text-center">

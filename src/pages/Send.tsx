@@ -6,9 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Edit } from "lucide-react";
 import { CoverArtModal } from "@/components/CoverArtModal";
+import { createTreat, type TreatData } from "@/lib/treatService";
+import { useToast } from "@/hooks/use-toast";
 
 const Send = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     headerText: "",
     headerFont: "inter",
@@ -30,16 +34,59 @@ const Send = () => {
   ];
 
 
-  const handleSave = () => {
-    // Save form data to localStorage for demo, mapping to expected structure
-    const treatData = {
-      ...formData,
-      recipientHandle: formData.venmoHandle,
-      treatType: formData.amount
-    };
-    localStorage.setItem('treatData', JSON.stringify(treatData));
-    window.scrollTo(0, 0);
-    navigate('/send/complete');
+  const handleSave = async () => {
+    if (!formData.senderName || !formData.recipientName) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in both sender and recipient names.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const treatData: TreatData = {
+        header_text: formData.headerText || "Someone sent you a treat!",
+        font_id: `font-${formData.headerFont}`,
+        cover_art_type: formData.coverArtType === 'poster' ? 'image' : formData.coverArtType,
+        cover_art_content: formData.coverArt,
+        message: formData.message,
+        sender_name: formData.senderName,
+        recipient_name: formData.recipientName,
+        venmo_handle: formData.venmoHandle,
+        amount: formData.amount ? parseFloat(formData.amount) : undefined,
+        theme: 'gradient-warm',
+        treat_type: 'coffee',
+        is_public: true
+      };
+
+      const result = await createTreat(treatData);
+      
+      // Save the result for the confirmation page
+      localStorage.setItem('treatData', JSON.stringify({
+        ...result.treat,
+        shareUrl: result.shareUrl
+      }));
+      
+      toast({
+        title: "Treat Created!",
+        description: "Your treat has been saved successfully.",
+      });
+      
+      window.scrollTo(0, 0);
+      navigate('/send/complete');
+    } catch (error) {
+      console.error('Error creating treat:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create treat. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCoverArtSelect = (url: string, type: 'photo' | 'gif' | 'poster') => {
@@ -217,9 +264,10 @@ const Send = () => {
         <div className="max-w-2xl mx-auto">
           <Button
             onClick={handleSave}
-            className="w-full h-14 text-lg font-bold rounded-2xl bg-gradient-primary hover:shadow-glow transition-all duration-300 border-0"
+            disabled={isLoading}
+            className="w-full h-14 text-lg font-bold rounded-2xl bg-gradient-primary hover:shadow-glow transition-all duration-300 border-0 disabled:opacity-50"
           >
-            Save
+            {isLoading ? 'Creating...' : 'Save'}
           </Button>
         </div>
       </div>
