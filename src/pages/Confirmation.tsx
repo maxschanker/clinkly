@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { encodeTreatData } from "@/lib/utils";
+import { createShareableURL } from "@/lib/utils";
 
 const Confirmation = () => {
   const navigate = useNavigate();
@@ -62,10 +62,10 @@ const Confirmation = () => {
       hasMessage: !!treatDataWithSlug.message
     });
     
-    const encodedData = encodeTreatData(treatDataWithSlug);
+    const { url: link, success, usedFallback } = createShareableURL(treatDataWithSlug, window.location.origin);
     
-    if (!encodedData) {
-      console.error('❌ Failed to encode treat data');
+    if (!success) {
+      console.error('❌ Failed to create shareable URL');
       toast({
         title: "Error",
         description: "Couldn't prepare the treat link"
@@ -73,13 +73,12 @@ const Confirmation = () => {
       return;
     }
     
-    const link = `${window.location.origin}/t/${treatSlug}?data=${encodedData}`;
     const message = `${treatData.headerText || getTreatDescription(treatData.treatType) + " on me"} ✨`;
     
     console.log('✅ Generated shareable link:', {
       link: link.substring(0, 100) + '...',
       linkLength: link.length,
-      encodedDataLength: encodedData.length
+      usedFallback
     });
     
     if (navigator.share) {
@@ -135,10 +134,10 @@ const Confirmation = () => {
       hasAllRequiredFields: !!(treatDataWithSlug.senderName && treatDataWithSlug.recipientName && treatDataWithSlug.treatType)
     });
     
-    const encodedData = encodeTreatData(treatDataWithSlug);
+    const { url: link, success, usedFallback } = createShareableURL(treatDataWithSlug, window.location.origin);
     
-    if (!encodedData) {
-      console.error('❌ Failed to encode treat data for copying');
+    if (!success) {
+      console.error('❌ Failed to create shareable URL for copying');
       toast({
         title: "Error",
         description: "Couldn't prepare the treat link"
@@ -146,11 +145,10 @@ const Confirmation = () => {
       return;
     }
     
-    const link = `${window.location.origin}/t/${treatSlug}?data=${encodedData}`;
-    
     console.log('✅ Generated link for copying:', {
       link: link.substring(0, 100) + '...',
-      linkLength: link.length
+      linkLength: link.length,
+      usedFallback
     });
     
     try {

@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { decodeTreatData } from "@/lib/utils";
+import { retrieveTreatData } from "@/lib/utils";
 
 const Treat = () => {
   const { slug } = useParams();
@@ -17,26 +17,20 @@ const Treat = () => {
     console.log('Treat page loading, slug:', slug, 'full URL:', window.location.href);
     console.log('Search params:', location.search);
     
-    // 1. First, try to decode data from URL parameters
+    // 1. First, try to retrieve data from URL (both direct and fallback storage)
     const urlParams = new URLSearchParams(location.search);
-    const encodedData = urlParams.get('data');
-    console.log('Encoded data from URL:', encodedData ? `${encodedData.substring(0, 50)}... (${encodedData.length} chars)` : 'none');
+    const retrievedData = retrieveTreatData(urlParams);
     
-    if (encodedData) {
-      const decodedData = decodeTreatData(encodedData);
-      
-      if (decodedData && decodedData.senderName) {
-        console.log('✅ Successfully using decoded data from URL');
-        setTreatData({
-          ...decodedData,
-          slug: slug // Use the slug from the URL
-        });
-        setIsPreviewMode(false);
-        return;
-      } else {
-        console.error('❌ Failed to decode valid data from URL parameters');
-        // Continue to next fallback instead of using demo data
-      }
+    if (retrievedData && retrievedData.senderName) {
+      console.log('✅ Successfully retrieved data from URL/storage');
+      setTreatData({
+        ...retrievedData,
+        slug: slug // Use the slug from the URL
+      });
+      setIsPreviewMode(false);
+      return;
+    } else {
+      console.log('⚠️ No valid data found from URL, trying localStorage fallback');
     }
 
     // 2. Try to get treat data from localStorage (preview data from Confirmation page)
