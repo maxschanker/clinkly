@@ -133,12 +133,20 @@ const Confirmation = () => {
   );
 
   const previewTreat = () => {
-    // Save treat data for the treat page
+    // Save treat data for the treat page (preview mode uses localStorage)
     localStorage.setItem('currentTreat', JSON.stringify({
       ...treatData,
       slug: treatSlug,
       createdAt: new Date().toISOString()
     }));
+    
+    // Also save to sessionStorage for the actual link sharing
+    sessionStorage.setItem(`treat_${treatSlug}`, JSON.stringify({
+      ...treatData,
+      slug: treatSlug,
+      createdAt: new Date().toISOString()
+    }));
+    
     window.scrollTo(0, 0);
     navigate(`/t/${treatSlug}`);
   };

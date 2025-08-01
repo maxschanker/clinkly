@@ -12,7 +12,15 @@ const Treat = () => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   useEffect(() => {
-    // Try to get treat data from localStorage (preview data from Confirmation page)
+    // First check sessionStorage for actual shared treats
+    const sessionData = sessionStorage.getItem(`treat_${slug}`);
+    if (sessionData) {
+      setTreatData(JSON.parse(sessionData));
+      setIsPreviewMode(false);
+      return;
+    }
+
+    // Then check localStorage for preview data from Confirmation page
     const data = localStorage.getItem('currentTreat');
     if (data) {
       const parsed = JSON.parse(data);
@@ -23,7 +31,7 @@ const Treat = () => {
       }
     }
 
-    // Fallback demo data if no localStorage data
+    // Fallback demo data if no data found
     setTreatData({
       headerText: "$5 coffee treat",
       headerFont: "font-sans",
@@ -37,6 +45,7 @@ const Treat = () => {
       slug: slug,
       createdAt: new Date().toISOString()
     });
+    setIsPreviewMode(false);
   }, [slug]);
 
   const getTreatEmoji = (type: string) => {
@@ -151,7 +160,7 @@ const Treat = () => {
               }}
               className="text-muted-foreground hover:text-foreground"
             >
-              ← Back to Complete
+              ← Exit Preview
             </Button>
           )}
         </div>
@@ -219,26 +228,28 @@ const Treat = () => {
           </Card>
         )}
 
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          <Button
-            onClick={shareThis}
-            className="w-full h-14 text-lg font-bold rounded-2xl bg-white hover:bg-white/90 text-primary shadow-card transition-all duration-300"
-          >
-            📤 Share This
-          </Button>
+        {/* Action Buttons - Hidden in preview mode */}
+        {!isPreviewMode && (
+          <div className="space-y-3">
+            <Button
+              onClick={shareThis}
+              className="w-full h-14 text-lg font-bold rounded-2xl bg-white hover:bg-white/90 text-primary shadow-card transition-all duration-300"
+            >
+              📤 Share This
+            </Button>
 
-          <Button
-            onClick={() => {
-              window.scrollTo(0, 0);
-              navigate('/');
-            }}
-            variant="outline"
-            className="w-full h-12 rounded-2xl border-2 bg-white/70 hover:bg-white"
-          >
-            💖 Send One Back
-          </Button>
-        </div>
+            <Button
+              onClick={() => {
+                window.scrollTo(0, 0);
+                navigate('/');
+              }}
+              variant="outline"
+              className="w-full h-12 rounded-2xl border-2 bg-white/70 hover:bg-white"
+            >
+              💖 Send One Back
+            </Button>
+          </div>
+        )}
 
         {/* Bottom Navigation */}
         <div className="mt-8 text-center">
@@ -251,7 +262,7 @@ const Treat = () => {
               }}
               className="text-muted-foreground hover:text-foreground"
             >
-              ← Back to Complete
+              ← Exit Preview
             </Button>
           ) : (
             <div className="space-y-3">
