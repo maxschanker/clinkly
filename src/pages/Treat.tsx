@@ -14,37 +14,60 @@ const Treat = () => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   useEffect(() => {
+    console.log('Treat page loading, slug:', slug, 'search params:', location.search);
+    
     // 1. First, try to decode data from URL parameters
     const urlParams = new URLSearchParams(location.search);
     const encodedData = urlParams.get('data');
+    console.log('Encoded data from URL:', encodedData);
+    
     if (encodedData) {
       const decodedData = decodeTreatData(encodedData);
-      if (decodedData && decodedData.slug === slug) {
-        setTreatData(decodedData);
+      console.log('Decoded data:', decodedData, 'slug match:', decodedData?.slug === slug);
+      
+      if (decodedData) {
+        // Use decoded data regardless of slug match - the slug might be from the URL encoding
+        setTreatData({
+          ...decodedData,
+          slug: slug // Use the slug from the URL
+        });
         setIsPreviewMode(false);
+        console.log('Using decoded data from URL');
         return;
+      } else {
+        console.warn('Failed to decode data from URL parameters');
       }
     }
 
     // 2. Try to get treat data from localStorage (preview data from Confirmation page)
     const data = localStorage.getItem('currentTreat');
+    console.log('LocalStorage data:', data);
+    
     if (data) {
-      const parsed = JSON.parse(data);
-      if (parsed.slug === slug) {
-        setTreatData(parsed);
-        setIsPreviewMode(true);
-        return;
+      try {
+        const parsed = JSON.parse(data);
+        console.log('Parsed localStorage data:', parsed, 'slug match:', parsed.slug === slug);
+        
+        if (parsed.slug === slug) {
+          setTreatData(parsed);
+          setIsPreviewMode(true);
+          console.log('Using localStorage data (preview mode)');
+          return;
+        }
+      } catch (error) {
+        console.error('Error parsing localStorage data:', error);
       }
     }
 
-    // 3. Fallback demo data if no URL data or localStorage data
+    // 3. Only use fallback demo data if we have no data at all
+    console.warn('No valid treat data found, using fallback demo data');
     setTreatData({
       headerText: "$5 coffee treat",
       headerFont: "font-sans",
-      senderName: "Sarah ✨",
+      senderName: "Demo User ✨",
       recipientHandle: "@friend",
       treatType: "5",
-      message: "congrats on the new job! you deserve this 🎉",
+      message: "This is a demo treat! The real treat data couldn't be loaded.",
       coverArt: "",
       coverArtType: "gradient",
       theme: "primary",

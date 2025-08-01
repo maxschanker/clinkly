@@ -48,9 +48,13 @@ const Confirmation = () => {
   };
 
   const shareOowoo = async () => {
-    const encodedData = encodeTreatData({ ...treatData, slug: treatSlug, createdAt: new Date().toISOString() });
+    const treatDataWithSlug = { ...treatData, slug: treatSlug, createdAt: new Date().toISOString() };
+    const encodedData = encodeTreatData(treatDataWithSlug);
     const link = `${window.location.origin}/t/${treatSlug}${encodedData ? `?data=${encodedData}` : ''}`;
     const message = `${treatData.headerText || getTreatDescription(treatData.treatType) + " on me"} ✨`;
+    
+    console.log('Sharing treat with data:', treatDataWithSlug);
+    console.log('Generated link:', link);
     
     if (navigator.share) {
       try {
@@ -93,8 +97,13 @@ const Confirmation = () => {
   };
 
   const handleCopyLink = async () => {
-    const encodedData = encodeTreatData({ ...treatData, slug: treatSlug, createdAt: new Date().toISOString() });
+    const treatDataWithSlug = { ...treatData, slug: treatSlug, createdAt: new Date().toISOString() };
+    const encodedData = encodeTreatData(treatDataWithSlug);
     const link = `${window.location.origin}/t/${treatSlug}${encodedData ? `?data=${encodedData}` : ''}`;
+    
+    console.log('Copying link with data:', treatDataWithSlug);
+    console.log('Generated link:', link);
+    
     try {
       await navigator.clipboard.writeText(link);
       setStepCompleted(prev => ({ ...prev, share: true }));
