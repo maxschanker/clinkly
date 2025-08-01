@@ -51,13 +51,12 @@ const Confirmation = () => {
     const encodedData = encodeTreatData({ ...treatData, slug: treatSlug, createdAt: new Date().toISOString() });
     const link = `${window.location.origin}/t/${treatSlug}${encodedData ? `?data=${encodedData}` : ''}`;
     const message = `${treatData.headerText || getTreatDescription(treatData.treatType) + " on me"} ✨`;
-    const combinedText = `${message} ${link}`;
     
     if (navigator.share) {
       try {
         await navigator.share({
           title: 'Oowoo Treat',
-          text: combinedText,
+          text: message,
           url: link
         });
         setStepCompleted(prev => ({ ...prev, share: true }));
@@ -70,7 +69,7 @@ const Confirmation = () => {
     
     // Fallback to copying link
     try {
-      await navigator.clipboard.writeText(combinedText);
+      await navigator.clipboard.writeText(`${message} ${link}`);
       setStepCompleted(prev => ({ ...prev, share: true }));
       toast({
         title: "Copied! 📋",
