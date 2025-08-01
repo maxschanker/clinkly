@@ -48,13 +48,39 @@ const Confirmation = () => {
   };
 
   const shareOowoo = async () => {
-    const treatDataWithSlug = { ...treatData, slug: treatSlug, createdAt: new Date().toISOString() };
+    const treatDataWithSlug = { 
+      ...treatData, 
+      slug: treatSlug, 
+      createdAt: new Date().toISOString() 
+    };
+    
+    console.log('🔄 Preparing to share treat with data:', {
+      slug: treatDataWithSlug.slug,
+      senderName: treatDataWithSlug.senderName,
+      recipientName: treatDataWithSlug.recipientName,
+      treatType: treatDataWithSlug.treatType,
+      hasMessage: !!treatDataWithSlug.message
+    });
+    
     const encodedData = encodeTreatData(treatDataWithSlug);
-    const link = `${window.location.origin}/t/${treatSlug}${encodedData ? `?data=${encodedData}` : ''}`;
+    
+    if (!encodedData) {
+      console.error('❌ Failed to encode treat data');
+      toast({
+        title: "Error",
+        description: "Couldn't prepare the treat link"
+      });
+      return;
+    }
+    
+    const link = `${window.location.origin}/t/${treatSlug}?data=${encodedData}`;
     const message = `${treatData.headerText || getTreatDescription(treatData.treatType) + " on me"} ✨`;
     
-    console.log('Sharing treat with data:', treatDataWithSlug);
-    console.log('Generated link:', link);
+    console.log('✅ Generated shareable link:', {
+      link: link.substring(0, 100) + '...',
+      linkLength: link.length,
+      encodedDataLength: encodedData.length
+    });
     
     if (navigator.share) {
       try {
@@ -65,10 +91,10 @@ const Confirmation = () => {
         });
         setStepCompleted(prev => ({ ...prev, share: true }));
         return;
-    } catch (err) {
-      console.log('Share cancelled or failed');
-      return;
-    }
+      } catch (err) {
+        console.log('Share cancelled or failed');
+        return;
+      }
     }
     
     // Fallback to copying link
@@ -97,12 +123,35 @@ const Confirmation = () => {
   };
 
   const handleCopyLink = async () => {
-    const treatDataWithSlug = { ...treatData, slug: treatSlug, createdAt: new Date().toISOString() };
-    const encodedData = encodeTreatData(treatDataWithSlug);
-    const link = `${window.location.origin}/t/${treatSlug}${encodedData ? `?data=${encodedData}` : ''}`;
+    const treatDataWithSlug = { 
+      ...treatData, 
+      slug: treatSlug, 
+      createdAt: new Date().toISOString() 
+    };
     
-    console.log('Copying link with data:', treatDataWithSlug);
-    console.log('Generated link:', link);
+    console.log('🔗 Copying link with data:', {
+      slug: treatDataWithSlug.slug,
+      senderName: treatDataWithSlug.senderName,
+      hasAllRequiredFields: !!(treatDataWithSlug.senderName && treatDataWithSlug.recipientName && treatDataWithSlug.treatType)
+    });
+    
+    const encodedData = encodeTreatData(treatDataWithSlug);
+    
+    if (!encodedData) {
+      console.error('❌ Failed to encode treat data for copying');
+      toast({
+        title: "Error",
+        description: "Couldn't prepare the treat link"
+      });
+      return;
+    }
+    
+    const link = `${window.location.origin}/t/${treatSlug}?data=${encodedData}`;
+    
+    console.log('✅ Generated link for copying:', {
+      link: link.substring(0, 100) + '...',
+      linkLength: link.length
+    });
     
     try {
       await navigator.clipboard.writeText(link);

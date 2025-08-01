@@ -14,44 +14,44 @@ const Treat = () => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   useEffect(() => {
-    console.log('Treat page loading, slug:', slug, 'search params:', location.search);
+    console.log('Treat page loading, slug:', slug, 'full URL:', window.location.href);
+    console.log('Search params:', location.search);
     
     // 1. First, try to decode data from URL parameters
     const urlParams = new URLSearchParams(location.search);
     const encodedData = urlParams.get('data');
-    console.log('Encoded data from URL:', encodedData);
+    console.log('Encoded data from URL:', encodedData ? `${encodedData.substring(0, 50)}... (${encodedData.length} chars)` : 'none');
     
     if (encodedData) {
       const decodedData = decodeTreatData(encodedData);
-      console.log('Decoded data:', decodedData, 'slug match:', decodedData?.slug === slug);
       
-      if (decodedData) {
-        // Use decoded data regardless of slug match - the slug might be from the URL encoding
+      if (decodedData && decodedData.senderName) {
+        console.log('✅ Successfully using decoded data from URL');
         setTreatData({
           ...decodedData,
           slug: slug // Use the slug from the URL
         });
         setIsPreviewMode(false);
-        console.log('Using decoded data from URL');
         return;
       } else {
-        console.warn('Failed to decode data from URL parameters');
+        console.error('❌ Failed to decode valid data from URL parameters');
+        // Continue to next fallback instead of using demo data
       }
     }
 
     // 2. Try to get treat data from localStorage (preview data from Confirmation page)
     const data = localStorage.getItem('currentTreat');
-    console.log('LocalStorage data:', data);
+    console.log('LocalStorage currentTreat:', data ? 'found' : 'not found');
     
     if (data) {
       try {
         const parsed = JSON.parse(data);
-        console.log('Parsed localStorage data:', parsed, 'slug match:', parsed.slug === slug);
+        console.log('Parsed localStorage data, slug match:', parsed.slug === slug);
         
         if (parsed.slug === slug) {
+          console.log('✅ Using localStorage data (preview mode)');
           setTreatData(parsed);
           setIsPreviewMode(true);
-          console.log('Using localStorage data (preview mode)');
           return;
         }
       } catch (error) {
@@ -59,20 +59,21 @@ const Treat = () => {
       }
     }
 
-    // 3. Only use fallback demo data if we have no data at all
-    console.warn('No valid treat data found, using fallback demo data');
+    // 3. Show error message instead of demo data for shared links
+    console.warn('❌ No valid treat data found - this treat may have expired or the link is invalid');
     setTreatData({
-      headerText: "$5 coffee treat",
+      headerText: "Oops! Something went wrong",
       headerFont: "font-sans",
-      senderName: "Demo User ✨",
-      recipientHandle: "@friend",
+      senderName: "Oowoo System",
+      recipientHandle: "@you",
       treatType: "5",
-      message: "This is a demo treat! The real treat data couldn't be loaded.",
+      message: "We couldn't load this treat. The link might be expired or invalid. Ask the sender to send it again!",
       coverArt: "",
       coverArtType: "gradient",
       theme: "primary",
       slug: slug,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      isError: true
     });
   }, [slug, location.search]);
 
@@ -258,8 +259,8 @@ const Treat = () => {
           </Card>
         )}
 
-        {/* Action Buttons - Only show in non-preview mode */}
-        {!isPreviewMode && (
+        {/* Action Buttons - Only show in non-preview mode and not for error states */}
+        {!isPreviewMode && !treatData.isError && (
           <div className="space-y-3">
             <Button
               onClick={shareThis}
@@ -277,6 +278,21 @@ const Treat = () => {
               className="w-full h-12 rounded-2xl border-2 bg-white/70 hover:bg-white"
             >
               💖 Send One Back
+            </Button>
+          </div>
+        )}
+
+        {/* Error state actions */}
+        {treatData.isError && (
+          <div className="space-y-3">
+            <Button
+              onClick={() => {
+                window.scrollTo(0, 0);
+                navigate('/');
+              }}
+              className="w-full h-14 text-lg font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
+            >
+              🏠 Go to Homepage
             </Button>
           </div>
         )}
