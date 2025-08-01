@@ -173,7 +173,7 @@ const Treat = () => {
         {/* 1. "[From] sent you something 💌" */}
         <div className="text-center mb-6">
           <p className="text-lg text-muted-foreground">
-            <span className="font-medium">{treatData.senderName}</span> sent you something 💌
+            <span className="font-bold">{treatData.senderName}</span> sent you something 💌
           </p>
         </div>
 
