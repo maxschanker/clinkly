@@ -145,7 +145,7 @@ const Treat = () => {
     <div className="min-h-screen bg-gradient-background p-4">
       <div className="max-w-md mx-auto">
         {/* Header */}
-        <header className="w-full p-4 md:p-6 relative z-10">
+        <header className="w-full p-4 pb-2 md:p-6 md:pb-2 relative z-10">
           <div className="max-w-6xl mx-auto flex justify-between items-center">
             <button
               onClick={() => {
