@@ -64,7 +64,7 @@ const Confirmation = () => {
 
     // Use the shareUrl from backend if available, otherwise construct it
     const shareUrl = treatData.shareUrl || `${window.location.origin}/t/${treatSlug}`;
-    const message = `${treatData.header_text || treatData.headerText || "Someone sent you a treat"} ✨`;
+    const message = `${treatData.header_text || treatData.headerText || "Someone sent you a cheerly"} ✨`;
     
     console.log('✅ Sharing treat with URL:', shareUrl);
     

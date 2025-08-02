@@ -48,7 +48,7 @@ const Send = () => {
     
     try {
       const treatData: TreatData = {
-        header_text: formData.headerText || "Someone sent you a treat!",
+        header_text: formData.headerText || "Someone sent you a cheerly",
         font_id: `font-${formData.headerFont}`,
         cover_art_type: formData.coverArtType === 'poster' ? 'image' : formData.coverArtType,
         cover_art_content: formData.coverArt,
