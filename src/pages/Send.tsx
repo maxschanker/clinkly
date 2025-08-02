@@ -70,10 +70,6 @@ const Send = () => {
         shareUrl: result.shareUrl
       }));
       
-      toast({
-        title: "Treat Created!",
-        description: "Your treat has been saved successfully.",
-      });
       
       window.scrollTo(0, 0);
       navigate('/send/complete');

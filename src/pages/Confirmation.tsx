@@ -85,10 +85,6 @@ const Confirmation = () => {
           url: shareUrl
         });
         setStepCompleted(prev => ({ ...prev, share: true }));
-        toast({
-          title: "Shared! 📤",
-          description: "Thanks for sharing the love!"
-        });
         return;
       } catch (err) {
         console.log('Share cancelled or failed');
