@@ -91,7 +91,7 @@ const Treat = () => {
           setTreatData({
             headerText: "Oops! Something went wrong",
             headerFont: "font-sans",
-            senderName: "Oowoo System",
+            senderName: "cheerly System",
             recipientHandle: "@you",
             treatType: "5",
             message: "We couldn't load this treat. The link might be expired or invalid. Ask the sender to send it again!",
@@ -168,7 +168,7 @@ const Treat = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Oowoo Treat',
+          title: 'cheerly Treat',
           text: text,
           url: url
         });
@@ -225,7 +225,7 @@ const Treat = () => {
               }}
               className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
             >
-              oowoo
+              cheerly
             </button>
             
             {isPreviewMode && (
@@ -300,7 +300,7 @@ const Treat = () => {
                 "{treatData.message}"
               </p>
               <div className="mt-3 text-sm text-muted-foreground">
-                💖 Sent with love via oowoo
+                💖 Sent with love via cheerly
               </div>
             </div>
           </Card>
@@ -367,7 +367,7 @@ const Treat = () => {
                   }}
                   className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
                 >
-                  oowoo
+                  cheerly
                 </button>
               </div>
             </div>

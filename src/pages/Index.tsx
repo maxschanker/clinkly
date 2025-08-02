@@ -22,7 +22,7 @@ const Index = () => {
             }}
             className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
           >
-            oowoo
+            cheerly
           </button>
         </div>
       </header>
@@ -70,7 +70,7 @@ const Index = () => {
       <footer className="w-full p-4 md:p-6">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-sm text-muted-foreground">
-            oowoo • 2024
+            cheerly • 2024
           </p>
         </div>
       </footer>

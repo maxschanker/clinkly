@@ -23,7 +23,7 @@ const NotFound = () => {
             }}
             className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
           >
-            oowoo
+            cheerly
           </button>
         </div>
       </header>

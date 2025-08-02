@@ -80,7 +80,7 @@ const Confirmation = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Oowoo Treat',
+          title: 'cheerly Treat',
           text: message,
           url: shareUrl
         });
@@ -211,7 +211,7 @@ const Confirmation = () => {
               }}
               className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
             >
-              oowoo
+              cheerly
             </button>
           </div>
         </header>
@@ -225,7 +225,7 @@ const Confirmation = () => {
             {allStepsComplete ? 'Perfect! All done!' : 'You made someone\'s day!'}
           </h1>
           <p className="text-muted-foreground">
-            {allStepsComplete ? 'Your treat is on its way!' : 'Your oowoo is wrapped and ready to go'}
+            {allStepsComplete ? 'Your treat is on its way!' : 'Your cheerly is wrapped and ready to go'}
           </p>
         </div>
 
@@ -248,7 +248,7 @@ const Confirmation = () => {
             size="sm"
             className="rounded-xl border-2 border-primary/30 bg-white/70 hover:bg-primary/10"
           >
-            👀 Preview oowoo
+            👀 Preview cheerly
           </Button>
         </div>
 
@@ -258,7 +258,7 @@ const Confirmation = () => {
           <div>
             <div className="flex items-center gap-3 mb-3 justify-center">
               <StepIndicator completed={stepCompleted.share} />
-              <h3 className="text-lg font-bold">Step 1: Share your oowoo</h3>
+              <h3 className="text-lg font-bold">Step 1: Share your cheerly</h3>
             </div>
             <div className="space-y-3">
               <Button
