@@ -177,12 +177,22 @@ const Confirmation = () => {
   );
 
   const previewTreat = () => {
-    // Save treat data for the treat page
-    localStorage.setItem('currentTreat', JSON.stringify({
-      ...treatData,
+    // Transform backend data format to frontend format for preview
+    const previewData = {
+      senderName: treatData.sender_name,
+      recipientName: treatData.recipient_name,
+      headerText: treatData.header_text,
+      headerFont: treatData.font_id?.replace('font-', '') || 'playfair',
+      message: treatData.message,
+      venmoHandle: treatData.venmo_handle,
+      amount: treatData.amount,
+      coverArt: treatData.cover_art,
+      treatType: treatData.treat_type,
       slug: treatSlug,
       createdAt: new Date().toISOString()
-    }));
+    };
+    
+    localStorage.setItem('currentTreat', JSON.stringify(previewData));
     window.scrollTo(0, 0);
     navigate(`/t/${treatSlug}`);
   };
