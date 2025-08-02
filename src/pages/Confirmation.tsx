@@ -186,7 +186,8 @@ const Confirmation = () => {
       message: treatData.message,
       venmoHandle: treatData.venmo_handle,
       amount: treatData.amount,
-      coverArt: treatData.cover_art,
+      coverArt: treatData.cover_art_content,
+      coverArtType: treatData.cover_art_type,
       treatType: treatData.treat_type,
       slug: treatSlug,
       createdAt: new Date().toISOString()
