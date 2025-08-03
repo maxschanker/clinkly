@@ -21,7 +21,6 @@ const Send = () => {
     message: "",
     senderName: "",
     recipientName: "",
-    venmoHandle: "",
     amount: ""
   });
   const [showCoverArtModal, setShowCoverArtModal] = useState(false);
@@ -55,7 +54,6 @@ const Send = () => {
         message: formData.message,
         sender_name: formData.senderName,
         recipient_name: formData.recipientName,
-        venmo_handle: formData.venmoHandle,
         amount: formData.amount ? parseFloat(formData.amount) : undefined,
         theme: 'gradient-warm',
         treat_type: 'coffee',
@@ -223,20 +221,6 @@ const Send = () => {
                 placeholder="Recipient's name"
                 className="w-full h-12 text-lg border-2 rounded-2xl"
               />
-            </div>
-            
-            <div>
-              <Label className="text-lg font-medium mb-2 block">👤 Venmo username</Label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-lg text-foreground font-medium z-10">@</span>
-                <Input
-                  type="text"
-                  value={formData.venmoHandle}
-                  onChange={(e) => setFormData({...formData, venmoHandle: e.target.value})}
-                  placeholder="recipient's username"
-                  className="w-full h-12 text-lg border-2 rounded-2xl pl-8"
-                />
-              </div>
             </div>
             
             <div>

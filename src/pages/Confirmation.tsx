@@ -112,8 +112,7 @@ const Confirmation = () => {
     if (!treatData) return;
     const amount = treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType);
     const note = generateVenmoMessage();
-    const venmoHandle = treatData.venmo_handle || treatData.venmoHandle || treatData.recipientHandle;
-    const venmoUrl = `venmo://paycharge?txn=pay&recipients=${venmoHandle}&amount=${amount}&note=${encodeURIComponent(note)}`;
+    const venmoUrl = `venmo://paycharge?txn=pay&amount=${amount}&note=${encodeURIComponent(note)}`;
     window.open(venmoUrl, '_blank');
     setStepCompleted(prev => ({ ...prev, venmo: true }));
   };
@@ -180,7 +179,6 @@ const Confirmation = () => {
       headerText: treatData.header_text,
       headerFont: treatData.font_id?.replace('font-', '') || 'playfair',
       message: treatData.message,
-      venmoHandle: treatData.venmo_handle,
       amount: treatData.amount,
       coverArt: treatData.cover_art_content,
       coverArtType: treatData.cover_art_type,
@@ -283,6 +281,7 @@ const Confirmation = () => {
               <StepIndicator completed={stepCompleted.venmo} />
               <h3 className="text-lg font-bold">Step 2: Send the $$ with Venmo</h3>
             </div>
+            <p className="text-sm text-muted-foreground text-center mb-3">(You'll choose who it's for inside Venmo)</p>
             <Button
               onClick={openVenmo}
               className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
