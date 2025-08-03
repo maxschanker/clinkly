@@ -48,7 +48,7 @@ const Send = () => {
     
     try {
       const treatData: TreatData = {
-        header_text: formData.headerText || "Someone sent you a cheerly",
+        header_text: formData.headerText || "Someone sent you a clink",
         font_id: `font-${formData.headerFont}`,
         cover_art_type: formData.coverArtType === 'poster' ? 'image' : formData.coverArtType,
         cover_art_content: formData.coverArt,
@@ -105,7 +105,7 @@ const Send = () => {
             }}
             className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
           >
-            cheerly
+            clink
           </button>
         </div>
       </header>
