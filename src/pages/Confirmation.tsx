@@ -333,10 +333,15 @@ const Confirmation = () => {
       <Dialog open={showVenmoModal} onOpenChange={setShowVenmoModal}>
         <DialogContent className="max-w-sm mx-auto bg-gradient-card border-0 rounded-3xl shadow-glow">
           <div className="text-center space-y-6 py-6">
-            <div className="text-5xl mb-2">💳</div>
-            <h2 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Venmo's ready — just pick who it's for inside!
-            </h2>
+            <div className="text-5xl mb-2">🎉</div>
+            <div className="space-y-1">
+              <h2 className="text-2xl font-bold text-foreground">
+                Venmo is ready!
+              </h2>
+              <p className="text-base text-foreground">
+                Just pick who it's for inside 👌
+              </p>
+            </div>
             <Button
               onClick={openVenmo}
               className="w-full h-14 text-lg font-bold rounded-2xl bg-gradient-primary hover:shadow-glow transform hover:scale-105 transition-all duration-200"
