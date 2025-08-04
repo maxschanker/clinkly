@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { recordShare } from "@/lib/treatService";
+import { loadTreatData, clearAllTreatData, saveTreatData } from "@/lib/utils";
 
 const Confirmation = () => {
   const navigate = useNavigate();
@@ -18,23 +19,61 @@ const Confirmation = () => {
     share: false,
     venmo: false
   });
+
+  // Add cleanup on page unload/reload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Only clear if we have completed the flow
+      if (stepCompleted.share && stepCompleted.venmo) {
+        clearAllTreatData();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [stepCompleted.share, stepCompleted.venmo]);
   
   const allStepsComplete = stepCompleted.share && stepCompleted.venmo;
 
+  // Clear data when flow is completed
   useEffect(() => {
-    const data = localStorage.getItem('treatData');
+    if (allStepsComplete) {
+      console.log('🎉 All steps completed, scheduling data cleanup');
+      // Small delay to ensure UI updates complete
+      const timeoutId = setTimeout(() => {
+        clearAllTreatData();
+        console.log('🧹 Treat data cleared after successful completion');
+      }, 1000);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [allStepsComplete]);
+
+  useEffect(() => {
+    // Use enhanced storage system to load treat data
+    const data = loadTreatData('treatData');
     if (data) {
-      const parsedData = JSON.parse(data);
-      setTreatData(parsedData);
+      console.log('✅ Loaded fresh treat data from enhanced storage');
+      setTreatData(data);
       
       // Set the slug from the backend response
-      if (parsedData.slug) {
-        setTreatSlug(parsedData.slug);
+      if (data.slug) {
+        setTreatSlug(data.slug);
       }
     } else {
+      console.log('❌ No valid treat data found, redirecting to send page');
       navigate('/send');
     }
-  }, [navigate]);
+
+    // Cleanup function to clear data when component unmounts or completes
+    return () => {
+      // Clear data if both steps are completed
+      if (stepCompleted.share && stepCompleted.venmo) {
+        console.log('🧹 Cleaning up completed treat data');
+        clearAllTreatData();
+      }
+    };
+  }, [navigate, stepCompleted.share, stepCompleted.venmo]);
 
   const getTreatEmoji = (type: string) => {
     return "✨";
@@ -212,7 +251,7 @@ const Confirmation = () => {
       createdAt: new Date().toISOString()
     };
     
-    localStorage.setItem('currentTreat', JSON.stringify(previewData));
+    saveTreatData('currentTreat', previewData);
     window.scrollTo(0, 0);
     navigate(`/t/${treatSlug}`);
   };

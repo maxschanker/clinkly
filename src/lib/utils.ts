@@ -101,6 +101,147 @@ function generateTreatId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
 
+// Generate a session ID for data validation
+function generateSessionId(): string {
+  return `session_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+}
+
+// Constants for data freshness
+const DATA_EXPIRY_TIME = 30 * 60 * 1000; // 30 minutes
+const CURRENT_SESSION_KEY = 'clink_current_session';
+
+// Enhanced treat data storage with metadata
+interface TreatDataWithMetadata {
+  data: any;
+  timestamp: number;
+  sessionId: string;
+  version: string;
+}
+
+// Initialize or get current session
+export function getCurrentSession(): string {
+  let sessionId = localStorage.getItem(CURRENT_SESSION_KEY);
+  if (!sessionId) {
+    sessionId = generateSessionId();
+    localStorage.setItem(CURRENT_SESSION_KEY, sessionId);
+    console.log('Created new session:', sessionId);
+  }
+  return sessionId;
+}
+
+// Enhanced localStorage operations with metadata
+export function saveTreatData(key: string, data: any): void {
+  try {
+    const sessionId = getCurrentSession();
+    const metadata: TreatDataWithMetadata = {
+      data,
+      timestamp: Date.now(),
+      sessionId,
+      version: '1.0'
+    };
+    
+    localStorage.setItem(key, JSON.stringify(metadata));
+    console.log('Saved treat data with metadata:', { key, sessionId, timestamp: metadata.timestamp });
+  } catch (error) {
+    console.error('Failed to save treat data:', error);
+  }
+}
+
+export function loadTreatData(key: string): any | null {
+  try {
+    const stored = localStorage.getItem(key);
+    if (!stored) {
+      console.log('No data found for key:', key);
+      return null;
+    }
+
+    const metadata: TreatDataWithMetadata = JSON.parse(stored);
+    const currentTime = Date.now();
+    const currentSession = getCurrentSession();
+
+    // Check data freshness
+    if (currentTime - metadata.timestamp > DATA_EXPIRY_TIME) {
+      console.log('Data expired, removing:', { key, age: currentTime - metadata.timestamp });
+      localStorage.removeItem(key);
+      return null;
+    }
+
+    // Check session validity
+    if (metadata.sessionId !== currentSession) {
+      console.log('Data from different session, removing:', { key, dataSession: metadata.sessionId, currentSession });
+      localStorage.removeItem(key);
+      return null;
+    }
+
+    console.log('Loaded fresh treat data:', { key, age: currentTime - metadata.timestamp });
+    return metadata.data;
+  } catch (error) {
+    console.error('Failed to load treat data:', error);
+    localStorage.removeItem(key);
+    return null;
+  }
+}
+
+// Clean up expired or stale data
+export function cleanupStaleData(): void {
+  try {
+    const currentTime = Date.now();
+    const currentSession = getCurrentSession();
+    const keysToRemove: string[] = [];
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || (!key.startsWith('treat_') && key !== 'treatData')) continue;
+
+      try {
+        const stored = localStorage.getItem(key);
+        if (!stored) continue;
+
+        const metadata: TreatDataWithMetadata = JSON.parse(stored);
+        
+        // Remove expired or different session data
+        if (currentTime - metadata.timestamp > DATA_EXPIRY_TIME || 
+            metadata.sessionId !== currentSession) {
+          keysToRemove.push(key);
+        }
+      } catch {
+        // Remove corrupted data
+        keysToRemove.push(key);
+      }
+    }
+
+    keysToRemove.forEach(key => {
+      localStorage.removeItem(key);
+      console.log('Cleaned up stale data:', key);
+    });
+
+    if (keysToRemove.length > 0) {
+      console.log('Cleanup completed, removed keys:', keysToRemove);
+    }
+  } catch (error) {
+    console.error('Failed to cleanup stale data:', error);
+  }
+}
+
+// Clear all treat data for the current session
+export function clearAllTreatData(): void {
+  try {
+    const keysToRemove: string[] = [];
+    
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('treat_') || key === 'treatData')) {
+        keysToRemove.push(key);
+      }
+    }
+
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    console.log('Cleared all treat data:', keysToRemove);
+  } catch (error) {
+    console.error('Failed to clear treat data:', error);
+  }
+}
+
 // Create shareable URL with fallback to storage for large data
 export function createShareableURL(data: any, baseURL: string): { url: string; success: boolean; usedFallback: boolean } {
   try {

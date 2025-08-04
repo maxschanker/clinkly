@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { getTreat, recordShare, type TreatResponse } from "@/lib/treatService";
-import { retrieveTreatData } from "@/lib/utils";
+import { retrieveTreatData, loadTreatData, cleanupStaleData } from "@/lib/utils";
 
 const Treat = () => {
   const { slug } = useParams();
@@ -15,6 +15,11 @@ const Treat = () => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Clean up stale data on component mount
+  useEffect(() => {
+    cleanupStaleData();
+  }, []);
+
   useEffect(() => {
     const loadTreat = async () => {
       if (!slug) return;
@@ -23,21 +28,14 @@ const Treat = () => {
       setIsLoading(true);
       
       try {
-        // 1. First check if this is preview mode (localStorage data)
-        const previewData = localStorage.getItem('currentTreat');
-        if (previewData) {
-          try {
-            const parsed = JSON.parse(previewData);
-            if (parsed.slug === slug) {
-              console.log('✅ Using localStorage data (preview mode)');
-              setTreatData(parsed);
-              setIsPreviewMode(true);
-              setIsLoading(false);
-              return;
-            }
-          } catch (error) {
-            console.error('Error parsing localStorage data:', error);
-          }
+        // 1. First check if this is preview mode (enhanced storage)
+        const previewData = loadTreatData('currentTreat');
+        if (previewData && previewData.slug === slug) {
+          console.log('✅ Using enhanced storage data (preview mode)');
+          setTreatData(previewData);
+          setIsPreviewMode(true);
+          setIsLoading(false);
+          return;
         }
 
         // 2. Try to fetch from backend using the new service

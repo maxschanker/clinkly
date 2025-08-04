@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,11 +8,17 @@ import { Edit } from "lucide-react";
 import { CoverArtModal } from "@/components/CoverArtModal";
 import { createTreat, type TreatData } from "@/lib/treatService";
 import { useToast } from "@/hooks/use-toast";
+import { saveTreatData, cleanupStaleData } from "@/lib/utils";
 
 const Send = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Clean up stale data on component mount
+  useEffect(() => {
+    cleanupStaleData();
+  }, []);
   const [formData, setFormData] = useState({
     headerText: "",
     headerFont: "inter",
@@ -62,11 +68,11 @@ const Send = () => {
 
       const result = await createTreat(treatData);
       
-      // Save the result for the confirmation page
-      localStorage.setItem('treatData', JSON.stringify({
+      // Save the result for the confirmation page using enhanced storage
+      saveTreatData('treatData', {
         ...result.treat,
         shareUrl: result.shareUrl
-      }));
+      });
       
       
       window.scrollTo(0, 0);
