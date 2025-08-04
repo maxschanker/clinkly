@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { recordShare } from "@/lib/treatService";
 
 const Confirmation = () => {
@@ -10,6 +11,7 @@ const Confirmation = () => {
   const { toast } = useToast();
   const [treatData, setTreatData] = useState<any>(null);
   const [treatSlug, setTreatSlug] = useState<string>("");
+  const [showVenmoModal, setShowVenmoModal] = useState(false);
   
   // Step completion state
   const [stepCompleted, setStepCompleted] = useState({
@@ -53,7 +55,7 @@ const Confirmation = () => {
     return `${message} ${emoji} → ${window.location.origin}/t/${treatSlug}`;
   };
 
-  const shareAndOpenVenmo = async () => {
+  const shareClinkAndPromptVenmo = async () => {
     if (!treatData || !treatSlug) {
       toast({
         title: "Error",
@@ -89,11 +91,6 @@ const Confirmation = () => {
         });
         shareSuccessful = true;
         setStepCompleted(prev => ({ ...prev, share: true }));
-        
-        toast({
-          title: "Shared! 📱",
-          description: "Opening Venmo in a moment...",
-        });
       } catch (err) {
         console.log('Share cancelled or failed');
         return;
@@ -107,7 +104,7 @@ const Confirmation = () => {
         
         toast({
           title: "Copied! 📋",
-          description: "Opening Venmo in a moment...",
+          description: "Link copied to clipboard",
         });
       } catch (err) {
         toast({
@@ -118,41 +115,9 @@ const Confirmation = () => {
       }
     }
 
-    // If share was successful, open Venmo after a short delay
+    // If share was successful, show Venmo modal
     if (shareSuccessful) {
-      setTimeout(() => {
-        const amount = treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType);
-        const note = generateVenmoMessage();
-        const venmoUrl = `venmo://paycharge?txn=pay&amount=${amount}&note=${encodeURIComponent(note)}`;
-        
-        try {
-          const venmoWindow = window.open(venmoUrl, '_blank');
-          
-          // Check if popup was blocked
-          setTimeout(() => {
-            if (!venmoWindow || venmoWindow.closed) {
-              toast({
-                title: "Popup Blocked",
-                description: "Please allow popups and try again, or open Venmo manually.",
-                duration: 5000,
-              });
-            } else {
-              setStepCompleted(prev => ({ ...prev, venmo: true }));
-              toast({
-                title: "🎉 Perfect!",
-                description: "Venmo is opening to send the $$!",
-              });
-            }
-          }, 500);
-          
-        } catch (error) {
-          toast({
-            title: "Can't open Venmo",
-            description: "Please open Venmo manually to send the payment.",
-            duration: 5000,
-          });
-        }
-      }, 1000);
+      setShowVenmoModal(true);
     }
   };
 
@@ -161,8 +126,23 @@ const Confirmation = () => {
     const amount = treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType);
     const note = generateVenmoMessage();
     const venmoUrl = `venmo://paycharge?txn=pay&amount=${amount}&note=${encodeURIComponent(note)}`;
-    window.open(venmoUrl, '_blank');
-    setStepCompleted(prev => ({ ...prev, venmo: true }));
+    
+    try {
+      window.open(venmoUrl, '_blank');
+      setStepCompleted(prev => ({ ...prev, venmo: true }));
+      setShowVenmoModal(false);
+      
+      toast({
+        title: "🎉 Perfect!",
+        description: "Venmo is opening to send the $$!",
+      });
+    } catch (error) {
+      toast({
+        title: "Can't open Venmo",
+        description: "Please open Venmo manually to send the payment.",
+        duration: 5000,
+      });
+    }
   };
 
   const handleCopyLink = async () => {
@@ -304,10 +284,10 @@ const Confirmation = () => {
             <h3 className="text-lg font-bold mb-3">Send the $$ with Venmo</h3>
             <p className="text-sm text-muted-foreground mb-4">(You'll choose who it's for inside Venmo)</p>
             <Button
-              onClick={shareAndOpenVenmo}
+              onClick={shareClinkAndPromptVenmo}
               className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
             >
-              📨 Send Your Clink + Open Venmo
+              📨 Send Your Clink + Venmo
             </Button>
           </div>
           
@@ -348,6 +328,33 @@ const Confirmation = () => {
           </Button>
         </div>
       </div>
+
+      {/* Venmo Modal */}
+      <Dialog open={showVenmoModal} onOpenChange={setShowVenmoModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl">🎉 Almost done!</DialogTitle>
+          </DialogHeader>
+          <div className="text-center space-y-4 py-4">
+            <p className="text-muted-foreground">
+              Just send the $$ now.
+            </p>
+            <Button
+              onClick={openVenmo}
+              className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
+            >
+              💸 Open Venmo
+            </Button>
+            <Button
+              onClick={() => setShowVenmoModal(false)}
+              variant="ghost"
+              className="w-full"
+            >
+              Skip for now
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
