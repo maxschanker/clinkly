@@ -343,7 +343,7 @@ const Treat = () => {
           <div className="space-y-3">
             <Button
               onClick={shareThis}
-              className="w-full h-14 text-lg font-bold rounded-2xl bg-white hover:bg-white/90 text-primary shadow-card transition-all duration-300"
+              className="w-full h-14 text-lg font-bold rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-button hover:shadow-glow transition-all duration-300"
             >
               📤 Share This
             </Button>
