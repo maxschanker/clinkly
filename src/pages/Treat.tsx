@@ -31,12 +31,24 @@ const Treat = () => {
       const urlParams = new URLSearchParams(location.search);
       const hasUrlData = urlParams.has('data') || urlParams.has('id');
       const previewData = loadTreatData('currentTreat');
-      const isLikelyPreview = previewData && previewData.slug === slug && !hasUrlData;
+      
+      // Enhanced preview detection: check for explicit preview flag and navigation context
+      const isExplicitPreview = previewData?._metadata?.isPreview === true;
+      const navigationEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      const isNavigatedFromConfirmation = document.referrer.includes('/send/complete') || 
+                                        navigationEntry?.type === 'navigate';
+      const isLikelyPreview = previewData && previewData.slug === slug && 
+                             !hasUrlData && 
+                             (isExplicitPreview || isNavigatedFromConfirmation);
       
       try {
         // 1. If this is clearly a preview (has matching cache, no URL data), use preview mode
         if (isLikelyPreview) {
-          console.log('✅ Using enhanced storage data (preview mode)');
+          console.log('✅ Using enhanced storage data (preview mode)', {
+            isExplicitPreview,
+            isNavigatedFromConfirmation,
+            hasUrlData
+          });
           setTreatData(previewData);
           setIsPreviewMode(true);
           setIsLoading(false);
@@ -44,7 +56,11 @@ const Treat = () => {
         }
 
         // 2. For shared links, always try backend first to get the final version
-        console.log('Fetching treat from backend (shared link)...');
+        console.log('Fetching treat from backend (shared link)...', {
+          hasUrlData,
+          isExplicitPreview,
+          treatSlug: slug
+        });
         const result = await getTreat(slug);
         
         if (result.success && result.treat) {
@@ -72,9 +88,10 @@ const Treat = () => {
           setTreatData(mappedData);
           setIsPreviewMode(false);
           
-          // Clear cached preview data since we're now viewing the final version
-          if (previewData && previewData.slug === slug) {
-            localStorage.removeItem(`treatData_currentTreat_${previewData.sessionId}`);
+          // Clear cached preview data since we're now viewing the final version  
+          if (previewData && previewData.slug === slug && previewData._metadata?.isPreview) {
+            console.log('Clearing preview data for shared link view');
+            localStorage.removeItem('currentTreat');
           }
           
         } else {

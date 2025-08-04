@@ -116,6 +116,7 @@ interface TreatDataWithMetadata {
   timestamp: number;
   sessionId: string;
   version: string;
+  isPreview?: boolean;
 }
 
 // Initialize or get current session
@@ -130,18 +131,19 @@ export function getCurrentSession(): string {
 }
 
 // Enhanced localStorage operations with metadata
-export function saveTreatData(key: string, data: any): void {
+export function saveTreatData(key: string, data: any, isPreview: boolean = false): void {
   try {
     const sessionId = getCurrentSession();
     const metadata: TreatDataWithMetadata = {
       data,
       timestamp: Date.now(),
       sessionId,
-      version: '1.0'
+      version: '1.0',
+      isPreview
     };
     
     localStorage.setItem(key, JSON.stringify(metadata));
-    console.log('Saved treat data with metadata:', { key, sessionId, timestamp: metadata.timestamp });
+    console.log('Saved treat data with metadata:', { key, sessionId, timestamp: metadata.timestamp, isPreview });
   } catch (error) {
     console.error('Failed to save treat data:', error);
   }
@@ -173,8 +175,8 @@ export function loadTreatData(key: string): any | null {
       return null;
     }
 
-    console.log('Loaded fresh treat data:', { key, age: currentTime - metadata.timestamp });
-    return metadata.data;
+    console.log('Loaded fresh treat data:', { key, age: currentTime - metadata.timestamp, isPreview: metadata.isPreview });
+    return { ...metadata.data, _metadata: { isPreview: metadata.isPreview } };
   } catch (error) {
     console.error('Failed to load treat data:', error);
     localStorage.removeItem(key);

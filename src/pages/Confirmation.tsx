@@ -251,7 +251,7 @@ const Confirmation = () => {
       createdAt: new Date().toISOString()
     };
     
-    saveTreatData('currentTreat', previewData);
+    saveTreatData('currentTreat', previewData, true); // Mark as preview
     window.scrollTo(0, 0);
     navigate(`/t/${treatSlug}`);
   };
