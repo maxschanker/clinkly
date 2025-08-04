@@ -132,10 +132,7 @@ const Confirmation = () => {
       setStepCompleted(prev => ({ ...prev, venmo: true }));
       setShowVenmoModal(false);
       
-      toast({
-        title: "🎉 Perfect!",
-        description: "Venmo is opening to send the $$!",
-      });
+      // Toast removed - redundant message after Venmo modal
     } catch (error) {
       toast({
         title: "Can't open Venmo",
@@ -281,13 +278,12 @@ const Confirmation = () => {
         {/* Single Action */}
         <div className="space-y-4">
           <div className="text-center">
-            <h3 className="text-lg font-bold mb-3">Send the $$ with Venmo</h3>
-            <p className="text-sm text-muted-foreground mb-4">(You'll choose who it's for inside Venmo)</p>
+            <h3 className="text-lg font-bold mb-3">Deliver your clink!</h3>
             <Button
               onClick={shareClinkAndPromptVenmo}
               className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
             >
-              📨 Send Your Clink + Venmo
+              📨 Send your clink + Venmo
             </Button>
           </div>
           
