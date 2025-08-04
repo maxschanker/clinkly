@@ -208,7 +208,7 @@ const Send = () => {
           
           <div className="space-y-4">
             <div>
-              <Label className="text-lg font-medium mb-2 block">$ Amount</Label>
+              <Label className="text-lg font-medium mb-2 block">💲 Amount</Label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-lg font-medium text-foreground pointer-events-none">
                   $
