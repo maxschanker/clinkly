@@ -53,7 +53,7 @@ const Confirmation = () => {
     return `${message} ${emoji} → ${window.location.origin}/t/${treatSlug}`;
   };
 
-  const shareOowoo = async () => {
+  const shareAndOpenVenmo = async () => {
     if (!treatData || !treatSlug) {
       toast({
         title: "Error",
@@ -84,7 +84,18 @@ const Confirmation = () => {
           text: message,
           url: shareUrl
         });
-        setStepCompleted(prev => ({ ...prev, share: true }));
+        setStepCompleted(prev => ({ ...prev, share: true, venmo: true }));
+        
+        // After successful share, open Venmo and show the specific toast
+        const amount = treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType);
+        const note = generateVenmoMessage();
+        const venmoUrl = `venmo://paycharge?txn=pay&amount=${amount}&note=${encodeURIComponent(note)}`;
+        window.open(venmoUrl, '_blank');
+        
+        toast({
+          title: "🎉 Just one step left — Venmo's opening to send the $$!",
+          description: "Your treat link has been shared successfully.",
+        });
         return;
       } catch (err) {
         console.log('Share cancelled or failed');
@@ -92,13 +103,19 @@ const Confirmation = () => {
       }
     }
     
-    // Fallback to copying link
+    // Fallback to copying link, then open Venmo
     try {
       await navigator.clipboard.writeText(`${message} ${shareUrl}`);
-      setStepCompleted(prev => ({ ...prev, share: true }));
+      setStepCompleted(prev => ({ ...prev, share: true, venmo: true }));
+      
+      const amount = treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType);
+      const note = generateVenmoMessage();
+      const venmoUrl = `venmo://paycharge?txn=pay&amount=${amount}&note=${encodeURIComponent(note)}`;
+      window.open(venmoUrl, '_blank');
+      
       toast({
-        title: "Copied! 📋",
-        description: "Treat link copied to clipboard"
+        title: "🎉 Just one step left — Venmo's opening to send the $$!",
+        description: "Link copied to clipboard.",
       });
     } catch (err) {
       toast({
@@ -250,43 +267,27 @@ const Confirmation = () => {
           </Button>
         </div>
 
-        {/* Two-Step Process */}
-        <div className="space-y-6">
-          {/* Step 1 */}
-          <div>
-            <div className="flex items-center gap-3 mb-3 justify-center">
-              <StepIndicator completed={stepCompleted.share} />
-              <h3 className="text-lg font-bold">Step 1: Share your clink</h3>
-            </div>
-            <div className="space-y-3">
-              <Button
-                onClick={shareOowoo}
-                className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
-              >
-                📤 Send It
-              </Button>
-              <Button
-                onClick={handleCopyLink}
-                variant="outline"
-                className="w-full h-12 rounded-2xl border-2 border-primary/30 bg-white/70 hover:bg-primary/10"
-              >
-                🔗 Copy Link
-              </Button>
-            </div>
-          </div>
-
-          {/* Step 2 */}
-          <div>
-            <div className="flex items-center gap-3 mb-3 justify-center">
-              <StepIndicator completed={stepCompleted.venmo} />
-              <h3 className="text-lg font-bold">Step 2: Send the $$ with Venmo</h3>
-            </div>
-            <p className="text-sm text-muted-foreground text-center mb-3">(You'll choose who it's for inside Venmo)</p>
+        {/* Single Action */}
+        <div className="space-y-4">
+          <div className="text-center">
+            <h3 className="text-lg font-bold mb-3">Send the $$ with Venmo</h3>
+            <p className="text-sm text-muted-foreground mb-4">(You'll choose who it's for inside Venmo)</p>
             <Button
-              onClick={openVenmo}
+              onClick={shareAndOpenVenmo}
               className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
             >
-              💰 Open Venmo
+              📨 Send Your Clink + Open Venmo
+            </Button>
+          </div>
+          
+          {/* Fallback copy option */}
+          <div className="text-center">
+            <Button
+              onClick={handleCopyLink}
+              variant="outline"
+              className="w-full h-12 rounded-2xl border-2 border-primary/30 bg-white/70 hover:bg-primary/10"
+            >
+              🔗 Copy Link Only
             </Button>
           </div>
         </div>
