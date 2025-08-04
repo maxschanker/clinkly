@@ -331,26 +331,17 @@ const Confirmation = () => {
 
       {/* Venmo Modal */}
       <Dialog open={showVenmoModal} onOpenChange={setShowVenmoModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center text-xl">🎉 Almost done!</DialogTitle>
-          </DialogHeader>
-          <div className="text-center space-y-4 py-4">
-            <p className="text-muted-foreground">
-              Just send the $$ now.
-            </p>
+        <DialogContent className="max-w-sm mx-auto bg-gradient-card border-0 rounded-3xl shadow-glow">
+          <div className="text-center space-y-6 py-6">
+            <div className="text-5xl mb-2">💳</div>
+            <h2 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Venmo's ready — just pick who it's for inside!
+            </h2>
             <Button
               onClick={openVenmo}
-              className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
+              className="w-full h-14 text-lg font-bold rounded-2xl bg-gradient-primary hover:shadow-glow transform hover:scale-105 transition-all duration-200"
             >
               💸 Open Venmo
-            </Button>
-            <Button
-              onClick={() => setShowVenmoModal(false)}
-              variant="ghost"
-              className="w-full"
-            >
-              Skip for now
             </Button>
           </div>
         </DialogContent>
