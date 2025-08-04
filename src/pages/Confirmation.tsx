@@ -62,6 +62,14 @@ const Confirmation = () => {
       return;
     }
 
+    // Pre-open window immediately to avoid popup blockers
+    const venmoWindow = window.open('about:blank', '_blank');
+    
+    // Prepare Venmo URL
+    const amount = treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType);
+    const note = generateVenmoMessage();
+    const venmoUrl = `venmo://paycharge?txn=pay&amount=${amount}&note=${encodeURIComponent(note)}`;
+
     // Use the shareUrl from backend if available, otherwise construct it
     const shareUrl = treatData.shareUrl || `${window.location.origin}/t/${treatSlug}`;
     const message = `${treatData.header_text || treatData.headerText || "Someone sent you a clink"} ✨`;
@@ -86,11 +94,10 @@ const Confirmation = () => {
         });
         setStepCompleted(prev => ({ ...prev, share: true, venmo: true }));
         
-        // After successful share, open Venmo and show the specific toast
-        const amount = treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType);
-        const note = generateVenmoMessage();
-        const venmoUrl = `venmo://paycharge?txn=pay&amount=${amount}&note=${encodeURIComponent(note)}`;
-        window.open(venmoUrl, '_blank');
+        // Navigate the pre-opened window to Venmo
+        if (venmoWindow && !venmoWindow.closed) {
+          venmoWindow.location.href = venmoUrl;
+        }
         
         toast({
           title: "🎉 Just one step left — Venmo's opening to send the $$!",
@@ -99,6 +106,10 @@ const Confirmation = () => {
         return;
       } catch (err) {
         console.log('Share cancelled or failed');
+        // Close the pre-opened window if share was cancelled
+        if (venmoWindow && !venmoWindow.closed) {
+          venmoWindow.close();
+        }
         return;
       }
     }
@@ -108,16 +119,20 @@ const Confirmation = () => {
       await navigator.clipboard.writeText(`${message} ${shareUrl}`);
       setStepCompleted(prev => ({ ...prev, share: true, venmo: true }));
       
-      const amount = treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType);
-      const note = generateVenmoMessage();
-      const venmoUrl = `venmo://paycharge?txn=pay&amount=${amount}&note=${encodeURIComponent(note)}`;
-      window.open(venmoUrl, '_blank');
+      // Navigate the pre-opened window to Venmo
+      if (venmoWindow && !venmoWindow.closed) {
+        venmoWindow.location.href = venmoUrl;
+      }
       
       toast({
         title: "🎉 Just one step left — Venmo's opening to send the $$!",
         description: "Link copied to clipboard.",
       });
     } catch (err) {
+      // Close the pre-opened window if clipboard failed
+      if (venmoWindow && !venmoWindow.closed) {
+        venmoWindow.close();
+      }
       toast({
         title: "Oops!",
         description: "Couldn't copy link"
