@@ -62,14 +62,6 @@ const Confirmation = () => {
       return;
     }
 
-    // Pre-open window immediately to avoid popup blockers
-    const venmoWindow = window.open('about:blank', '_blank');
-    
-    // Prepare Venmo URL
-    const amount = treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType);
-    const note = generateVenmoMessage();
-    const venmoUrl = `venmo://paycharge?txn=pay&amount=${amount}&note=${encodeURIComponent(note)}`;
-
     // Use the shareUrl from backend if available, otherwise construct it
     const shareUrl = treatData.shareUrl || `${window.location.origin}/t/${treatSlug}`;
     const message = `${treatData.header_text || treatData.headerText || "Someone sent you a clink"} ✨`;
@@ -84,7 +76,10 @@ const Confirmation = () => {
         console.error('Failed to record share:', error);
       }
     }
+
+    let shareSuccessful = false;
     
+    // Try native share first
     if (navigator.share) {
       try {
         await navigator.share({
@@ -92,51 +87,72 @@ const Confirmation = () => {
           text: message,
           url: shareUrl
         });
-        setStepCompleted(prev => ({ ...prev, share: true, venmo: true }));
-        
-        // Navigate the pre-opened window to Venmo
-        if (venmoWindow && !venmoWindow.closed) {
-          venmoWindow.location.href = venmoUrl;
-        }
+        shareSuccessful = true;
+        setStepCompleted(prev => ({ ...prev, share: true }));
         
         toast({
-          title: "🎉 Just one step left — Venmo's opening to send the $$!",
-          description: "Your treat link has been shared successfully.",
+          title: "Shared! 📱",
+          description: "Opening Venmo in a moment...",
         });
-        return;
       } catch (err) {
         console.log('Share cancelled or failed');
-        // Close the pre-opened window if share was cancelled
-        if (venmoWindow && !venmoWindow.closed) {
-          venmoWindow.close();
-        }
+        return;
+      }
+    } else {
+      // Fallback to copying link
+      try {
+        await navigator.clipboard.writeText(`${message} ${shareUrl}`);
+        shareSuccessful = true;
+        setStepCompleted(prev => ({ ...prev, share: true }));
+        
+        toast({
+          title: "Copied! 📋",
+          description: "Opening Venmo in a moment...",
+        });
+      } catch (err) {
+        toast({
+          title: "Oops!",
+          description: "Couldn't copy link"
+        });
         return;
       }
     }
-    
-    // Fallback to copying link, then open Venmo
-    try {
-      await navigator.clipboard.writeText(`${message} ${shareUrl}`);
-      setStepCompleted(prev => ({ ...prev, share: true, venmo: true }));
-      
-      // Navigate the pre-opened window to Venmo
-      if (venmoWindow && !venmoWindow.closed) {
-        venmoWindow.location.href = venmoUrl;
-      }
-      
-      toast({
-        title: "🎉 Just one step left — Venmo's opening to send the $$!",
-        description: "Link copied to clipboard.",
-      });
-    } catch (err) {
-      // Close the pre-opened window if clipboard failed
-      if (venmoWindow && !venmoWindow.closed) {
-        venmoWindow.close();
-      }
-      toast({
-        title: "Oops!",
-        description: "Couldn't copy link"
-      });
+
+    // If share was successful, open Venmo after a short delay
+    if (shareSuccessful) {
+      setTimeout(() => {
+        const amount = treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType);
+        const note = generateVenmoMessage();
+        const venmoUrl = `venmo://paycharge?txn=pay&amount=${amount}&note=${encodeURIComponent(note)}`;
+        
+        try {
+          const venmoWindow = window.open(venmoUrl, '_blank');
+          
+          // Check if popup was blocked
+          setTimeout(() => {
+            if (!venmoWindow || venmoWindow.closed) {
+              toast({
+                title: "Popup Blocked",
+                description: "Please allow popups and try again, or open Venmo manually.",
+                duration: 5000,
+              });
+            } else {
+              setStepCompleted(prev => ({ ...prev, venmo: true }));
+              toast({
+                title: "🎉 Perfect!",
+                description: "Venmo is opening to send the $$!",
+              });
+            }
+          }, 500);
+          
+        } catch (error) {
+          toast({
+            title: "Can't open Venmo",
+            description: "Please open Venmo manually to send the payment.",
+            duration: 5000,
+          });
+        }
+      }, 1000);
     }
   };
 
