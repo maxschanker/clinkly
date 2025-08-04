@@ -33,8 +33,8 @@ const Index = () => {
           {/* Card Container */}
           <div className="bg-gradient-card p-12 rounded-3xl shadow-card backdrop-blur-sm border border-white/20">
             {/* Main Message */}
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight animate-fade-in">
-              Show someone you love them
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4 leading-tight animate-fade-in">
+              Send a little love
             </h2>
             
             {/* Emoji with glow effect */}
@@ -53,7 +53,7 @@ const Index = () => {
               }}
               className="h-16 px-16 text-xl font-semibold rounded-full bg-gradient-primary hover:shadow-glow transition-all duration-500 transform hover:scale-110 hover:rotate-1 shadow-button border border-white/20"
             >
-              Get Started
+              Let's clink!
             </Button>
             
             {/* Decorative elements */}
