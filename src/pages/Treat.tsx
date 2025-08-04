@@ -27,10 +27,15 @@ const Treat = () => {
       console.log('Treat page loading, slug:', slug);
       setIsLoading(true);
       
+      // Check if this is likely a preview scenario vs shared link
+      const urlParams = new URLSearchParams(location.search);
+      const hasUrlData = urlParams.has('data') || urlParams.has('id');
+      const previewData = loadTreatData('currentTreat');
+      const isLikelyPreview = previewData && previewData.slug === slug && !hasUrlData;
+      
       try {
-        // 1. First check if this is preview mode (enhanced storage)
-        const previewData = loadTreatData('currentTreat');
-        if (previewData && previewData.slug === slug) {
+        // 1. If this is clearly a preview (has matching cache, no URL data), use preview mode
+        if (isLikelyPreview) {
           console.log('✅ Using enhanced storage data (preview mode)');
           setTreatData(previewData);
           setIsPreviewMode(true);
@@ -38,8 +43,8 @@ const Treat = () => {
           return;
         }
 
-        // 2. Try to fetch from backend using the new service
-        console.log('Fetching treat from backend...');
+        // 2. For shared links, always try backend first to get the final version
+        console.log('Fetching treat from backend (shared link)...');
         const result = await getTreat(slug);
         
         if (result.success && result.treat) {
@@ -66,40 +71,52 @@ const Treat = () => {
           
           setTreatData(mappedData);
           setIsPreviewMode(false);
+          
+          // Clear cached preview data since we're now viewing the final version
+          if (previewData && previewData.slug === slug) {
+            localStorage.removeItem(`treatData_currentTreat_${previewData.sessionId}`);
+          }
+          
         } else {
           throw new Error('Treat not found');
         }
       } catch (error) {
         console.error('Error loading treat:', error);
         
-        // 3. Fallback to URL params (backwards compatibility)
-        const urlParams = new URLSearchParams(location.search);
-        const retrievedData = retrieveTreatData(urlParams);
-        
-        if (retrievedData && retrievedData.senderName) {
-          console.log('✅ Successfully retrieved data from URL/storage (fallback)');
-          setTreatData({
-            ...retrievedData,
-            slug: slug
-          });
-          setIsPreviewMode(false);
+        // 3. Fallback to cached data if backend fails
+        if (previewData && previewData.slug === slug) {
+          console.log('✅ Using cached data as fallback');
+          setTreatData(previewData);
+          setIsPreviewMode(false); // Not preview mode since backend fetch was attempted
         } else {
-          // 4. Show error state
-          console.warn('❌ No valid treat data found');
-          setTreatData({
-            headerText: "Oops! Something went wrong",
-            headerFont: "font-sans",
-            senderName: "clink System",
-            recipientHandle: "@you",
-            treatType: "5",
-            message: "We couldn't load this treat. The link might be expired or invalid. Ask the sender to send it again!",
-            coverArt: "",
-            coverArtType: "gradient",
-            theme: "primary",
-            slug: slug,
-            createdAt: new Date().toISOString(),
-            isError: true
-          });
+          // 4. Fallback to URL params (backwards compatibility)
+          const retrievedData = retrieveTreatData(urlParams);
+          
+          if (retrievedData && retrievedData.senderName) {
+            console.log('✅ Successfully retrieved data from URL/storage (fallback)');
+            setTreatData({
+              ...retrievedData,
+              slug: slug
+            });
+            setIsPreviewMode(false);
+          } else {
+            // 5. Show error state
+            console.warn('❌ No valid treat data found');
+            setTreatData({
+              headerText: "Oops! Something went wrong",
+              headerFont: "font-sans",
+              senderName: "clink System",
+              recipientHandle: "@you",
+              treatType: "5",
+              message: "We couldn't load this treat. The link might be expired or invalid. Ask the sender to send it again!",
+              coverArt: "",
+              coverArtType: "gradient",
+              theme: "primary",
+              slug: slug,
+              createdAt: new Date().toISOString(),
+              isError: true
+            });
+          }
         }
       } finally {
         setIsLoading(false);
