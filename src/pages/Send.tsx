@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Edit } from "lucide-react";
 import { CoverArtModal } from "@/components/CoverArtModal";
-import { VoiceMemoRecorder } from "@/components/VoiceMemoRecorder";
+import { CompactVoiceMemoRecorder } from "@/components/CompactVoiceMemoRecorder";
 import { createTreat, type TreatData } from "@/lib/treatService";
 import { useToast } from "@/hooks/use-toast";
 import { saveTreatData, cleanupStaleData } from "@/lib/utils";
@@ -223,7 +223,7 @@ const Send = () => {
 
         {/* Voice Memo Section */}
         <div className="mb-8">
-          <VoiceMemoRecorder 
+          <CompactVoiceMemoRecorder 
             onVoiceMemoChange={setVoiceMemoUrl}
             existingUrl={voiceMemoUrl}
           />

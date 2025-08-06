@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { getTreat, recordShare, type TreatResponse } from "@/lib/treatService";
 import { retrieveTreatData, loadTreatData, cleanupStaleData } from "@/lib/utils";
-import VoiceMemoPlayer from "@/components/VoiceMemoPlayer";
+import MiniVoiceMemoPlayer from "@/components/MiniVoiceMemoPlayer";
 
 const Treat = () => {
   const { slug } = useParams();
@@ -324,7 +324,7 @@ const Treat = () => {
 
         {/* 5. Voice memo - Above message */}
         {treatData.voice_memo_url && (
-          <VoiceMemoPlayer voiceMemoUrl={treatData.voice_memo_url} />
+          <MiniVoiceMemoPlayer voiceMemoUrl={treatData.voice_memo_url} />
         )}
 
         {/* 6. Sweet message */}
