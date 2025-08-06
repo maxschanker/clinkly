@@ -119,7 +119,7 @@ const Treat = () => {
               senderName: "clink System",
               recipientHandle: "@you",
               treatType: "5",
-              message: "We couldn't load this treat. The link might be expired or invalid. Ask the sender to send it again!",
+              message: "We couldn't load this clink. The link might be expired or invalid. Ask the sender to send it again!",
               coverArt: "",
               coverArtType: "gradient",
               theme: "primary",
@@ -149,7 +149,7 @@ const Treat = () => {
     switch (type) {
       case "5": return "coffee";
       case "10": return "lunch";
-      default: return "treat";
+      default: return "clink";
     }
   };
 
@@ -180,7 +180,7 @@ const Treat = () => {
 
   const shareThis = async () => {
     const url = window.location.href;
-    const text = `Someone sent me a treat! Check it out ✨`;
+    const text = `Someone sent me a clink! Check it out ✨`;
     
     // Record sharing analytics
     if (treatData?.id) {
@@ -194,7 +194,7 @@ const Treat = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'clink Treat',
+          title: 'clink',
           text: text,
           url: url
         });
@@ -224,7 +224,7 @@ const Treat = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-background">
         <div className="text-center">
           <div className="text-4xl mb-4 animate-bounce">✨</div>
-          <p className="text-muted-foreground">Loading your treat...</p>
+          <p className="text-muted-foreground">Loading your clink...</p>
         </div>
       </div>
     );
@@ -283,7 +283,7 @@ const Treat = () => {
             <div className="text-2xl animate-sparkle absolute -top-2 -right-2" style={{animationDelay: '0.5s'}}>✨</div>
             <div className="text-2xl animate-sparkle absolute -bottom-2 left-1/2 transform -translate-x-1/2" style={{animationDelay: '1s'}}>✨</div>
             <h1 className={`text-3xl font-bold mb-2 ${getFontClass(treatData.headerFont)}`}>
-              {treatData.headerText || `$${treatData.treatType === "custom" ? "25" : treatData.treatType} ${getTreatDescription(treatData.treatType)} treat`}
+              {treatData.headerText || `$${treatData.treatType === "custom" ? "25" : treatData.treatType} ${getTreatDescription(treatData.treatType)} clink`}
             </h1>
           </div>
         </div>

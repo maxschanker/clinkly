@@ -81,7 +81,7 @@ const Send = () => {
       console.error('Error creating treat:', error);
       toast({
         title: "Error",
-        description: "Failed to create treat. Please try again.",
+        description: "Failed to create clink. Please try again.",
         variant: "destructive"
       });
     } finally {

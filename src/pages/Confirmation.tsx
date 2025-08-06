@@ -83,7 +83,7 @@ const Confirmation = () => {
     switch (type) {
       case "5": return "coffee";
       case "10": return "lunch";
-      default: return "treat";
+      default: return "clink";
     }
   };
 
@@ -98,7 +98,7 @@ const Confirmation = () => {
     if (!treatData || !treatSlug) {
       toast({
         title: "Error",
-        description: "Treat data not available"
+        description: "Clink data not available"
       });
       return;
     }
@@ -124,7 +124,7 @@ const Confirmation = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'clink Treat',
+          title: 'clink',
           text: message,
           url: shareUrl
         });
@@ -185,7 +185,7 @@ const Confirmation = () => {
     if (!treatData || !treatSlug) {
       toast({
         title: "Error",
-        description: "Treat data not available"
+        description: "Clink data not available"
       });
       return;
     }
@@ -287,7 +287,7 @@ const Confirmation = () => {
             {allStepsComplete ? 'Perfect! All done!' : 'You made someone\'s day!'}
           </h1>
           <p className="text-muted-foreground">
-            {allStepsComplete ? 'Your treat is on its way!' : 'Your clink is wrapped and ready to go'}
+            {allStepsComplete ? 'Your clink is on its way!' : 'Your clink is wrapped and ready to go'}
           </p>
         </div>
 
