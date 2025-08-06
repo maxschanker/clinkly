@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Edit } from "lucide-react";
 import { CoverArtModal } from "@/components/CoverArtModal";
+import { VoiceMemoRecorder } from "@/components/VoiceMemoRecorder";
 import { createTreat, type TreatData } from "@/lib/treatService";
 import { useToast } from "@/hooks/use-toast";
 import { saveTreatData, cleanupStaleData } from "@/lib/utils";
@@ -29,6 +30,7 @@ const Send = () => {
   });
   const [addCash, setAddCash] = useState(false);
   const [showCoverArtModal, setShowCoverArtModal] = useState(false);
+  const [voiceMemoUrl, setVoiceMemoUrl] = useState<string | null>(null);
 
   // Clean up stale data on component mount
   useEffect(() => {
@@ -79,7 +81,8 @@ const Send = () => {
         amount: addCash && formData.amount ? parseFloat(formData.amount) : undefined,
         theme: 'gradient-warm',
         treat_type: 'coffee',
-        is_public: true
+        is_public: true,
+        voice_memo_url: voiceMemoUrl
       };
 
       const result = await createTreat(treatData);
@@ -216,6 +219,14 @@ const Send = () => {
               {formData.message.length}/300
             </div>
           </div>
+        </div>
+
+        {/* Voice Memo Section */}
+        <div className="mb-8">
+          <VoiceMemoRecorder 
+            onVoiceMemoChange={setVoiceMemoUrl}
+            existingUrl={voiceMemoUrl}
+          />
         </div>
 
         {/* Gift Section */}

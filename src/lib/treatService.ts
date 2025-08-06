@@ -14,6 +14,7 @@ export interface TreatData {
   treat_type: string;
   is_public?: boolean;
   expires_at?: string;
+  voice_memo_url?: string;
 }
 
 export interface TreatResponse {
@@ -33,6 +34,7 @@ export interface TreatResponse {
   treat_type: string;
   is_public: boolean;
   expires_at?: string;
+  voice_memo_url?: string;
   created_at: string;
   updated_at: string;
 }

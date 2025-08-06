@@ -20,6 +20,7 @@ interface TreatData {
   treat_type: string;
   is_public?: boolean;
   expires_at?: string;
+  voice_memo_url?: string;
 }
 
 serve(async (req) => {
@@ -75,7 +76,8 @@ serve(async (req) => {
         theme: treatData.theme,
         treat_type: treatData.treat_type,
         is_public: treatData.is_public !== false,
-        expires_at: treatData.expires_at ? new Date(treatData.expires_at).toISOString() : null
+        expires_at: treatData.expires_at ? new Date(treatData.expires_at).toISOString() : null,
+        voice_memo_url: treatData.voice_memo_url
       })
       .select()
       .single();

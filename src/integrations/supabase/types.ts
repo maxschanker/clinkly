@@ -469,6 +469,7 @@ export type Database = {
           updated_at: string
           user_id: string | null
           venmo_handle: string | null
+          voice_memo_url: string | null
         }
         Insert: {
           amount?: number | null
@@ -489,6 +490,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           venmo_handle?: string | null
+          voice_memo_url?: string | null
         }
         Update: {
           amount?: number | null
@@ -509,6 +511,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           venmo_handle?: string | null
+          voice_memo_url?: string | null
         }
         Relationships: []
       }
@@ -543,6 +546,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      voice_memo_uploads: {
+        Row: {
+          created_at: string | null
+          duration_seconds: number | null
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration_seconds?: number | null
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_seconds?: number | null
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

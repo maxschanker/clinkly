@@ -334,6 +334,24 @@ const Treat = () => {
           </Card>
         )}
 
+        {/* 6. Voice memo */}
+        {treatData.voice_memo_url && (
+          <Card className="mb-8 p-6 rounded-3xl bg-white/80 border-0 shadow-card">
+            <div className="text-center">
+              <div className="mb-4">
+                <p className="text-lg font-medium text-foreground">
+                  🎤 Voice Message
+                </p>
+              </div>
+              <audio controls className="w-full max-w-md mx-auto">
+                <source src={treatData.voice_memo_url} type="audio/webm" />
+                <source src={treatData.voice_memo_url} type="audio/mp3" />
+                Your browser does not support audio playback.
+              </audio>
+            </div>
+          </Card>
+        )}
+
         {/* Action Buttons - Only show in non-preview mode and not for error states */}
         {!isPreviewMode && !treatData.isError && (
           <div className="space-y-3">
