@@ -70,7 +70,7 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   }, [voiceMemoUrl]);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2 py-4">
+    <div className="flex flex-col items-center justify-center gap-1 py-2">
       <Button
         onClick={togglePlayback}
         variant="default"

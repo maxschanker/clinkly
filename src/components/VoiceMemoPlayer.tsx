@@ -71,14 +71,14 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
   }, [voiceMemoUrl]);
 
   return (
-    <div className="mb-6 text-center">
-      <div className="mb-4">
+    <div className="mb-4 text-center">
+      <div className="mb-2">
         <p className="text-lg font-medium text-foreground">
           🎤 Voice Message
         </p>
       </div>
       
-      <div className="flex flex-col items-center justify-center gap-2">
+      <div className="flex flex-col items-center justify-center gap-1">
         <Button
           onClick={togglePlayback}
           variant="default"
