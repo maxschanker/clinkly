@@ -232,12 +232,12 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
       <div className="flex items-center justify-between p-1 rounded border border-border bg-background max-w-20">
         <div className="flex-1 flex justify-center">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={playRecording}
-            className="w-4 h-4 rounded-full p-0"
+            className="w-6 h-6 rounded-full p-0 bg-green-500 hover:bg-green-600 transition-all duration-200 shadow-sm hover:shadow-md"
           >
-            {isPlaying ? <Pause className="w-2.5 h-2.5" /> : <Play className="w-2.5 h-2.5" />}
+            {isPlaying ? <Pause className="w-3 h-3 text-white" /> : <Play className="w-3 h-3 text-white" />}
           </Button>
         </div>
         
