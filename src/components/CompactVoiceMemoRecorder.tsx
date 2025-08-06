@@ -183,44 +183,92 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
   };
 
 
-  // Initial State: Compact horizontal layout
+  // Initial State: Ultra-compact layout
   if (state === 'initial') {
     return (
-      <div className="flex items-center justify-between p-1.5 rounded-md border border-border bg-background hover:bg-accent/50 transition-all duration-200">
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm">🎤</span>
-          <span className="text-xs font-medium text-foreground">Voice</span>
-        </div>
+      <div className="flex items-center gap-1 p-1 rounded border border-border bg-background hover:bg-accent/50 transition-all max-w-20">
+        <span className="text-xs">🎤</span>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setState('pre-record')}
-          className="w-4 h-4 p-0 hover:bg-primary/10"
+          className="w-4 h-4 p-0"
         >
-          <Plus className="w-2.5 h-2.5" />
+          <Plus className="w-3 h-3" />
         </Button>
       </div>
     );
   }
 
-  // Pre-Record State: Compact layout
+  // Pre-Record State: Ultra-compact layout
   if (state === 'pre-record') {
     return (
-      <div className="flex items-center justify-between p-1.5 rounded-md border border-border bg-background space-x-1.5 animate-fade-in">
+      <div className="flex items-center gap-1 p-1 rounded border border-border bg-background max-w-20">
         <Button
           variant="default"
           size="sm"
           onClick={startRecording}
-          className="w-6 h-6 rounded-full shadow-sm hover:shadow-md transition-all duration-200"
+          className="w-5 h-5 rounded-full"
         >
-          <Mic className="w-2.5 h-2.5" />
+          <Mic className="w-3 h-3" />
         </Button>
-        <span className="text-xs font-medium text-foreground flex-1 text-center">Record</span>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setState('initial')}
           className="w-4 h-4 p-0"
+        >
+          <X className="w-3 h-3" />
+        </Button>
+      </div>
+    );
+  }
+
+  // Recording State: Ultra-compact layout
+  if (state === 'recording') {
+    return (
+      <div className="flex items-center gap-1 p-1 rounded bg-primary/5 border border-primary/20 max-w-20">
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={stopRecording}
+          className="w-5 h-5 rounded-full animate-pulse"
+        >
+          <MicOff className="w-3 h-3" />
+        </Button>
+        <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
+        <span className="text-xs font-mono text-primary">{Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}</span>
+      </div>
+    );
+  }
+
+  // Post-Record State: Ultra-compact layout with controls
+  if (state === 'post-record') {
+    return (
+      <div className="flex items-center gap-1 p-1 rounded border border-border bg-background max-w-20">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={playRecording}
+          className="w-4 h-4 rounded-full p-0"
+        >
+          {isPlaying ? <Pause className="w-2.5 h-2.5" /> : <Play className="w-2.5 h-2.5" />}
+        </Button>
+        
+        <Button
+          variant="default"
+          size="sm"
+          onClick={handleUpload}
+          disabled={isUploading}
+          className="w-4 h-4 rounded-full p-0"
+        >
+          <Upload className="w-2.5 h-2.5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={deleteRecording}
+          className="w-4 h-4 p-0 text-destructive"
         >
           <X className="w-2.5 h-2.5" />
         </Button>
@@ -228,88 +276,18 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
     );
   }
 
-  // Recording State: Compact layout with timer
-  if (state === 'recording') {
-    return (
-      <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-primary/5 border border-primary/20 animate-scale-in">
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={stopRecording}
-          className="w-6 h-6 rounded-full animate-pulse shadow-sm"
-        >
-          <MicOff className="w-2.5 h-2.5" />
-        </Button>
-        
-        <div className="flex-1 flex items-center gap-1">
-          <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-          <span className="text-xs font-medium text-primary">Recording</span>
-        </div>
-        
-        <span className="text-xs font-mono text-primary min-w-[30px]">{formatTime(recordingTime)}</span>
-      </div>
-    );
-  }
-
-  // Post-Record State: Compact layout with controls
-  if (state === 'post-record') {
-    return (
-      <div className="flex items-center gap-1.5 p-1.5 rounded-md border border-border bg-background animate-fade-in">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={playRecording}
-          className="w-6 h-6 rounded-full"
-        >
-          {isPlaying ? <Pause className="w-2.5 h-2.5" /> : <Play className="w-2.5 h-2.5" />}
-        </Button>
-        
-        <div className="flex-1 flex items-center gap-1">
-          <span className="text-xs font-medium text-foreground">Audio</span>
-          <span className="text-xs font-mono text-muted-foreground">
-            {formatTime(isPlaying ? playbackTime : recordingTime)}
-          </span>
-        </div>
-        
-        <div className="flex gap-1">
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handleUpload}
-            disabled={isUploading}
-            className="w-6 h-6 rounded-full shadow-sm hover:shadow-md transition-all duration-200"
-          >
-            <Upload className="w-2.5 h-2.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={deleteRecording}
-            className="w-4 h-4 p-0 text-destructive hover:bg-destructive/10"
-          >
-            <X className="w-2.5 h-2.5" />
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Completed State: Compact layout with success indicator
+  // Completed State: Ultra-compact layout
   if (state === 'completed') {
     return (
-      <div className="flex items-center justify-between p-1.5 rounded-md bg-success/10 border border-success/20 animate-fade-in">
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm">✅</span>
-          <span className="text-xs font-medium text-success">Recorded</span>
-        </div>
+      <div className="flex items-center gap-1 p-1 rounded bg-success/10 border border-success/20 max-w-20">
+        <span className="text-xs">✅</span>
         <Button
           variant="ghost"
           size="sm"
           onClick={editRecording}
-          className="text-xs text-muted-foreground hover:text-foreground hover:bg-background/50 h-5 px-1.5"
+          className="w-4 h-4 p-0 text-muted-foreground hover:text-foreground"
         >
-          <Edit className="w-2.5 h-2.5 mr-1" />
-          Edit
+          <Edit className="w-3 h-3" />
         </Button>
       </div>
     );
