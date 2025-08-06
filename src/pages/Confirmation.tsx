@@ -91,7 +91,7 @@ const Confirmation = () => {
     if (!treatData) return "";
     const emoji = getTreatEmoji(treatData.treat_type || treatData.treatType);
     const message = treatData.header_text || treatData.headerText || getTreatDescription(treatData.treat_type || treatData.treatType) + " on me";
-    return `${message} ${emoji} → ${window.location.origin}/t/${treatSlug}`;
+    return `${message} ${emoji} sent you a clink 💌`;
   };
 
   const shareClinkAndPromptVenmo = async () => {
