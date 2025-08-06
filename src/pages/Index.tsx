@@ -92,7 +92,7 @@ const Index = () => {
                 </div>
                 
                 <p className="text-sm text-muted-foreground mb-8">
-                  Visit <span className="font-semibold text-foreground">clink.ly</span> on your mobile device
+                  Visit <span className="font-semibold bg-gradient-primary bg-clip-text text-transparent">clink.ly</span> on your mobile device
                 </p>
                 
                 {/* Decorative elements */}
