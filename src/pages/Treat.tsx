@@ -32,19 +32,32 @@ const Treat = () => {
       const hasUrlData = urlParams.has('data') || urlParams.has('id');
       const previewData = loadTreatData('currentTreat');
       
-      // Enhanced preview detection: check for explicit preview flag and navigation context
+      // Strengthened preview detection - only treat as preview if:
+      // 1. Explicit preview flag is set in metadata AND
+      // 2. Navigation came directly from confirmation page
       const isExplicitPreview = previewData?._metadata?.isPreview === true;
-      const navigationEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-      const isNavigatedFromConfirmation = document.referrer.includes('/send/complete') || 
-                                        navigationEntry?.type === 'navigate';
-      const isLikelyPreview = previewData && previewData.slug === slug && 
-                             !hasUrlData && 
-                             (isExplicitPreview || isNavigatedFromConfirmation);
+      const isNavigatedFromConfirmation = document.referrer.includes('/send/complete');
+      
+      // More restrictive preview detection - require BOTH conditions
+      const isLikelyPreview = previewData && 
+                             previewData.slug === slug && 
+                             isExplicitPreview && 
+                             isNavigatedFromConfirmation;
+      
+      console.log('Preview detection logic:', {
+        hasPreviewData: !!previewData,
+        slugMatch: previewData?.slug === slug,
+        isExplicitPreview,
+        isNavigatedFromConfirmation,
+        referrer: document.referrer,
+        isLikelyPreview,
+        hasUrlData
+      });
       
       try {
-        // 1. If this is clearly a preview (has matching cache, no URL data), use preview mode
+        // 1. Only use preview mode if BOTH explicit flag and confirmation navigation are present
         if (isLikelyPreview) {
-          console.log('✅ Using enhanced storage data (preview mode)', {
+          console.log('✅ Using preview mode (strict conditions met)', {
             isExplicitPreview,
             isNavigatedFromConfirmation,
             hasUrlData
@@ -88,9 +101,9 @@ const Treat = () => {
           setTreatData(mappedData);
           setIsPreviewMode(false);
           
-          // Clear cached preview data since we're now viewing the final version  
-          if (previewData && previewData.slug === slug && previewData._metadata?.isPreview) {
-            console.log('Clearing preview data for shared link view');
+          // Always clear preview data when successfully viewing shared link
+          if (previewData && previewData.slug === slug) {
+            console.log('Clearing cached data for shared link view');
             localStorage.removeItem('currentTreat');
           }
           
@@ -100,11 +113,11 @@ const Treat = () => {
       } catch (error) {
         console.error('Error loading treat:', error);
         
-        // 3. Fallback to cached data if backend fails
+        // 3. Fallback to cached data if backend fails (but not as preview)
         if (previewData && previewData.slug === slug) {
-          console.log('✅ Using cached data as fallback');
+          console.log('✅ Using cached data as fallback (not preview mode)');
           setTreatData(previewData);
-          setIsPreviewMode(false); // Not preview mode since backend fetch was attempted
+          setIsPreviewMode(false); // Never treat cached fallbacks as preview mode
         } else {
           // 4. Fallback to URL params (backwards compatibility)
           const retrievedData = retrieveTreatData(urlParams);
