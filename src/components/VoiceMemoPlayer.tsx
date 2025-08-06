@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Play } from "lucide-react";
+import { Play, Square } from "lucide-react";
 
 interface VoiceMemoPlayerProps {
   voiceMemoUrl: string;
@@ -13,24 +13,22 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
   const [hasError, setHasError] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const playAudio = async () => {
-    if (!audioRef.current || isPlaying) return;
-
-    try {
-      await audioRef.current.play();
-      setIsPlaying(true);
-    } catch (error) {
-      console.error("Audio playback error:", error);
-      setHasError(true);
-    }
-  };
-
-  const stopAudio = () => {
+  const togglePlayback = async () => {
     if (!audioRef.current) return;
-    
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
-    setIsPlaying(false);
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setIsPlaying(false);
+    } else {
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+      } catch (error) {
+        console.error("Audio playback error:", error);
+        setHasError(true);
+      }
+    }
   };
 
   const handleLoadedMetadata = () => {
@@ -81,33 +79,25 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
           </p>
         </div>
         
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center">
           <Button
-            onClick={playAudio}
-            variant="outline"
+            onClick={togglePlayback}
+            variant="default"
             size="lg"
-            disabled={isLoading || hasError || isPlaying}
-            className="w-20 h-16 rounded-xl border-2 border-primary/30 bg-white hover:bg-primary/10 hover:scale-105 transition-all duration-200"
+            disabled={isLoading || hasError}
+            className="w-20 h-16 rounded-xl bg-primary hover:bg-primary/90 hover:scale-105 transition-all duration-200 shadow-lg"
           >
             {isLoading ? (
-              <div className="w-6 h-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <div className="w-6 h-6 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+            ) : isPlaying ? (
+              <Square className="w-5 h-5 text-primary-foreground fill-current" />
             ) : (
-              <Play className="w-6 h-6 text-primary ml-1" />
+              <Play className="w-6 h-6 text-primary-foreground ml-1" />
             )}
           </Button>
           
-          <Button
-            onClick={stopAudio}
-            variant="outline"
-            size="lg"
-            disabled={isLoading || hasError || !isPlaying}
-            className="w-20 h-16 rounded-xl border-2 border-primary/30 bg-white hover:bg-primary/10 hover:scale-105 transition-all duration-200"
-          >
-            <div className="w-4 h-4 bg-primary rounded-sm" />
-          </Button>
-          
           {hasError && (
-            <div className="text-sm text-destructive">
+            <div className="text-sm text-destructive mt-2">
               Error loading audio
             </div>
           )}

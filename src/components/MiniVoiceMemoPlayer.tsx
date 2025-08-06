@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Volume2, Play } from "lucide-react";
+import { Play, Square } from "lucide-react";
 
 interface MiniVoiceMemoPlayerProps {
   voiceMemoUrl: string;
@@ -13,24 +13,22 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   const [hasError, setHasError] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const playAudio = async () => {
-    if (!audioRef.current || isPlaying) return;
-
-    try {
-      await audioRef.current.play();
-      setIsPlaying(true);
-    } catch (error) {
-      console.error("Audio playback error:", error);
-      setHasError(true);
-    }
-  };
-
-  const stopAudio = () => {
+  const togglePlayback = async () => {
     if (!audioRef.current) return;
-    
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
-    setIsPlaying(false);
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setIsPlaying(false);
+    } else {
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+      } catch (error) {
+        console.error("Audio playback error:", error);
+        setHasError(true);
+      }
+    }
   };
 
   const handleLoadedMetadata = () => {
@@ -73,32 +71,22 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
 
   return (
     <Card className="w-64 p-4 bg-white/95 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
-      <div className="flex items-center justify-center gap-3">
+      <div className="flex flex-col items-center justify-center gap-2">
         <Button
-          onClick={playAudio}
-          variant="ghost"
+          onClick={togglePlayback}
+          variant="default"
           size="icon"
-          disabled={isLoading || hasError || isPlaying}
-          className="w-12 h-12 rounded-full bg-primary/10 hover:bg-primary/20"
+          disabled={isLoading || hasError}
+          className="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 hover:scale-105 transition-all duration-200 shadow-lg"
         >
           {isLoading ? (
-            <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+          ) : isPlaying ? (
+            <Square className="w-3 h-3 text-primary-foreground fill-current" />
           ) : (
-            <Play className="w-4 h-4 text-primary ml-0.5" />
+            <Play className="w-4 h-4 text-primary-foreground ml-0.5" />
           )}
         </Button>
-        
-        <Button
-          onClick={stopAudio}
-          variant="ghost"
-          size="icon"
-          disabled={isLoading || hasError || !isPlaying}
-          className="w-12 h-12 rounded-full bg-primary/10 hover:bg-primary/20"
-        >
-          <div className="w-3 h-3 bg-primary rounded-sm" />
-        </Button>
-        
-        <Volume2 className="w-5 h-5 text-muted-foreground" />
         
         {hasError && (
           <div className="text-xs text-destructive">
