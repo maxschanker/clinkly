@@ -186,8 +186,15 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
   // Initial State: Ultra-compact layout
   if (state === 'initial') {
     return (
-      <div className="flex items-center gap-1 p-1 rounded border border-border bg-background hover:bg-accent/50 transition-all max-w-20">
-        <span className="text-xs">🎤</span>
+      <div className="flex items-center gap-1 max-w-20">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setState('pre-record')}
+          className="flex items-center gap-1 p-1 h-6 text-xs border border-border rounded hover:bg-accent/50 transition-all"
+        >
+          <span>🎤️ Voice</span>
+        </Button>
         <Button
           variant="ghost"
           size="sm"
