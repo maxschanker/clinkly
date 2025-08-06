@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,11 +15,8 @@ const Send = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-
-  // Clean up stale data on component mount
-  useEffect(() => {
-    cleanupStaleData();
-  }, []);
+  const amountFieldRef = useRef<HTMLDivElement>(null);
+  
   const [formData, setFormData] = useState({
     headerText: "",
     headerFont: "inter",
@@ -32,6 +29,23 @@ const Send = () => {
   });
   const [addCash, setAddCash] = useState(false);
   const [showCoverArtModal, setShowCoverArtModal] = useState(false);
+
+  // Clean up stale data on component mount
+  useEffect(() => {
+    cleanupStaleData();
+  }, []);
+
+  // Auto-scroll to amount field when cash toggle is enabled
+  useEffect(() => {
+    if (addCash && amountFieldRef.current) {
+      setTimeout(() => {
+        amountFieldRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 100);
+    }
+  }, [addCash]);
 
   const fontOptions = [
     { id: "inter", name: "Classic", class: "font-sans" },
@@ -240,7 +254,7 @@ const Send = () => {
             </div>
 
             {addCash && (
-              <div>
+              <div ref={amountFieldRef}>
                 <Label className="text-lg font-medium mb-2 block">💲 Amount ($)</Label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-lg font-medium text-foreground pointer-events-none">
