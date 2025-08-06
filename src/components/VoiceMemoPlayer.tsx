@@ -10,6 +10,7 @@ interface VoiceMemoPlayerProps {
 const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(false);
   const [hasError, setHasError] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -36,9 +37,14 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
     setHasError(false);
   };
 
-  const handleCanPlay = () => {
+  const handleCanPlayThrough = () => {
     setIsLoading(false);
+    setIsBuffering(false);
     setHasError(false);
+  };
+
+  const handleWaiting = () => {
+    setIsBuffering(true);
   };
 
   const handleAudioEnded = () => {
@@ -50,6 +56,7 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
     setIsPlaying(false);
     setHasError(true);
     setIsLoading(false);
+    setIsBuffering(false);
   };
 
 
@@ -58,13 +65,15 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
     if (!audio) return;
 
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('canplaythrough', handleCanPlayThrough);
+    audio.addEventListener('waiting', handleWaiting);
     audio.addEventListener('ended', handleAudioEnded);
     audio.addEventListener('error', handleAudioError);
 
     return () => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('canplaythrough', handleCanPlayThrough);
+      audio.removeEventListener('waiting', handleWaiting);
       audio.removeEventListener('ended', handleAudioEnded);
       audio.removeEventListener('error', handleAudioError);
     };
@@ -86,7 +95,7 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
           disabled={isLoading || hasError}
           className="w-20 h-16 rounded-xl bg-primary hover:bg-primary/90 hover:scale-105 transition-all duration-200 shadow-lg"
         >
-          {isLoading ? (
+          {isLoading || isBuffering ? (
             <div className="w-6 h-6 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
           ) : isPlaying ? (
             <Square className="w-5 h-5 text-primary-foreground fill-current" />

@@ -10,6 +10,7 @@ interface MiniVoiceMemoPlayerProps {
 const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(false);
   const [hasError, setHasError] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -36,9 +37,14 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
     setHasError(false);
   };
 
-  const handleCanPlay = () => {
+  const handleCanPlayThrough = () => {
     setIsLoading(false);
+    setIsBuffering(false);
     setHasError(false);
+  };
+
+  const handleWaiting = () => {
+    setIsBuffering(true);
   };
 
   const handleAudioEnded = () => {
@@ -50,6 +56,7 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
     setIsPlaying(false);
     setHasError(true);
     setIsLoading(false);
+    setIsBuffering(false);
   };
 
   useEffect(() => {
@@ -57,13 +64,15 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
     if (!audio) return;
 
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('canplaythrough', handleCanPlayThrough);
+    audio.addEventListener('waiting', handleWaiting);
     audio.addEventListener('ended', handleAudioEnded);
     audio.addEventListener('error', handleAudioError);
 
     return () => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('canplaythrough', handleCanPlayThrough);
+      audio.removeEventListener('waiting', handleWaiting);
       audio.removeEventListener('ended', handleAudioEnded);
       audio.removeEventListener('error', handleAudioError);
     };
@@ -78,7 +87,7 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
         disabled={isLoading || hasError}
         className="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 hover:scale-105 transition-all duration-200 shadow-lg"
       >
-        {isLoading ? (
+        {isLoading || isBuffering ? (
           <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
         ) : isPlaying ? (
           <Square className="w-3 h-3 text-primary-foreground fill-current" />
