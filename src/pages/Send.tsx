@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Edit } from "lucide-react";
 import { CoverArtModal } from "@/components/CoverArtModal";
 import { createTreat, type TreatData } from "@/lib/treatService";
@@ -29,6 +30,7 @@ const Send = () => {
     recipientName: "",
     amount: ""
   });
+  const [addCash, setAddCash] = useState(false);
   const [showCoverArtModal, setShowCoverArtModal] = useState(false);
 
   const fontOptions = [
@@ -60,7 +62,7 @@ const Send = () => {
         message: formData.message,
         sender_name: formData.senderName,
         recipient_name: formData.recipientName,
-        amount: formData.amount ? parseFloat(formData.amount) : undefined,
+        amount: addCash && formData.amount ? parseFloat(formData.amount) : undefined,
         theme: 'gradient-warm',
         treat_type: 'coffee',
         is_public: true
@@ -208,25 +210,7 @@ const Send = () => {
           
           <div className="space-y-4">
             <div>
-              <Label className="text-lg font-medium mb-2 block">💲 Amount</Label>
-              <div className="relative">
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-lg font-medium text-foreground pointer-events-none">
-                  $
-                </div>
-                <Input
-                  type="number"
-                  value={formData.amount}
-                  onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                  placeholder="0"
-                  className="w-full h-12 text-lg border-2 rounded-2xl pl-8"
-                  min="1"
-                  max="500"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label className="text-lg font-medium mb-2 block">📩 To:</Label>
+              <Label className="text-lg font-medium mb-2 block">🎁 To:</Label>
               <Input
                 type="text"
                 value={formData.recipientName}
@@ -237,7 +221,7 @@ const Send = () => {
             </div>
             
             <div>
-              <Label className="text-lg font-medium mb-2 block">🫶 From:</Label>
+              <Label className="text-lg font-medium mb-2 block">💌 From:</Label>
               <Input
                 type="text"
                 value={formData.senderName}
@@ -246,6 +230,34 @@ const Send = () => {
                 className="w-full h-12 text-lg border-2 rounded-2xl"
               />
             </div>
+
+            <div className="flex items-center justify-between">
+              <Label className="text-lg font-medium">💰 Add a little cash?</Label>
+              <Switch
+                checked={addCash}
+                onCheckedChange={setAddCash}
+              />
+            </div>
+
+            {addCash && (
+              <div>
+                <Label className="text-lg font-medium mb-2 block">💲 Amount ($)</Label>
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-lg font-medium text-foreground pointer-events-none">
+                    $
+                  </div>
+                  <Input
+                    type="number"
+                    value={formData.amount}
+                    onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                    placeholder="0"
+                    className="w-full h-12 text-lg border-2 rounded-2xl pl-8"
+                    min="1"
+                    max="500"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
