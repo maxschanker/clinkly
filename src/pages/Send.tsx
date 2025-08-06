@@ -231,12 +231,14 @@ const Send = () => {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <Label className="text-lg font-medium">💸 Add a little cash?</Label>
-              <Switch
-                checked={addCash}
-                onCheckedChange={setAddCash}
-              />
+            <div className="border border-border/30 rounded-xl p-4 bg-card/20">
+              <div className="flex items-center justify-between">
+                <Label className="text-lg font-medium">💸 Add a little cash?</Label>
+                <Switch
+                  checked={addCash}
+                  onCheckedChange={setAddCash}
+                />
+              </div>
             </div>
 
             {addCash && (
