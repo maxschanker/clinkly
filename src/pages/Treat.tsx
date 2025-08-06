@@ -27,51 +27,29 @@ const Treat = () => {
       console.log('Treat page loading, slug:', slug);
       setIsLoading(true);
       
-      // Check if this is likely a preview scenario vs shared link
+      // Use URL parameter to determine mode - simple and reliable
       const urlParams = new URLSearchParams(location.search);
-      const hasUrlData = urlParams.has('data') || urlParams.has('id');
+      const isPreviewMode = urlParams.get('preview') === 'true';
       const previewData = loadTreatData('currentTreat');
       
-      // Strengthened preview detection - only treat as preview if:
-      // 1. Explicit preview flag is set in metadata AND
-      // 2. Navigation came directly from confirmation page
-      const isExplicitPreview = previewData?._metadata?.isPreview === true;
-      const isNavigatedFromConfirmation = document.referrer.includes('/send/complete');
-      
-      // More restrictive preview detection - require BOTH conditions
-      const isLikelyPreview = previewData && 
-                             previewData.slug === slug && 
-                             isExplicitPreview && 
-                             isNavigatedFromConfirmation;
-      
       console.log('Preview detection logic:', {
+        isPreviewMode,
         hasPreviewData: !!previewData,
-        slugMatch: previewData?.slug === slug,
-        isExplicitPreview,
-        isNavigatedFromConfirmation,
-        referrer: document.referrer,
-        isLikelyPreview,
-        hasUrlData
+        slugMatch: previewData?.slug === slug
       });
       
       try {
-        // 1. Only use preview mode if BOTH explicit flag and confirmation navigation are present
-        if (isLikelyPreview) {
-          console.log('✅ Using preview mode (strict conditions met)', {
-            isExplicitPreview,
-            isNavigatedFromConfirmation,
-            hasUrlData
-          });
+        // 1. If preview parameter is present, use cached preview data
+        if (isPreviewMode && previewData && previewData.slug === slug) {
+          console.log('✅ Using preview mode with cached data');
           setTreatData(previewData);
           setIsPreviewMode(true);
           setIsLoading(false);
           return;
         }
 
-        // 2. For shared links, always try backend first to get the final version
-        console.log('Fetching treat from backend (shared link)...', {
-          hasUrlData,
-          isExplicitPreview,
+        // 2. For live mode (default), always try backend first to get the final version
+        console.log('Fetching treat from backend (live mode)...', {
           treatSlug: slug
         });
         const result = await getTreat(slug);
@@ -101,9 +79,9 @@ const Treat = () => {
           setTreatData(mappedData);
           setIsPreviewMode(false);
           
-          // Always clear preview data when successfully viewing shared link
+          // Clear preview data when successfully viewing live version
           if (previewData && previewData.slug === slug) {
-            console.log('Clearing cached data for shared link view');
+            console.log('Clearing cached data for live view');
             localStorage.removeItem('currentTreat');
           }
           
@@ -113,22 +91,25 @@ const Treat = () => {
       } catch (error) {
         console.error('Error loading treat:', error);
         
-        // 3. Fallback to cached data if backend fails (but not as preview)
+        // 3. Fallback to cached data if backend fails
         if (previewData && previewData.slug === slug) {
-          console.log('✅ Using cached data as fallback (not preview mode)');
+          console.log('✅ Using cached data as fallback');
           setTreatData(previewData);
-          setIsPreviewMode(false); // Never treat cached fallbacks as preview mode
+          setIsPreviewMode(false);
         } else {
           // 4. Fallback to URL params (backwards compatibility)
-          const retrievedData = retrieveTreatData(urlParams);
-          
-          if (retrievedData && retrievedData.senderName) {
-            console.log('✅ Successfully retrieved data from URL/storage (fallback)');
-            setTreatData({
-              ...retrievedData,
-              slug: slug
-            });
-            setIsPreviewMode(false);
+          const hasUrlData = urlParams.has('data') || urlParams.has('id');
+          if (hasUrlData) {
+            const retrievedData = retrieveTreatData(urlParams);
+            
+            if (retrievedData && retrievedData.senderName) {
+              console.log('✅ Successfully retrieved data from URL/storage (fallback)');
+              setTreatData({
+                ...retrievedData,
+                slug: slug
+              });
+              setIsPreviewMode(false);
+            }
           } else {
             // 5. Show error state
             console.warn('❌ No valid treat data found');
@@ -278,7 +259,7 @@ const Treat = () => {
                 variant="ghost"
                 onClick={() => {
                   window.scrollTo(0, 0);
-                  navigate('/send/complete');
+                  navigate('/send/complete', { replace: true });
                 }}
                 className="text-muted-foreground hover:text-foreground"
               >
@@ -396,7 +377,7 @@ const Treat = () => {
               variant="ghost"
               onClick={() => {
                 window.scrollTo(0, 0);
-                navigate('/send/complete');
+                navigate('/send/complete', { replace: true });
               }}
               className="text-muted-foreground hover:text-foreground"
             >

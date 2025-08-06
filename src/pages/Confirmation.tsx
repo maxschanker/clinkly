@@ -253,7 +253,7 @@ const Confirmation = () => {
     
     saveTreatData('currentTreat', previewData, true); // Mark as preview
     window.scrollTo(0, 0);
-    navigate(`/t/${treatSlug}`);
+    navigate(`/t/${treatSlug}?preview=true`); // Navigate with preview parameter
   };
 
   if (!treatData) {
