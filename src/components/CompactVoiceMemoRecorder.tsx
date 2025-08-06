@@ -1,36 +1,70 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Upload, X } from 'lucide-react';
+import { Mic, MicOff, Play, Pause, Upload, X, Plus, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { uploadVoiceMemo } from '@/lib/treatService';
+import { cn } from '@/lib/utils';
 
 interface CompactVoiceMemoRecorderProps {
   onVoiceMemoChange: (url: string | null) => void;
   existingUrl?: string | null;
 }
 
+type RecorderState = 'initial' | 'pre-record' | 'recording' | 'post-record' | 'completed';
+
 export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> = ({
   onVoiceMemoChange,
   existingUrl
 }) => {
+  const [state, setState] = useState<RecorderState>(existingUrl ? 'completed' : 'initial');
   const [isRecording, setIsRecording] = useState(false);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(existingUrl || null);
-  const [showRecorder, setShowRecorder] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackTime, setPlaybackTime] = useState(0);
+  const [waveformBars, setWaveformBars] = useState<number[]>(Array(12).fill(1));
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const playbackTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const waveformAnimationRef = useRef<NodeJS.Timeout | null>(null);
   
   const { toast } = useToast();
 
   useEffect(() => {
     if (existingUrl) {
       setUploadedUrl(existingUrl);
+      setState('completed');
     }
   }, [existingUrl]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (playbackTimerRef.current) clearInterval(playbackTimerRef.current);
+      if (waveformAnimationRef.current) clearInterval(waveformAnimationRef.current);
+    };
+  }, []);
+
+  const animateWaveform = () => {
+    if (waveformAnimationRef.current) clearInterval(waveformAnimationRef.current);
+    
+    waveformAnimationRef.current = setInterval(() => {
+      setWaveformBars(prev => prev.map(() => Math.random() * 100 + 10));
+    }, 150);
+  };
+
+  const stopWaveformAnimation = () => {
+    if (waveformAnimationRef.current) {
+      clearInterval(waveformAnimationRef.current);
+      waveformAnimationRef.current = null;
+    }
+  };
 
   const startRecording = async () => {
     try {
@@ -50,14 +84,15 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         setRecordedBlob(blob);
         stream.getTracks().forEach(track => track.stop());
-        
-        // Auto-upload after recording
-        await handleUpload(blob);
+        stopWaveformAnimation();
+        setState('post-record');
       };
       
       mediaRecorder.start();
       setIsRecording(true);
       setRecordingTime(0);
+      setState('recording');
+      animateWaveform();
       
       timerRef.current = setInterval(() => {
         setRecordingTime(prev => prev + 1);
@@ -69,6 +104,7 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
         title: "Can't access mic",
         description: "Please allow microphone access to record.",
       });
+      setState('pre-record');
     }
   };
 
@@ -83,17 +119,59 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
     }
   };
 
-  const handleUpload = async (blob: Blob) => {
+  const playRecording = () => {
+    if (recordedBlob && !isPlaying) {
+      const audioUrl = URL.createObjectURL(recordedBlob);
+      audioRef.current = new Audio(audioUrl);
+      
+      audioRef.current.onended = () => {
+        setIsPlaying(false);
+        setPlaybackTime(0);
+        if (playbackTimerRef.current) clearInterval(playbackTimerRef.current);
+      };
+      
+      audioRef.current.play();
+      setIsPlaying(true);
+      setPlaybackTime(0);
+      
+      playbackTimerRef.current = setInterval(() => {
+        setPlaybackTime(prev => prev + 1);
+      }, 1000);
+    } else if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      if (playbackTimerRef.current) clearInterval(playbackTimerRef.current);
+    }
+  };
+
+  const deleteRecording = () => {
+    setRecordedBlob(null);
+    setRecordingTime(0);
+    setPlaybackTime(0);
+    setIsPlaying(false);
+    setState('pre-record');
+    onVoiceMemoChange(null);
+    
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    if (playbackTimerRef.current) clearInterval(playbackTimerRef.current);
+  };
+
+  const handleUpload = async () => {
+    if (!recordedBlob) return;
+    
     setIsUploading(true);
     
     try {
-      const { file_url } = await uploadVoiceMemo(blob);
+      const { file_url } = await uploadVoiceMemo(recordedBlob);
       setUploadedUrl(file_url);
       onVoiceMemoChange(file_url);
-      setShowRecorder(false);
+      setState('completed');
       
       toast({
-        title: "Voice memo added! 🎤",
+        title: "Voice memo uploaded! 🎤",
         description: "Your message has been attached.",
       });
       
@@ -108,11 +186,12 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
     }
   };
 
-  const removeVoiceMemo = () => {
+  const editRecording = () => {
+    setState('initial');
+    setUploadedUrl(null);
     setRecordedBlob(null);
     setRecordingTime(0);
-    setUploadedUrl(null);
-    setShowRecorder(false);
+    setPlaybackTime(0);
     onVoiceMemoChange(null);
   };
 
@@ -122,95 +201,154 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // If already has voice memo, show compact indicator
-  if (uploadedUrl) {
-    return (
-      <div className="flex items-center gap-2 p-2 rounded-xl bg-primary/10 border border-primary/20">
-        <div className="flex items-center gap-2 flex-1">
-          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-sm font-medium text-primary">Voice memo attached</span>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={removeVoiceMemo}
-          className="w-6 h-6 p-0 text-muted-foreground hover:text-destructive"
-        >
-          <X className="w-3 h-3" />
-        </Button>
-      </div>
-    );
-  }
-
-  // Toggle view for recording
-  if (!showRecorder) {
-    return (
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setShowRecorder(true)}
-        className="w-full justify-start text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-200"
-      >
-        <Mic className="w-4 h-4 mr-2" />
-        Add voice memo
-      </Button>
-    );
-  }
-
-  // Recording interface
-  return (
-    <div className="p-3 rounded-xl bg-background border border-border space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">Voice Memo</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowRecorder(false)}
-          className="w-6 h-6 p-0"
-        >
-          <X className="w-3 h-3" />
-        </Button>
-      </div>
-
-      <div className="flex items-center gap-3">
-        {!isRecording ? (
-          <Button
-            variant="default"
-            size="lg"
-            onClick={startRecording}
-            disabled={isUploading}
-            className="w-12 h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-          >
-            <Mic className="w-5 h-5" />
-          </Button>
-        ) : (
-          <Button
-            variant="destructive"
-            size="lg"
-            onClick={stopRecording}
-            className="w-12 h-12 rounded-full animate-pulse shadow-lg"
-          >
-            <MicOff className="w-5 h-5" />
-          </Button>
-        )}
-        
-        <div className="flex-1">
-          {isRecording ? (
-            <div className="flex items-center gap-2">
-              <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-primary animate-pulse" style={{ width: '100%' }} />
-              </div>
-              <span className="text-sm font-mono text-muted-foreground min-w-[3rem]">
-                {formatTime(recordingTime)}
-              </span>
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">
-              {isUploading ? "Uploading..." : "Tap to start recording"}
-            </div>
+  const renderWaveform = (isStatic = false) => (
+    <div className="flex items-center gap-0.5 h-6 px-2">
+      {waveformBars.map((height, index) => (
+        <div
+          key={index}
+          className={cn(
+            "w-0.5 bg-primary rounded-full transition-all duration-150",
+            isStatic ? "opacity-60" : "opacity-100"
           )}
-        </div>
-      </div>
+          style={{ 
+            height: isStatic ? `${Math.min(height * 0.4, 16)}px` : `${Math.min(height * 0.6, 20)}px` 
+          }}
+        />
+      ))}
     </div>
   );
+
+  // Initial State: Horizontal layout with mic icon and plus button
+  if (state === 'initial') {
+    return (
+      <div className="flex items-center justify-between p-2 rounded-lg border border-border bg-background hover:bg-accent/50 transition-all duration-200">
+        <div className="flex items-center gap-2">
+          <span className="text-base">🎤</span>
+          <span className="text-xs font-medium text-foreground">Voice</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setState('pre-record')}
+          className="w-5 h-5 p-0 hover:bg-primary/10"
+        >
+          <Plus className="w-3 h-3" />
+        </Button>
+      </div>
+    );
+  }
+
+  // Pre-Record State: Horizontal layout with record button and close
+  if (state === 'pre-record') {
+    return (
+      <div className="flex items-center justify-between p-2 rounded-lg border border-border bg-background space-x-2 animate-fade-in">
+        <Button
+          variant="default"
+          size="sm"
+          onClick={startRecording}
+          className="w-8 h-8 rounded-full shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"
+        >
+          <Mic className="w-3 h-3" />
+        </Button>
+        <span className="text-xs font-medium text-foreground flex-1 text-center">Tap to record</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setState('initial')}
+          className="w-5 h-5 p-0"
+        >
+          <X className="w-3 h-3" />
+        </Button>
+      </div>
+    );
+  }
+
+  // Recording State: Horizontal layout with stop button, waveform, and timer
+  if (state === 'recording') {
+    return (
+      <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/20 animate-scale-in">
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={stopRecording}
+          className="w-8 h-8 rounded-full animate-pulse shadow-sm"
+        >
+          <MicOff className="w-3 h-3" />
+        </Button>
+        
+        <div className="flex-1 bg-background/50 rounded-md overflow-hidden">
+          {renderWaveform()}
+        </div>
+        
+        <span className="text-xs font-mono text-primary min-w-[35px]">{formatTime(recordingTime)}</span>
+      </div>
+    );
+  }
+
+  // Post-Record State: Horizontal layout with play, waveform, upload controls
+  if (state === 'post-record') {
+    return (
+      <div className="flex items-center gap-2 p-2 rounded-lg border border-border bg-background animate-fade-in">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={playRecording}
+          className="w-7 h-7 rounded-full"
+        >
+          {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+        </Button>
+        
+        <div className="flex-1 bg-muted/30 rounded-md overflow-hidden">
+          {renderWaveform(true)}
+        </div>
+        
+        <span className="text-xs font-mono text-muted-foreground min-w-[35px]">
+          {formatTime(isPlaying ? playbackTime : recordingTime)}
+        </span>
+        
+        <div className="flex gap-1">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleUpload}
+            disabled={isUploading}
+            className="w-7 h-7 rounded-full shadow-sm hover:shadow-md transition-all duration-200"
+          >
+            <Upload className="w-3 h-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={deleteRecording}
+            className="w-5 h-5 p-0 text-destructive hover:bg-destructive/10"
+          >
+            <X className="w-3 h-3" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Completed State: Horizontal layout with checkmark and edit button
+  if (state === 'completed') {
+    return (
+      <div className="flex items-center justify-between p-2 rounded-lg bg-success/10 border border-success/20 animate-fade-in">
+        <div className="flex items-center gap-2">
+          <span className="text-base">✅</span>
+          <span className="text-xs font-medium text-success">Recorded</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={editRecording}
+          className="text-xs text-muted-foreground hover:text-foreground hover:bg-background/50 h-6 px-2"
+        >
+          <Edit className="w-3 h-3 mr-1" />
+          Edit
+        </Button>
+      </div>
+    );
+  }
+
+  return null;
 };
