@@ -324,7 +324,9 @@ const Treat = () => {
 
         {/* 5. Voice memo - Above message */}
         {treatData.voice_memo_url && (
-          <MiniVoiceMemoPlayer voiceMemoUrl={treatData.voice_memo_url} />
+          <div className="mb-6">
+            <MiniVoiceMemoPlayer voiceMemoUrl={treatData.voice_memo_url} />
+          </div>
         )}
 
         {/* 6. Sweet message */}
@@ -368,7 +370,7 @@ const Treat = () => {
         {treatData.isError && (
           <div className="space-y-3">
             <Button
-              onClick={() => {
+              onClick={()={() => {
                 window.scrollTo(0, 0);
                 navigate('/');
               }}
