@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Mic, Square, Play, Pause, Trash2, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { uploadVoiceMemo } from '@/lib/treatService';
 
 interface VoiceMemoRecorderProps {
   onVoiceMemoChange: (url: string | null) => void;
@@ -115,28 +116,13 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
     }
   };
 
-  const uploadVoiceMemo = async () => {
+  const handleUploadVoiceMemo = async () => {
     if (!recordedBlob) return;
     
     setIsUploading(true);
     
     try {
-      const formData = new FormData();
-      formData.append('file', recordedBlob, `voice-memo-${Date.now()}.webm`);
-      
-      const response = await fetch('/functions/v1/upload-voice-memo', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('supabase.auth.token')}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-      
-      const { file_url } = await response.json();
+      const { file_url } = await uploadVoiceMemo(recordedBlob);
       setUploadedUrl(file_url);
       onVoiceMemoChange(file_url);
       
@@ -232,7 +218,7 @@ export const VoiceMemoRecorder: React.FC<VoiceMemoRecorderProps> = ({
           <Button
             variant="default"
             size="sm"
-            onClick={uploadVoiceMemo}
+            onClick={handleUploadVoiceMemo}
             disabled={isUploading}
           >
             <Upload className="h-4 w-4 mr-2" />

@@ -117,6 +117,27 @@ export async function uploadCoverArt(file: File): Promise<{ file_url: string }> 
   }
 }
 
+// Upload voice memo
+export async function uploadVoiceMemo(file: Blob): Promise<{ file_url: string }> {
+  try {
+    const formData = new FormData();
+    formData.append('file', file, `voice-memo-${Date.now()}.webm`);
+
+    const { data, error } = await supabase.functions.invoke('upload-voice-memo', {
+      body: formData
+    });
+
+    if (error) {
+      throw new Error(error.message || 'Failed to upload voice memo');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error uploading voice memo:', error);
+    throw error;
+  }
+}
+
 // Record sharing action
 export async function recordShare(treatId: string, platform: string): Promise<void> {
   try {
