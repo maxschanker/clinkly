@@ -215,7 +215,7 @@ const Send = () => {
                 type="text"
                 value={formData.recipientName}
                 onChange={(e) => setFormData({...formData, recipientName: e.target.value})}
-                placeholder="Recipient's name"
+                placeholder="Their name"
                 className="w-full h-12 text-lg border-2 rounded-2xl"
               />
             </div>
@@ -232,7 +232,7 @@ const Send = () => {
             </div>
 
             <div className="flex items-center justify-between">
-              <Label className="text-lg font-medium">💰 Add a little cash?</Label>
+              <Label className="text-lg font-medium">💸 Add a little cash?</Label>
               <Switch
                 checked={addCash}
                 onCheckedChange={setAddCash}
