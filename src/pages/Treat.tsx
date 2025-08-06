@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { getTreat, recordShare, type TreatResponse } from "@/lib/treatService";
 import { retrieveTreatData, loadTreatData, cleanupStaleData } from "@/lib/utils";
+import VoiceMemoPlayer from "@/components/VoiceMemoPlayer";
 
 const Treat = () => {
   const { slug } = useParams();
@@ -72,6 +73,7 @@ const Treat = () => {
             coverArt: result.treat.cover_art_content,
             coverArtType: result.treat.cover_art_type,
             theme: result.treat.theme,
+            voice_memo_url: result.treat.voice_memo_url,
             createdAt: result.treat.created_at,
             isPublic: result.treat.is_public
           };
@@ -320,7 +322,12 @@ const Treat = () => {
           </div>
         )}
 
-        {/* 5. Sweet message */}
+        {/* 5. Voice memo - Above message */}
+        {treatData.voice_memo_url && (
+          <VoiceMemoPlayer voiceMemoUrl={treatData.voice_memo_url} />
+        )}
+
+        {/* 6. Sweet message */}
         {treatData.message && (
           <Card className="mb-8 p-6 rounded-3xl bg-white/80 border-0 shadow-card">
             <div className="text-center">
@@ -330,24 +337,6 @@ const Treat = () => {
               <div className="mt-3 text-sm text-muted-foreground">
                 💖 Sent with love via clink
               </div>
-            </div>
-          </Card>
-        )}
-
-        {/* 6. Voice memo */}
-        {treatData.voice_memo_url && (
-          <Card className="mb-8 p-6 rounded-3xl bg-white/80 border-0 shadow-card">
-            <div className="text-center">
-              <div className="mb-4">
-                <p className="text-lg font-medium text-foreground">
-                  🎤 Voice Message
-                </p>
-              </div>
-              <audio controls className="w-full max-w-md mx-auto">
-                <source src={treatData.voice_memo_url} type="audio/webm" />
-                <source src={treatData.voice_memo_url} type="audio/mp3" />
-                Your browser does not support audio playback.
-              </audio>
             </div>
           </Card>
         )}

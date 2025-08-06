@@ -304,6 +304,7 @@ const Confirmation = () => {
       coverArt: treatData.cover_art_content,
       coverArtType: treatData.cover_art_type,
       treatType: treatData.treat_type,
+      voice_memo_url: treatData.voice_memo_url,
       slug: treatSlug,
       createdAt: new Date().toISOString()
     };
