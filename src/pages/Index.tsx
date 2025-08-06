@@ -1,8 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
+import QRCode from "react-qr-code";
 
 const Index = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   return (
     <div className="min-h-screen bg-gradient-hero flex flex-col relative overflow-hidden">
@@ -32,36 +35,74 @@ const Index = () => {
         <div className="text-center max-w-2xl mx-auto">
           {/* Card Container */}
           <div className="bg-gradient-card p-12 rounded-3xl shadow-card backdrop-blur-sm border border-white/20">
-            {/* Main Message */}
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight animate-fade-in">
-              Make it a moment
-            </h2>
-            
-            {/* Emoji with glow effect */}
-            <div className="relative mb-6">
-              <div className="text-7xl animate-bounce-gentle relative">
-                🫶
-                <div className="absolute inset-0 bg-gradient-primary rounded-full blur-xl opacity-30 animate-pulse"></div>
-              </div>
-            </div>
-            
-            {/* Get Started Button */}
-            <Button
-              onClick={() => {
-                window.scrollTo(0, 0);
-                navigate('/send');
-              }}
-              className="h-16 px-16 text-xl font-semibold rounded-full bg-gradient-primary hover:shadow-glow transition-all duration-500 transform hover:scale-110 hover:rotate-1 shadow-button border border-white/20"
-            >
-              Send a clink
-            </Button>
-            
-            {/* Decorative elements */}
-            <div className="flex justify-center space-x-4 mt-8 opacity-60">
-              <div className="w-2 h-2 bg-sparkle-1 rounded-full animate-pulse"></div>
-              <div className="w-2 h-2 bg-sparkle-2 rounded-full animate-pulse animation-delay-500"></div>
-              <div className="w-2 h-2 bg-sparkle-3 rounded-full animate-pulse animation-delay-1000"></div>
-            </div>
+            {isMobile ? (
+              <>
+                {/* Mobile: Original Content */}
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 leading-tight animate-fade-in">
+                  Make it a moment
+                </h2>
+                
+                {/* Emoji with glow effect */}
+                <div className="relative mb-6">
+                  <div className="text-7xl animate-bounce-gentle relative">
+                    🫶
+                    <div className="absolute inset-0 bg-gradient-primary rounded-full blur-xl opacity-30 animate-pulse"></div>
+                  </div>
+                </div>
+                
+                {/* Get Started Button */}
+                <Button
+                  onClick={() => {
+                    window.scrollTo(0, 0);
+                    navigate('/send');
+                  }}
+                  className="h-16 px-16 text-xl font-semibold rounded-full bg-gradient-primary hover:shadow-glow transition-all duration-500 transform hover:scale-110 hover:rotate-1 shadow-button border border-white/20"
+                >
+                  Send a clink
+                </Button>
+                
+                {/* Decorative elements */}
+                <div className="flex justify-center space-x-4 mt-8 opacity-60">
+                  <div className="w-2 h-2 bg-sparkle-1 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-sparkle-2 rounded-full animate-pulse animation-delay-500"></div>
+                  <div className="w-2 h-2 bg-sparkle-3 rounded-full animate-pulse animation-delay-1000"></div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Desktop: QR Code Landing */}
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight animate-fade-in">
+                  clink works best on mobile
+                </h2>
+                
+                <p className="text-lg text-muted-foreground mb-8 animate-fade-in">
+                  Scan the QR code below or visit on your phone to get started
+                </p>
+                
+                {/* QR Code */}
+                <div className="flex justify-center mb-8">
+                  <div className="bg-white p-6 rounded-2xl shadow-glow">
+                    <QRCode
+                      value="https://clink.ly"
+                      size={200}
+                      style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                      viewBox="0 0 256 256"
+                    />
+                  </div>
+                </div>
+                
+                <p className="text-sm text-muted-foreground mb-8">
+                  Visit <span className="font-semibold text-foreground">clink.ly</span> on your mobile device
+                </p>
+                
+                {/* Decorative elements */}
+                <div className="flex justify-center space-x-4 opacity-60">
+                  <div className="w-2 h-2 bg-sparkle-1 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-sparkle-2 rounded-full animate-pulse animation-delay-500"></div>
+                  <div className="w-2 h-2 bg-sparkle-3 rounded-full animate-pulse animation-delay-1000"></div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
