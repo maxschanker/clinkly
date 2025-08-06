@@ -185,28 +185,25 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
   // Pre-Record State: Ultra-compact layout
   if (state === 'pre-record') {
     return (
-      <div className="flex flex-col items-center gap-1">
-        <div className="text-xs text-muted-foreground">🎤️ Voice</div>
-        <div className="flex items-center justify-between p-1 rounded border border-border bg-background max-w-20">
-          <div className="flex-1 flex justify-center">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={startRecording}
-              className="w-5 h-5 rounded-full"
-            >
-              <Mic className="w-3 h-3" />
-            </Button>
-          </div>
+      <div className="flex items-center justify-between p-1 rounded border border-border bg-background max-w-20">
+        <div className="flex-1 flex justify-center">
           <Button
-            variant="ghost"
+            variant="default"
             size="sm"
-            onClick={() => setState('initial')}
-            className="w-4 h-4 p-0"
+            onClick={startRecording}
+            className="w-5 h-5 rounded-full"
           >
-            <X className="w-3 h-3" />
+            <Mic className="w-3 h-3" />
           </Button>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setState('initial')}
+          className="w-4 h-4 p-0"
+        >
+          <X className="w-3 h-3" />
+        </Button>
       </div>
     );
   }
@@ -232,29 +229,26 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
   // Post-Record State: Ultra-compact layout with controls
   if (state === 'post-record') {
     return (
-      <div className="flex flex-col items-center gap-1">
-        <div className="text-xs text-muted-foreground">✅ Voice</div>
-        <div className="flex items-center justify-between p-1 rounded border border-border bg-background max-w-20">
-          <div className="flex-1 flex justify-center">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={playRecording}
-              className="w-4 h-4 rounded-full p-0 border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
-            >
-              {isPlaying ? <Pause className="w-2.5 h-2.5" /> : <Play className="w-2.5 h-2.5" />}
-            </Button>
-          </div>
-          
+      <div className="flex items-center justify-between p-1 rounded border border-border bg-background max-w-20">
+        <div className="flex-1 flex justify-center">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={deleteRecording}
-            className="w-4 h-4 p-0 text-destructive"
+            onClick={playRecording}
+            className="w-4 h-4 rounded-full p-0"
           >
-            <X className="w-2.5 h-2.5" />
+            {isPlaying ? <Pause className="w-2.5 h-2.5" /> : <Play className="w-2.5 h-2.5" />}
           </Button>
         </div>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={deleteRecording}
+          className="w-4 h-4 p-0 text-destructive"
+        >
+          <X className="w-2.5 h-2.5" />
+        </Button>
       </div>
     );
   }
