@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, Volume2 } from "lucide-react";
 
@@ -11,17 +11,25 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const togglePlayback = () => {
+  const togglePlayback = async () => {
     if (!audioRef.current) return;
 
-    if (isPlaying) {
-      audioRef.current.pause();
+    try {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        await audioRef.current.play();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error("Audio playback error:", error);
+      setHasError(true);
       setIsPlaying(false);
-    } else {
-      audioRef.current.play();
-      setIsPlaying(true);
     }
   };
 
@@ -37,10 +45,48 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   };
 
   const handleLoadedMetadata = () => {
-    if (audioRef.current) {
-      setDuration(audioRef.current.duration);
+    if (!audioRef.current) return;
+    
+    const audioDuration = audioRef.current.duration;
+    if (isFinite(audioDuration) && audioDuration > 0) {
+      setDuration(audioDuration);
+    } else {
+      setDuration(0);
     }
+    setIsLoading(false);
+    setHasError(false);
   };
+
+  const handleCanPlay = () => {
+    setIsLoading(false);
+    setHasError(false);
+  };
+
+  const handleAudioError = (e: any) => {
+    console.error("Audio error:", e);
+    setIsPlaying(false);
+    setHasError(true);
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('ended', handleAudioEnded);
+    audio.addEventListener('error', handleAudioError);
+
+    return () => {
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('ended', handleAudioEnded);
+      audio.removeEventListener('error', handleAudioError);
+    };
+  }, [voiceMemoUrl]);
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!audioRef.current || !duration) return;
@@ -77,10 +123,7 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
         
         <audio
           ref={audioRef}
-          onEnded={handleAudioEnded}
-          onTimeUpdate={handleTimeUpdate}
-          onLoadedMetadata={handleLoadedMetadata}
-          preload="metadata"
+          preload="auto"
         >
           <source src={voiceMemoUrl} type="audio/webm" />
           <source src={voiceMemoUrl} type="audio/mp3" />
@@ -142,10 +185,7 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
       
       <audio
         ref={audioRef}
-        onEnded={handleAudioEnded}
-        onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={handleLoadedMetadata}
-        preload="metadata"
+        preload="auto"
       >
         <source src={voiceMemoUrl} type="audio/webm" />
         <source src={voiceMemoUrl} type="audio/mp3" />

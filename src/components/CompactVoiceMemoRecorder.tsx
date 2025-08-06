@@ -101,28 +101,48 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
     }
   };
 
-  const playRecording = () => {
-    if (recordedBlob && !isPlaying) {
-      const audioUrl = URL.createObjectURL(recordedBlob);
-      audioRef.current = new Audio(audioUrl);
-      
-      audioRef.current.onended = () => {
+  const playRecording = async () => {
+    if (!recordedBlob) return;
+
+    try {
+      if (isPlaying && audioRef.current) {
+        audioRef.current.pause();
         setIsPlaying(false);
         setPlaybackTime(0);
-        if (playbackTimerRef.current) clearInterval(playbackTimerRef.current);
-      };
-      
-      audioRef.current.play();
-      setIsPlaying(true);
-      setPlaybackTime(0);
-      
-      playbackTimerRef.current = setInterval(() => {
-        setPlaybackTime(prev => prev + 1);
-      }, 1000);
-    } else if (isPlaying && audioRef.current) {
-      audioRef.current.pause();
+      } else {
+        const audioUrl = URL.createObjectURL(recordedBlob);
+        audioRef.current = new Audio(audioUrl);
+        audioRef.current.preload = "auto";
+        
+        // Add event listeners for better playback handling
+        audioRef.current.onloadedmetadata = () => {
+          console.log("Audio metadata loaded");
+        };
+        
+        audioRef.current.ontimeupdate = () => {
+          if (audioRef.current) {
+            setPlaybackTime(audioRef.current.currentTime);
+          }
+        };
+        
+        audioRef.current.onended = () => {
+          setIsPlaying(false);
+          setPlaybackTime(0);
+        };
+        
+        audioRef.current.onerror = (e) => {
+          console.error("Audio playback error:", e);
+          setIsPlaying(false);
+          setPlaybackTime(0);
+        };
+        
+        await audioRef.current.play();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error("Playback failed:", error);
       setIsPlaying(false);
-      if (playbackTimerRef.current) clearInterval(playbackTimerRef.current);
+      setPlaybackTime(0);
     }
   };
 
