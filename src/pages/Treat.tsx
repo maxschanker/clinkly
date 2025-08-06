@@ -370,7 +370,7 @@ const Treat = () => {
         {treatData.isError && (
           <div className="space-y-3">
             <Button
-              onClick={()={() => {
+              onClick={() => {
                 window.scrollTo(0, 0);
                 navigate('/');
               }}
