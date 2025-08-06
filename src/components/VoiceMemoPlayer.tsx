@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Play, Pause } from "lucide-react";
+import { Play } from "lucide-react";
 
 interface VoiceMemoPlayerProps {
   voiceMemoUrl: string;
@@ -9,48 +9,33 @@ interface VoiceMemoPlayerProps {
 
 const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const togglePlayback = async () => {
-    if (!audioRef.current) return;
+  const playAudio = async () => {
+    if (!audioRef.current || isPlaying) return;
 
     try {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        await audioRef.current.play();
-        setIsPlaying(true);
-      }
+      await audioRef.current.play();
+      setIsPlaying(true);
     } catch (error) {
       console.error("Audio playback error:", error);
       setHasError(true);
-      setIsPlaying(false);
     }
+  };
+
+  const stopAudio = () => {
+    if (!audioRef.current) return;
+    
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+    setIsPlaying(false);
   };
 
   const handleLoadedMetadata = () => {
-    if (!audioRef.current) return;
-    
-    const audioDuration = audioRef.current.duration;
-    // Handle invalid or infinite duration
-    if (isFinite(audioDuration) && audioDuration > 0) {
-      setDuration(audioDuration);
-    } else {
-      // Fallback for WebM files with missing duration metadata
-      setDuration(0);
-    }
     setIsLoading(false);
     setHasError(false);
-  };
-
-  const handleTimeUpdate = () => {
-    if (!audioRef.current) return;
-    setCurrentTime(audioRef.current.currentTime);
   };
 
   const handleCanPlay = () => {
@@ -60,7 +45,6 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
 
   const handleAudioEnded = () => {
     setIsPlaying(false);
-    setCurrentTime(0);
   };
 
   const handleAudioError = (e: any) => {
@@ -70,25 +54,18 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
     setIsLoading(false);
   };
 
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('canplay', handleCanPlay);
     audio.addEventListener('ended', handleAudioEnded);
     audio.addEventListener('error', handleAudioError);
 
     return () => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('ended', handleAudioEnded);
       audio.removeEventListener('error', handleAudioError);
@@ -106,39 +83,34 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
         
         <div className="flex items-center justify-center gap-4">
           <Button
-            onClick={togglePlayback}
+            onClick={playAudio}
             variant="outline"
             size="lg"
-            disabled={isLoading || hasError}
-            className="w-16 h-16 rounded-full border-2 border-primary/30 bg-white hover:bg-primary/10 hover:scale-105 transition-all duration-200"
+            disabled={isLoading || hasError || isPlaying}
+            className="w-20 h-16 rounded-xl border-2 border-primary/30 bg-white hover:bg-primary/10 hover:scale-105 transition-all duration-200"
           >
             {isLoading ? (
               <div className="w-6 h-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            ) : isPlaying ? (
-              <Pause className="w-6 h-6 text-primary" />
             ) : (
               <Play className="w-6 h-6 text-primary ml-1" />
             )}
           </Button>
           
-          <div className="flex-1 max-w-xs">
-            <div className="text-sm text-muted-foreground mb-1">
-              {hasError 
-                ? "Error loading audio" 
-                : isLoading 
-                ? "Loading..." 
-                : `${formatTime(currentTime)}${duration > 0 ? ` / ${formatTime(duration)}` : ''}`
-              }
+          <Button
+            onClick={stopAudio}
+            variant="outline"
+            size="lg"
+            disabled={isLoading || hasError || !isPlaying}
+            className="w-20 h-16 rounded-xl border-2 border-primary/30 bg-white hover:bg-primary/10 hover:scale-105 transition-all duration-200"
+          >
+            <div className="w-4 h-4 bg-primary rounded-sm" />
+          </Button>
+          
+          {hasError && (
+            <div className="text-sm text-destructive">
+              Error loading audio
             </div>
-            <div className="w-full h-2 bg-muted rounded-full">
-              <div 
-                className="h-2 bg-primary rounded-full transition-all duration-300" 
-                style={{ 
-                  width: duration > 0 ? `${(currentTime / duration) * 100}%` : isPlaying ? '100%' : '0%' 
-                }} 
-              />
-            </div>
-          </div>
+          )}
         </div>
         
         <audio

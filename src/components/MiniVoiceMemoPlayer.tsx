@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Volume2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Volume2, Play } from "lucide-react";
 
 interface MiniVoiceMemoPlayerProps {
   voiceMemoUrl: string;
@@ -8,51 +9,31 @@ interface MiniVoiceMemoPlayerProps {
 
 const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const togglePlayback = async () => {
-    if (!audioRef.current) return;
+  const playAudio = async () => {
+    if (!audioRef.current || isPlaying) return;
 
     try {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        await audioRef.current.play();
-        setIsPlaying(true);
-      }
+      await audioRef.current.play();
+      setIsPlaying(true);
     } catch (error) {
       console.error("Audio playback error:", error);
       setHasError(true);
-      setIsPlaying(false);
     }
   };
 
-  const handleAudioEnded = () => {
+  const stopAudio = () => {
+    if (!audioRef.current) return;
+    
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
     setIsPlaying(false);
-    setCurrentTime(0);
-  };
-
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-    }
   };
 
   const handleLoadedMetadata = () => {
-    if (!audioRef.current) return;
-    
-    const audioDuration = audioRef.current.duration;
-    if (isFinite(audioDuration) && audioDuration > 0) {
-      setDuration(audioDuration);
-    } else {
-      setDuration(0);
-    }
     setIsLoading(false);
     setHasError(false);
   };
@@ -60,6 +41,10 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   const handleCanPlay = () => {
     setIsLoading(false);
     setHasError(false);
+  };
+
+  const handleAudioEnded = () => {
+    setIsPlaying(false);
   };
 
   const handleAudioError = (e: any) => {
@@ -74,113 +59,52 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
     if (!audio) return;
 
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('canplay', handleCanPlay);
     audio.addEventListener('ended', handleAudioEnded);
     audio.addEventListener('error', handleAudioError);
 
     return () => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('ended', handleAudioEnded);
       audio.removeEventListener('error', handleAudioError);
     };
   }, [voiceMemoUrl]);
 
-  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!audioRef.current || !duration) return;
-    
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const progress = clickX / rect.width;
-    const newTime = progress * duration;
-    
-    audioRef.current.currentTime = newTime;
-    setCurrentTime(newTime);
-  };
-
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  const progress = duration ? (currentTime / duration) * 100 : 0;
-
-  // Minimal floating bubble view
-  if (!isExpanded) {
-    return (
-      <div 
-        className="inline-flex items-center gap-2 p-2 rounded-full bg-primary/10 border border-primary/20 cursor-pointer hover:bg-primary/15 transition-all duration-200"
-        onClick={() => setIsExpanded(true)}
-      >
-        <div className="flex items-center gap-1">
-          <Volume2 className="w-3 h-3 text-primary" />
-          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-        </div>
-        <span className="text-xs font-medium text-primary">Voice message</span>
-        
-        <audio
-          ref={audioRef}
-          preload="auto"
-        >
-          <source src={voiceMemoUrl} type="audio/webm" />
-          <source src={voiceMemoUrl} type="audio/mp3" />
-          <source src={voiceMemoUrl} type="audio/wav" />
-        </audio>
-      </div>
-    );
-  }
-
-  // Expanded player view
   return (
-    <div className="p-4 rounded-2xl bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/20 space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Volume2 className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium text-primary">Voice Message</span>
-        </div>
+    <Card className="w-64 p-4 bg-white/95 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
+      <div className="flex items-center justify-center gap-3">
         <Button
+          onClick={playAudio}
           variant="ghost"
-          size="sm"
-          onClick={() => setIsExpanded(false)}
-          className="text-xs text-muted-foreground hover:text-foreground"
+          size="icon"
+          disabled={isLoading || hasError || isPlaying}
+          className="w-12 h-12 rounded-full bg-primary/10 hover:bg-primary/20"
         >
-          Minimize
-        </Button>
-      </div>
-      
-      <div className="flex items-center gap-3">
-        <Button
-          onClick={togglePlayback}
-          variant="default"
-          size="sm"
-          className="w-10 h-10 rounded-full shadow-button hover:shadow-glow hover:scale-105 transition-all duration-200"
-        >
-          {isPlaying ? (
-            <Pause className="w-4 h-4" />
+          {isLoading ? (
+            <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           ) : (
-            <Play className="w-4 h-4 ml-0.5" />
+            <Play className="w-4 h-4 text-primary ml-0.5" />
           )}
         </Button>
         
-        <div className="flex-1 space-y-1">
-          <div 
-            className="h-1.5 bg-muted rounded-full cursor-pointer overflow-hidden"
-            onClick={handleSeek}
-          >
-            <div 
-              className="h-full bg-primary rounded-full transition-all duration-100"
-              style={{ width: `${progress}%` }}
-            />
+        <Button
+          onClick={stopAudio}
+          variant="ghost"
+          size="icon"
+          disabled={isLoading || hasError || !isPlaying}
+          className="w-12 h-12 rounded-full bg-primary/10 hover:bg-primary/20"
+        >
+          <div className="w-3 h-3 bg-primary rounded-sm" />
+        </Button>
+        
+        <Volume2 className="w-5 h-5 text-muted-foreground" />
+        
+        {hasError && (
+          <div className="text-xs text-destructive">
+            Error
           </div>
-          
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{formatTime(currentTime)}</span>
-            <span>{formatTime(duration)}</span>
-          </div>
-        </div>
+        )}
       </div>
       
       <audio
@@ -191,7 +115,7 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
         <source src={voiceMemoUrl} type="audio/mp3" />
         <source src={voiceMemoUrl} type="audio/wav" />
       </audio>
-    </div>
+    </Card>
   );
 };
 
