@@ -24,14 +24,12 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(existingUrl || null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackTime, setPlaybackTime] = useState(0);
-  const [waveformBars, setWaveformBars] = useState<number[]>(Array(12).fill(1));
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const playbackTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const waveformAnimationRef = useRef<NodeJS.Timeout | null>(null);
   
   const { toast } = useToast();
 
@@ -47,24 +45,9 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (playbackTimerRef.current) clearInterval(playbackTimerRef.current);
-      if (waveformAnimationRef.current) clearInterval(waveformAnimationRef.current);
     };
   }, []);
 
-  const animateWaveform = () => {
-    if (waveformAnimationRef.current) clearInterval(waveformAnimationRef.current);
-    
-    waveformAnimationRef.current = setInterval(() => {
-      setWaveformBars(prev => prev.map(() => Math.random() * 100 + 10));
-    }, 150);
-  };
-
-  const stopWaveformAnimation = () => {
-    if (waveformAnimationRef.current) {
-      clearInterval(waveformAnimationRef.current);
-      waveformAnimationRef.current = null;
-    }
-  };
 
   const startRecording = async () => {
     try {
@@ -84,7 +67,6 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         setRecordedBlob(blob);
         stream.getTracks().forEach(track => track.stop());
-        stopWaveformAnimation();
         setState('post-record');
       };
       
@@ -92,7 +74,6 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
       setIsRecording(true);
       setRecordingTime(0);
       setState('recording');
-      animateWaveform();
       
       timerRef.current = setInterval(() => {
         setRecordingTime(prev => prev + 1);
@@ -201,110 +182,94 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const renderWaveform = (isStatic = false) => (
-    <div className="flex items-center gap-0.5 h-6 px-2">
-      {waveformBars.map((height, index) => (
-        <div
-          key={index}
-          className={cn(
-            "w-0.5 bg-primary rounded-full transition-all duration-150",
-            isStatic ? "opacity-60" : "opacity-100"
-          )}
-          style={{ 
-            height: isStatic ? `${Math.min(height * 0.4, 16)}px` : `${Math.min(height * 0.6, 20)}px` 
-          }}
-        />
-      ))}
-    </div>
-  );
 
-  // Initial State: Horizontal layout with mic icon and plus button
+  // Initial State: Compact horizontal layout
   if (state === 'initial') {
     return (
-      <div className="flex items-center justify-between p-2 rounded-lg border border-border bg-background hover:bg-accent/50 transition-all duration-200">
-        <div className="flex items-center gap-2">
-          <span className="text-base">🎤</span>
+      <div className="flex items-center justify-between p-1.5 rounded-md border border-border bg-background hover:bg-accent/50 transition-all duration-200">
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm">🎤</span>
           <span className="text-xs font-medium text-foreground">Voice</span>
         </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setState('pre-record')}
-          className="w-5 h-5 p-0 hover:bg-primary/10"
+          className="w-4 h-4 p-0 hover:bg-primary/10"
         >
-          <Plus className="w-3 h-3" />
+          <Plus className="w-2.5 h-2.5" />
         </Button>
       </div>
     );
   }
 
-  // Pre-Record State: Horizontal layout with record button and close
+  // Pre-Record State: Compact layout
   if (state === 'pre-record') {
     return (
-      <div className="flex items-center justify-between p-2 rounded-lg border border-border bg-background space-x-2 animate-fade-in">
+      <div className="flex items-center justify-between p-1.5 rounded-md border border-border bg-background space-x-1.5 animate-fade-in">
         <Button
           variant="default"
           size="sm"
           onClick={startRecording}
-          className="w-8 h-8 rounded-full shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"
+          className="w-6 h-6 rounded-full shadow-sm hover:shadow-md transition-all duration-200"
         >
-          <Mic className="w-3 h-3" />
+          <Mic className="w-2.5 h-2.5" />
         </Button>
-        <span className="text-xs font-medium text-foreground flex-1 text-center">Tap to record</span>
+        <span className="text-xs font-medium text-foreground flex-1 text-center">Record</span>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setState('initial')}
-          className="w-5 h-5 p-0"
+          className="w-4 h-4 p-0"
         >
-          <X className="w-3 h-3" />
+          <X className="w-2.5 h-2.5" />
         </Button>
       </div>
     );
   }
 
-  // Recording State: Horizontal layout with stop button, waveform, and timer
+  // Recording State: Compact layout with timer
   if (state === 'recording') {
     return (
-      <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/20 animate-scale-in">
+      <div className="flex items-center gap-1.5 p-1.5 rounded-md bg-primary/5 border border-primary/20 animate-scale-in">
         <Button
           variant="destructive"
           size="sm"
           onClick={stopRecording}
-          className="w-8 h-8 rounded-full animate-pulse shadow-sm"
+          className="w-6 h-6 rounded-full animate-pulse shadow-sm"
         >
-          <MicOff className="w-3 h-3" />
+          <MicOff className="w-2.5 h-2.5" />
         </Button>
         
-        <div className="flex-1 bg-background/50 rounded-md overflow-hidden">
-          {renderWaveform()}
+        <div className="flex-1 flex items-center gap-1">
+          <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+          <span className="text-xs font-medium text-primary">Recording</span>
         </div>
         
-        <span className="text-xs font-mono text-primary min-w-[35px]">{formatTime(recordingTime)}</span>
+        <span className="text-xs font-mono text-primary min-w-[30px]">{formatTime(recordingTime)}</span>
       </div>
     );
   }
 
-  // Post-Record State: Horizontal layout with play, waveform, upload controls
+  // Post-Record State: Compact layout with controls
   if (state === 'post-record') {
     return (
-      <div className="flex items-center gap-2 p-2 rounded-lg border border-border bg-background animate-fade-in">
+      <div className="flex items-center gap-1.5 p-1.5 rounded-md border border-border bg-background animate-fade-in">
         <Button
           variant="outline"
           size="sm"
           onClick={playRecording}
-          className="w-7 h-7 rounded-full"
+          className="w-6 h-6 rounded-full"
         >
-          {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+          {isPlaying ? <Pause className="w-2.5 h-2.5" /> : <Play className="w-2.5 h-2.5" />}
         </Button>
         
-        <div className="flex-1 bg-muted/30 rounded-md overflow-hidden">
-          {renderWaveform(true)}
+        <div className="flex-1 flex items-center gap-1">
+          <span className="text-xs font-medium text-foreground">Audio</span>
+          <span className="text-xs font-mono text-muted-foreground">
+            {formatTime(isPlaying ? playbackTime : recordingTime)}
+          </span>
         </div>
-        
-        <span className="text-xs font-mono text-muted-foreground min-w-[35px]">
-          {formatTime(isPlaying ? playbackTime : recordingTime)}
-        </span>
         
         <div className="flex gap-1">
           <Button
@@ -312,38 +277,38 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
             size="sm"
             onClick={handleUpload}
             disabled={isUploading}
-            className="w-7 h-7 rounded-full shadow-sm hover:shadow-md transition-all duration-200"
+            className="w-6 h-6 rounded-full shadow-sm hover:shadow-md transition-all duration-200"
           >
-            <Upload className="w-3 h-3" />
+            <Upload className="w-2.5 h-2.5" />
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={deleteRecording}
-            className="w-5 h-5 p-0 text-destructive hover:bg-destructive/10"
+            className="w-4 h-4 p-0 text-destructive hover:bg-destructive/10"
           >
-            <X className="w-3 h-3" />
+            <X className="w-2.5 h-2.5" />
           </Button>
         </div>
       </div>
     );
   }
 
-  // Completed State: Horizontal layout with checkmark and edit button
+  // Completed State: Compact layout with success indicator
   if (state === 'completed') {
     return (
-      <div className="flex items-center justify-between p-2 rounded-lg bg-success/10 border border-success/20 animate-fade-in">
-        <div className="flex items-center gap-2">
-          <span className="text-base">✅</span>
+      <div className="flex items-center justify-between p-1.5 rounded-md bg-success/10 border border-success/20 animate-fade-in">
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm">✅</span>
           <span className="text-xs font-medium text-success">Recorded</span>
         </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={editRecording}
-          className="text-xs text-muted-foreground hover:text-foreground hover:bg-background/50 h-6 px-2"
+          className="text-xs text-muted-foreground hover:text-foreground hover:bg-background/50 h-5 px-1.5"
         >
-          <Edit className="w-3 h-3 mr-1" />
+          <Edit className="w-2.5 h-2.5 mr-1" />
           Edit
         </Button>
       </div>
