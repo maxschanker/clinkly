@@ -54,7 +54,7 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.upload-voice-memo]
-verify_jwt = true
+verify_jwt = false
 
 [functions.analytics]
 verify_jwt = true

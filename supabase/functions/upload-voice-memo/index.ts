@@ -27,31 +27,7 @@ serve(async (req) => {
       );
     }
 
-    // Get user from auth header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Authorization required' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid authorization' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
+    // Anonymous upload - no authentication required
 
     // Parse form data
     const formData = await req.formData();
@@ -90,10 +66,11 @@ serve(async (req) => {
       );
     }
 
-    // Generate unique filename
+    // Generate unique filename for anonymous upload
     const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 15);
     const extension = file.name.split('.').pop() || 'webm';
-    const fileName = `${user.id}/${timestamp}-voice-memo.${extension}`;
+    const fileName = `anonymous/${timestamp}-${randomId}-voice-memo.${extension}`;
 
     // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -130,11 +107,11 @@ serve(async (req) => {
       );
     }
 
-    // Store upload metadata
+    // Store upload metadata (anonymous upload)
     const { error: metadataError } = await supabase
       .from('voice_memo_uploads')
       .insert({
-        user_id: user.id,
+        user_id: null, // Anonymous upload
         file_name: fileName,
         file_url: urlData.publicUrl,
         file_size: file.size,
