@@ -311,12 +311,14 @@ const Treat = () => {
           </Card>
         </div>
 
-        {/* 4. "check your venmo 😉" */}
-        <div className="text-center mb-6">
-          <p className="text-lg font-medium text-foreground">
-            check your venmo 😉
-          </p>
-        </div>
+        {/* 4. "check your venmo 😉" - Only show if there's an amount */}
+        {treatData.amount && (
+          <div className="text-center mb-6">
+            <p className="text-lg font-medium text-foreground">
+              check your venmo 😉
+            </p>
+          </div>
+        )}
 
         {/* 5. Sweet message */}
         {treatData.message && (
