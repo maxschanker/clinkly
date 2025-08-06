@@ -196,6 +196,14 @@ const Send = () => {
           </button>
         </div>
 
+        {/* Voice Memo Section */}
+        <div className="mb-8">
+          <CompactVoiceMemoRecorder 
+            onVoiceMemoChange={setVoiceMemoUrl}
+            existingUrl={voiceMemoUrl}
+          />
+        </div>
+
         {/* Sweet Message Section */}
         <div className="mb-8">
           <h2 className="text-xl font-bold mb-4">Sweet message</h2>
@@ -219,14 +227,6 @@ const Send = () => {
               {formData.message.length}/300
             </div>
           </div>
-        </div>
-
-        {/* Voice Memo Section */}
-        <div className="mb-8">
-          <CompactVoiceMemoRecorder 
-            onVoiceMemoChange={setVoiceMemoUrl}
-            existingUrl={voiceMemoUrl}
-          />
         </div>
 
         {/* Gift Section */}
