@@ -94,6 +94,63 @@ const Confirmation = () => {
     return `${message} ${emoji} sent you a clink 💌`;
   };
 
+  const shareClinkOnly = async () => {
+    if (!treatData || !treatSlug) {
+      toast({
+        title: "Error",
+        description: "Clink data not available"
+      });
+      return;
+    }
+
+    // Use the shareUrl from backend if available, otherwise construct it
+    const shareUrl = treatData.shareUrl || `${window.location.origin}/t/${treatSlug}`;
+    const message = `${treatData.header_text || treatData.headerText || "Someone sent you a clink"} ✨`;
+    
+    console.log('✅ Sharing treat with URL:', shareUrl);
+    
+    // Record sharing analytics
+    if (treatData.id) {
+      try {
+        await recordShare(treatData.id, navigator.share ? 'native_share' : 'clipboard');
+      } catch (error) {
+        console.error('Failed to record share:', error);
+      }
+    }
+
+    // Try native share first
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'clink',
+          text: message,
+          url: shareUrl
+        });
+        setStepCompleted(prev => ({ ...prev, share: true, venmo: true })); // Mark both as complete since no Venmo needed
+      } catch (err) {
+        console.log('Share cancelled or failed');
+        return;
+      }
+    } else {
+      // Fallback to copying link
+      try {
+        await navigator.clipboard.writeText(`${message} ${shareUrl}`);
+        setStepCompleted(prev => ({ ...prev, share: true, venmo: true })); // Mark both as complete since no Venmo needed
+        
+        toast({
+          title: "Copied! 📋",
+          description: "Link copied to clipboard",
+        });
+      } catch (err) {
+        toast({
+          title: "Oops!",
+          description: "Couldn't copy link"
+        });
+        return;
+      }
+    }
+  };
+
   const shareClinkAndPromptVenmo = async () => {
     if (!treatData || !treatSlug) {
       toast({
@@ -318,12 +375,21 @@ const Confirmation = () => {
         <div className="space-y-4">
           <div className="text-center">
             <h3 className="text-lg font-bold mb-3">Deliver your clink!</h3>
-            <Button
-              onClick={shareClinkAndPromptVenmo}
-              className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
-            >
-              📨 Send your clink + Venmo
-            </Button>
+            {treatData.amount ? (
+              <Button
+                onClick={shareClinkAndPromptVenmo}
+                className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
+              >
+                📨 Send your clink + Venmo
+              </Button>
+            ) : (
+              <Button
+                onClick={shareClinkOnly}
+                className="w-full h-12 text-base font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
+              >
+                📨 Send your clink
+              </Button>
+            )}
           </div>
           
           {/* Fallback copy option */}
