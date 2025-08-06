@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+
 import { Play, Square } from "lucide-react";
 
 interface MiniVoiceMemoPlayerProps {
@@ -70,30 +70,28 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   }, [voiceMemoUrl]);
 
   return (
-    <Card className="w-64 p-4 bg-white/95 backdrop-blur-sm border-0 shadow-lg rounded-2xl">
-      <div className="flex flex-col items-center justify-center gap-2">
-        <Button
-          onClick={togglePlayback}
-          variant="default"
-          size="icon"
-          disabled={isLoading || hasError}
-          className="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 hover:scale-105 transition-all duration-200 shadow-lg"
-        >
-          {isLoading ? (
-            <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-          ) : isPlaying ? (
-            <Square className="w-3 h-3 text-primary-foreground fill-current" />
-          ) : (
-            <Play className="w-4 h-4 text-primary-foreground ml-0.5" />
-          )}
-        </Button>
-        
-        {hasError && (
-          <div className="text-xs text-destructive">
-            Error
-          </div>
+    <div className="flex flex-col items-center justify-center gap-2 py-4">
+      <Button
+        onClick={togglePlayback}
+        variant="default"
+        size="icon"
+        disabled={isLoading || hasError}
+        className="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 hover:scale-105 transition-all duration-200 shadow-lg"
+      >
+        {isLoading ? (
+          <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+        ) : isPlaying ? (
+          <Square className="w-3 h-3 text-primary-foreground fill-current" />
+        ) : (
+          <Play className="w-4 h-4 text-primary-foreground ml-0.5" />
         )}
-      </div>
+      </Button>
+      
+      {hasError && (
+        <div className="text-xs text-destructive">
+          Error
+        </div>
+      )}
       
       <audio
         ref={audioRef}
@@ -103,7 +101,7 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
         <source src={voiceMemoUrl} type="audio/mp3" />
         <source src={voiceMemoUrl} type="audio/wav" />
       </audio>
-    </Card>
+    </div>
   );
 };
 
