@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Edit } from "lucide-react";
 import { CoverArtModal } from "@/components/CoverArtModal";
 import { CompactVoiceMemoRecorder } from "@/components/CompactVoiceMemoRecorder";
-import { createTreat, type TreatData } from "@/lib/treatService";
+import { createTreat, uploadVoiceMemo, type TreatData } from "@/lib/treatService";
 import { useToast } from "@/hooks/use-toast";
 import { saveTreatData, cleanupStaleData } from "@/lib/utils";
 
@@ -30,7 +30,7 @@ const Send = () => {
   });
   const [addCash, setAddCash] = useState(false);
   const [showCoverArtModal, setShowCoverArtModal] = useState(false);
-  const [voiceMemoUrl, setVoiceMemoUrl] = useState<string | null>(null);
+  const [voiceMemoBlob, setVoiceMemoBlob] = useState<Blob | null>(null);
 
   // Clean up stale data on component mount
   useEffect(() => {
@@ -70,6 +70,21 @@ const Send = () => {
     setIsLoading(true);
     
     try {
+      // Upload voice memo if present
+      let voiceMemoUrl = null;
+      if (voiceMemoBlob) {
+        try {
+          const { file_url } = await uploadVoiceMemo(voiceMemoBlob);
+          voiceMemoUrl = file_url;
+        } catch (error) {
+          toast({
+            title: "Voice memo upload failed",
+            description: "Your clink will be saved without the voice memo.",
+            variant: "destructive"
+          });
+        }
+      }
+
       const treatData: TreatData = {
         header_text: formData.headerText || "Someone sent you a clink",
         font_id: `font-${formData.headerFont}`,
@@ -199,8 +214,8 @@ const Send = () => {
         {/* Voice Memo Section */}
         <div className="mb-8">
           <CompactVoiceMemoRecorder 
-            onVoiceMemoChange={setVoiceMemoUrl}
-            existingUrl={voiceMemoUrl}
+            onVoiceMemoChange={setVoiceMemoBlob}
+            existingUrl={null}
           />
         </div>
 

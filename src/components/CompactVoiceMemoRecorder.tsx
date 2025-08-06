@@ -6,7 +6,7 @@ import { uploadVoiceMemo } from '@/lib/treatService';
 import { cn } from '@/lib/utils';
 
 interface CompactVoiceMemoRecorderProps {
-  onVoiceMemoChange: (url: string | null) => void;
+  onVoiceMemoChange: (blob: Blob | null) => void;
   existingUrl?: string | null;
 }
 
@@ -66,6 +66,7 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
       mediaRecorder.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         setRecordedBlob(blob);
+        onVoiceMemoChange(blob);
         stream.getTracks().forEach(track => track.stop());
         setState('post-record');
       };
@@ -140,32 +141,6 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
     if (playbackTimerRef.current) clearInterval(playbackTimerRef.current);
   };
 
-  const handleUpload = async () => {
-    if (!recordedBlob) return;
-    
-    setIsUploading(true);
-    
-    try {
-      const { file_url } = await uploadVoiceMemo(recordedBlob);
-      setUploadedUrl(file_url);
-      onVoiceMemoChange(file_url);
-      setState('completed');
-      
-      toast({
-        title: "Voice memo uploaded! 🎤",
-        description: "Your message has been attached.",
-      });
-      
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Upload failed",
-        description: "Try recording again.",
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  };
 
   const editRecording = () => {
     setState('initial');
@@ -254,25 +229,18 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
   // Post-Record State: Ultra-compact layout with controls
   if (state === 'post-record') {
     return (
-      <div className="flex items-center gap-1 p-1 rounded border border-border bg-background max-w-20">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={playRecording}
-          className="w-4 h-4 rounded-full p-0"
-        >
-          {isPlaying ? <Pause className="w-2.5 h-2.5" /> : <Play className="w-2.5 h-2.5" />}
-        </Button>
+      <div className="flex items-center justify-between p-1 rounded border border-border bg-background max-w-20">
+        <div className="flex-1 flex justify-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={playRecording}
+            className="w-4 h-4 rounded-full p-0"
+          >
+            {isPlaying ? <Pause className="w-2.5 h-2.5" /> : <Play className="w-2.5 h-2.5" />}
+          </Button>
+        </div>
         
-        <Button
-          variant="default"
-          size="sm"
-          onClick={handleUpload}
-          disabled={isUploading}
-          className="w-4 h-4 rounded-full p-0"
-        >
-          <Upload className="w-2.5 h-2.5" />
-        </Button>
         <Button
           variant="ghost"
           size="sm"
