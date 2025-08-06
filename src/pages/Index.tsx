@@ -72,7 +72,7 @@ const Index = () => {
               <>
                 {/* Desktop: QR Code Landing */}
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight animate-fade-in">
-                  clink works best on mobile
+                  <span className="bg-gradient-primary bg-clip-text text-transparent">clink</span> works best on mobile!
                 </h2>
                 
                 <p className="text-lg text-muted-foreground mb-8 animate-fade-in">
