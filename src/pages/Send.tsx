@@ -235,14 +235,16 @@ const Send = () => {
                 existingUrl={null}
               />
             </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowMusicModal(true)}
-              className="flex items-center gap-2 ml-4"
-            >
-              <Music className="h-4 w-4" />
-              {selectedSong ? 'Change Song' : 'Add Song'}
-            </Button>
+            {!selectedSong && (
+              <Button
+                variant="outline"
+                onClick={() => setShowMusicModal(true)}
+                className="flex items-center gap-2 ml-4"
+              >
+                <Music className="h-4 w-4" />
+                Add Song
+              </Button>
+            )}
           </div>
           
           {selectedSong && (
