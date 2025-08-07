@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Play, Pause, Music, Volume2 } from "lucide-react";
+import { Play, Pause, Square, Music, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -17,6 +17,7 @@ interface SongPlayerProps {
 
 export function SongPlayer({ song, className = "" }: SongPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isStopped, setIsStopped] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
@@ -89,8 +90,22 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
       sendPlayerCommand('playVideo');
     }, 50);
     
+    setIsStopped(false);
     return true;
   }, [playerReady, isCued, isMobile, userInteracted, sendPlayerCommand]);
+
+  const stopPlayback = useCallback(() => {
+    if (!playerReady) {
+      console.warn('Cannot stop playback - player not ready');
+      return;
+    }
+
+    console.log('Stopping playback');
+    sendPlayerCommand('stopVideo');
+    setIsPlaying(false);
+    setIsStopped(true);
+    setIsLoading(false);
+  }, [playerReady, sendPlayerCommand]);
 
   const togglePlay = useCallback(() => {
     // Mark user interaction for mobile autoplay policy compliance
@@ -202,6 +217,7 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
             case 1: // Playing
               console.log('State: Playing - updating UI');
               setIsPlaying(true);
+              setIsStopped(false);
               setIsLoading(false);
               setHasError(false);
               break;
@@ -229,6 +245,7 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
               setIsCued(true);
               setIsLoading(false);
               setIsPlaying(false); // Ensure play state is false when cued
+              setIsStopped(true);
               if (!playerReady) {
                 setPlayerReady(true);
               }
@@ -236,6 +253,7 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
             case 0: // Ended
               console.log('State: Ended');
               setIsPlaying(false);
+              setIsStopped(true);
               setIsLoading(false);
               break;
           }
@@ -276,6 +294,7 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
   // Reset state when song changes
   useEffect(() => {
     setIsPlaying(false);
+    setIsStopped(true);
     setIsLoading(false);
     setHasError(false);
     setPlayerReady(false);
@@ -301,23 +320,32 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
             className="w-16 h-12 object-cover rounded"
             loading="lazy"
           />
-          <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded">
+          <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/30 rounded">
             <Button
               size="sm"
               variant="ghost"
               onClick={togglePlay}
               disabled={isLoading && !isPlaying}
-              className="h-8 w-8 p-0 text-white hover:bg-white/20"
+              className="h-7 w-7 p-0 text-white hover:bg-white/20"
             >
               {isLoading && !isPlaying ? (
-                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full" />
               ) : hasError ? (
-                <Volume2 className="h-4 w-4 opacity-50" />
+                <Volume2 className="h-3 w-3 opacity-50" />
               ) : isPlaying ? (
-                <Pause className="h-4 w-4" />
+                <Pause className="h-3 w-3" />
               ) : (
-                <Play className="h-4 w-4" />
+                <Play className="h-3 w-3" />
               )}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={stopPlayback}
+              disabled={isStopped || isLoading || hasError}
+              className="h-7 w-7 p-0 text-white hover:bg-white/20 disabled:opacity-50"
+            >
+              <Square className="h-3 w-3" />
             </Button>
           </div>
         </div>
