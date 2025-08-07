@@ -22,9 +22,13 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
   const [playerReady, setPlayerReady] = useState(false);
   const [isCued, setIsCued] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [pendingPlay, setPendingPlay] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const preloadTimeoutRef = useRef<NodeJS.Timeout>();
   const readyTimeoutRef = useRef<NodeJS.Timeout>();
+  const retryTimeoutRef = useRef<NodeJS.Timeout>();
   const isMobile = useIsMobile();
 
   // Optimized embed URL with mobile-first preloading
@@ -92,37 +96,85 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
     return true;
   }, [playerReady, isCued, isMobile, userInteracted, sendPlayerCommand]);
 
+  const retryPlayback = useCallback(() => {
+    if (retryCount >= 3) {
+      console.log('Max retry attempts reached');
+      setIsLoading(false);
+      setHasError(true);
+      setPendingPlay(false);
+      return;
+    }
+
+    console.log('Retrying playback, attempt:', retryCount + 1);
+    setRetryCount(prev => prev + 1);
+    
+    retryTimeoutRef.current = setTimeout(() => {
+      if (playerReady && isCued && pendingPlay) {
+        if (startPlayback()) {
+          setPendingPlay(false);
+          setRetryCount(0);
+        } else {
+          retryPlayback();
+        }
+      } else if (pendingPlay) {
+        retryPlayback();
+      }
+    }, 500);
+  }, [retryCount, playerReady, isCued, pendingPlay, startPlayback]);
+
   const togglePlay = useCallback(() => {
     // Mark user interaction for mobile autoplay policy compliance
     if (!userInteracted) {
       setUserInteracted(true);
     }
 
-    if (hasError) {
-      setHasError(false);
-      setIsLoading(true);
-      // Retry by reloading the video
-      sendPlayerCommand('cueVideoById', song.id);
-      return;
-    }
-
+    // Handle pause action
     if (isPlaying) {
       console.log('Pausing video');
-      setIsLoading(true); // Show loading state immediately
+      setIsLoading(true);
+      setPendingPlay(false);
       sendPlayerCommand('pauseVideo');
       return;
     }
 
-    console.log('Starting playback', { isMobile, userInteracted, playerReady, isCued });
+    // Handle error recovery
+    if (hasError) {
+      setHasError(false);
+      setIsLoading(true);
+      setRetryCount(0);
+      sendPlayerCommand('cueVideoById', song.id);
+      setPendingPlay(true);
+      return;
+    }
+
+    // Handle transitioning state - queue the play request
+    if (isTransitioning) {
+      console.log('Player transitioning, queuing play request');
+      setPendingPlay(true);
+      setIsLoading(true);
+      return;
+    }
+
+    console.log('Starting playback', { isMobile, userInteracted, playerReady, isCued, isTransitioning });
     setIsLoading(true);
     setHasError(false);
     
-    // Start playback using optimized approach
-    if (!startPlayback()) {
-      setIsLoading(false);
-      setHasError(true);
+    // Try immediate playback if player is ready
+    if (playerReady && isCued) {
+      if (startPlayback()) {
+        setRetryCount(0);
+      } else {
+        setPendingPlay(true);
+        retryPlayback();
+      }
+    } else {
+      // Player not ready, queue the request
+      setPendingPlay(true);
+      if (!playerReady) {
+        console.log('Player not ready, queuing play request');
+      }
     }
-  }, [isPlaying, hasError, userInteracted, startPlayback, sendPlayerCommand, song.id, isMobile, playerReady, isCued]);
+  }, [isPlaying, hasError, userInteracted, isTransitioning, startPlayback, sendPlayerCommand, song.id, isMobile, playerReady, isCued, retryPlayback]);
 
   // Enhanced iframe load and player initialization
   useEffect(() => {
@@ -131,7 +183,8 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
 
     const handleIframeLoad = () => {
       console.log('Iframe loaded, initializing player...', { isMobile });
-      setIsLoading(true);
+      setIsTransitioning(false);
+      setIsLoading(!pendingPlay);
       
       // Send listening command to enable state change events
       setTimeout(() => {
@@ -147,7 +200,9 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
         if (!playerReady) {
           console.log('Player ready timeout, assuming ready', { isMobile });
           setPlayerReady(true);
-          setIsLoading(false);
+          if (!pendingPlay) {
+            setIsLoading(false);
+          }
         }
       }, isMobile ? 2000 : 1500);
     };
@@ -167,8 +222,11 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
       if (readyTimeoutRef.current) {
         clearTimeout(readyTimeoutRef.current);
       }
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
     };
-  }, [playerReady, isMobile]);
+  }, [playerReady, isMobile, pendingPlay]);
 
   // Trigger preloading when player is ready
   useEffect(() => {
@@ -176,6 +234,19 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
       preloadVideo();
     }
   }, [playerReady, isCued, preloadVideo]);
+
+  // Handle pending play requests
+  useEffect(() => {
+    if (pendingPlay && playerReady && isCued && !isTransitioning) {
+      console.log('Executing pending play request');
+      if (startPlayback()) {
+        setPendingPlay(false);
+        setRetryCount(0);
+      } else {
+        retryPlayback();
+      }
+    }
+  }, [pendingPlay, playerReady, isCued, isTransitioning, startPlayback, retryPlayback]);
 
   // Listen for iframe messages to sync play state
   useEffect(() => {
@@ -189,7 +260,9 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
         if (data.event === 'onReady') {
           console.log('Player ready confirmed');
           setPlayerReady(true);
-          setIsLoading(false);
+          if (!pendingPlay) {
+            setIsLoading(false);
+          }
           setHasError(false);
           // Clear ready timeout since we got confirmation
           if (readyTimeoutRef.current) {
@@ -227,7 +300,9 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
             case 5: // Cued
               console.log('Video cued successfully');
               setIsCued(true);
-              setIsLoading(false);
+              if (!pendingPlay) {
+                setIsLoading(false);
+              }
               setIsPlaying(false); // Ensure play state is false when cued
               if (!playerReady) {
                 setPlayerReady(true);
@@ -275,12 +350,16 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
 
   // Reset state when song changes
   useEffect(() => {
+    console.log('Song changed, resetting player state');
+    setIsTransitioning(true);
     setIsPlaying(false);
     setIsLoading(false);
     setHasError(false);
     setPlayerReady(false);
     setIsCued(false);
     setUserInteracted(false);
+    setPendingPlay(false);
+    setRetryCount(0);
     
     // Clear all timeouts
     if (preloadTimeoutRef.current) {
@@ -288,6 +367,9 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
     }
     if (readyTimeoutRef.current) {
       clearTimeout(readyTimeoutRef.current);
+    }
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
     }
   }, [song.id]);
 
@@ -306,7 +388,7 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
               size="sm"
               variant="ghost"
               onClick={togglePlay}
-              disabled={isLoading && !isPlaying}
+              disabled={(isLoading && !isPlaying) || isTransitioning}
               className="h-8 w-8 p-0 text-white hover:bg-white/20"
             >
               {isLoading && !isPlaying ? (
