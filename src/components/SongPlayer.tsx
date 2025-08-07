@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Play, Pause, Music, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -18,47 +18,141 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [playerReady, setPlayerReady] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const retryTimeoutRef = useRef<NodeJS.Timeout>();
 
-  const embedUrl = `https://www.youtube.com/embed/${song.id}?enablejsapi=1&origin=${window.location.origin}&controls=0&modestbranding=1&rel=0&showinfo=0&autoplay=0`;
+  const embedUrl = `https://www.youtube.com/embed/${song.id}?enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&controls=0&modestbranding=1&rel=0&showinfo=0&autoplay=0&iv_load_policy=3&fs=0&disablekb=1`;
 
-  const togglePlay = () => {
-    if (!iframeRef.current || hasError) return;
+  const sendPlayerCommand = useCallback((command: string, args: string = "") => {
+    if (!iframeRef.current || !playerReady) {
+      console.warn('Player not ready for command:', command);
+      return false;
+    }
+
+    try {
+      const message = JSON.stringify({
+        event: "command",
+        func: command,
+        args: args
+      });
+      
+      console.log('Sending player command:', message);
+      iframeRef.current.contentWindow?.postMessage(message, '*');
+      return true;
+    } catch (error) {
+      console.error('Error sending player command:', error);
+      return false;
+    }
+  }, [playerReady]);
+
+  const retryPlayback = useCallback(() => {
+    if (retryCount >= 3) {
+      console.error('Max retry attempts reached');
+      setHasError(true);
+      setIsLoading(false);
+      return;
+    }
+
+    console.log(`Retrying playback, attempt ${retryCount + 1}`);
+    setRetryCount(prev => prev + 1);
+    setHasError(false);
+    
+    // Clear any existing timeout
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+    }
+
+    // Try to send play command again
+    retryTimeoutRef.current = setTimeout(() => {
+      if (sendPlayerCommand('playVideo')) {
+        setIsLoading(true);
+      } else {
+        setHasError(true);
+        setIsLoading(false);
+      }
+    }, 1000);
+  }, [retryCount, sendPlayerCommand]);
+
+  const togglePlay = useCallback(() => {
+    if (hasError && retryCount < 3) {
+      retryPlayback();
+      return;
+    }
+
+    if (!playerReady || hasError) {
+      console.warn('Cannot toggle play - player not ready or has error');
+      return;
+    }
 
     setIsLoading(true);
     setHasError(false);
     
-    try {
-      if (isPlaying) {
-        // Pause the video
-        iframeRef.current.contentWindow?.postMessage(
-          '{"event":"command","func":"pauseVideo","args":""}',
-          '*'
-        );
-        setIsPlaying(false);
-        setIsLoading(false);
+    if (isPlaying) {
+      console.log('Pausing video');
+      if (sendPlayerCommand('pauseVideo')) {
+        // Don't set isPlaying to false immediately, wait for confirmation
+        setTimeout(() => setIsLoading(false), 500);
       } else {
-        // Play the video
-        iframeRef.current.contentWindow?.postMessage(
-          '{"event":"command","func":"playVideo","args":""}',
-          '*'
-        );
-        setIsPlaying(true);
-        // Loading state will be cleared when video starts playing or after timeout
+        setIsLoading(false);
+        setHasError(true);
+      }
+    } else {
+      console.log('Playing video');
+      if (sendPlayerCommand('playVideo')) {
+        // Set loading timeout
         setTimeout(() => {
-          setIsLoading(false);
-          // If still not playing after timeout, assume error
-          if (!isPlaying) {
-            setHasError(true);
+          if (isLoading && !isPlaying) {
+            console.warn('Playback timeout, trying retry');
+            retryPlayback();
           }
         }, 3000);
+      } else {
+        setIsLoading(false);
+        setHasError(true);
       }
-    } catch (error) {
-      console.error('Error controlling playback:', error);
-      setIsLoading(false);
-      setHasError(true);
     }
-  };
+  }, [isPlaying, playerReady, hasError, retryCount, sendPlayerCommand, retryPlayback, isLoading]);
+
+  // Handle iframe load and player ready detection
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const handleIframeLoad = () => {
+      console.log('Iframe loaded, waiting for player ready...');
+      setIsLoading(true);
+      
+      // Send listening command to enable state change events
+      setTimeout(() => {
+        iframe.contentWindow?.postMessage('{"event":"listening"}', '*');
+      }, 1000);
+
+      // Set a timeout to mark player as ready if we don't get confirmation
+      setTimeout(() => {
+        if (!playerReady) {
+          console.log('Player ready timeout, assuming ready');
+          setPlayerReady(true);
+          setIsLoading(false);
+        }
+      }, 3000);
+    };
+
+    iframe.addEventListener('load', handleIframeLoad);
+    
+    // If iframe is already loaded
+    if (iframe.contentDocument?.readyState === 'complete') {
+      handleIframeLoad();
+    }
+
+    return () => {
+      iframe.removeEventListener('load', handleIframeLoad);
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+    };
+  }, [playerReady]);
 
   // Listen for iframe messages to sync play state
   useEffect(() => {
@@ -66,41 +160,77 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
       if (event.origin !== 'https://www.youtube.com') return;
       
       try {
-        const data = JSON.parse(event.data);
-        if (data.event === 'video-progress') {
-          // Video is playing
-          setIsPlaying(true);
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        console.log('Received player message:', data);
+        
+        if (data.event === 'onReady') {
+          console.log('Player ready');
+          setPlayerReady(true);
           setIsLoading(false);
           setHasError(false);
+          setRetryCount(0);
         } else if (data.event === 'onStateChange') {
+          console.log('Player state change:', data.info);
           // Handle different player states
           switch (data.info) {
             case 1: // Playing
               setIsPlaying(true);
               setIsLoading(false);
               setHasError(false);
+              setRetryCount(0);
               break;
             case 2: // Paused
               setIsPlaying(false);
               setIsLoading(false);
               break;
             case -1: // Unstarted
+              if (playerReady) {
+                setIsLoading(false);
+              }
+              break;
             case 3: // Buffering
-              setIsLoading(true);
+              if (isPlaying || !playerReady) {
+                setIsLoading(true);
+              }
               break;
             case 5: // Cued
               setIsLoading(false);
+              if (!playerReady) {
+                setPlayerReady(true);
+              }
+              break;
+            case 0: // Ended
+              setIsPlaying(false);
+              setIsLoading(false);
               break;
           }
+        } else if (data.event === 'onError') {
+          console.error('YouTube player error:', data.data);
+          setHasError(true);
+          setIsLoading(false);
+          setIsPlaying(false);
         }
       } catch (e) {
-        // Ignore parsing errors
+        console.warn('Error parsing YouTube message:', e);
       }
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [isPlaying]);
+  }, [isPlaying, playerReady]);
+
+  // Reset state when song changes
+  useEffect(() => {
+    setIsPlaying(false);
+    setIsLoading(false);
+    setHasError(false);
+    setPlayerReady(false);
+    setRetryCount(0);
+    
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+    }
+  }, [song.id]);
 
   return (
     <div className={`bg-card border rounded-lg overflow-hidden ${className}`}>
