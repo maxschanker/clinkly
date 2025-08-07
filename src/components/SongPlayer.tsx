@@ -108,6 +108,7 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
 
     if (isPlaying) {
       console.log('Pausing video');
+      setIsLoading(true); // Show loading state immediately
       sendPlayerCommand('pauseVideo');
       return;
     }
@@ -196,25 +197,29 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
           }
         } else if (data.event === 'onStateChange') {
           console.log('Player state change:', data.info);
-          // Enhanced state management
+          // Enhanced state management with immediate UI feedback
           switch (data.info) {
             case 1: // Playing
+              console.log('State: Playing - updating UI');
               setIsPlaying(true);
               setIsLoading(false);
               setHasError(false);
               break;
             case 2: // Paused
+              console.log('State: Paused - updating UI');
               setIsPlaying(false);
               setIsLoading(false);
               break;
             case -1: // Unstarted
+              console.log('State: Unstarted');
               setIsPlaying(false);
               if (playerReady) {
                 setIsLoading(false);
               }
               break;
             case 3: // Buffering
-              // Only show loading if user initiated playback
+              console.log('State: Buffering');
+              // Show loading for all buffering states when user has interacted
               if (userInteracted) {
                 setIsLoading(true);
               }
@@ -223,11 +228,13 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
               console.log('Video cued successfully');
               setIsCued(true);
               setIsLoading(false);
+              setIsPlaying(false); // Ensure play state is false when cued
               if (!playerReady) {
                 setPlayerReady(true);
               }
               break;
             case 0: // Ended
+              console.log('State: Ended');
               setIsPlaying(false);
               setIsLoading(false);
               break;
@@ -299,10 +306,10 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
               size="sm"
               variant="ghost"
               onClick={togglePlay}
-              disabled={isLoading}
+              disabled={isLoading && !isPlaying}
               className="h-8 w-8 p-0 text-white hover:bg-white/20"
             >
-              {isLoading ? (
+              {isLoading && !isPlaying ? (
                 <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
               ) : hasError ? (
                 <Volume2 className="h-4 w-4 opacity-50" />
