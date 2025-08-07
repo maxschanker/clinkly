@@ -90,14 +90,11 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
       return;
     }
 
+    // If player not ready, set it ready on user interaction (especially on mobile)
     if (!playerReady) {
-      console.warn('Cannot toggle play - player not ready');
-      // On mobile, try to force player ready state after user interaction
-      if (isMobile) {
-        setPlayerReady(true);
-        setIsLoading(false);
-      }
-      return;
+      console.log('Player not ready, setting ready state on user interaction');
+      setPlayerReady(true);
+      setIsLoading(false);
     }
 
     setIsLoading(true);
@@ -117,7 +114,7 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
         setHasError(true);
       }
     } else {
-      console.log('Playing video', { isMobile, userInteracted });
+      console.log('Playing video', { isMobile, userInteracted, playerReady });
       
       // On mobile, ensure we have user interaction before attempting playback
       if (isMobile && !userInteracted) {
