@@ -125,15 +125,24 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   }, []);
 
   const handleStalled = useCallback(() => {
+    console.log("[MiniVoiceMemoPlayer] Audio stalled, entering stall state");
     setAudioState(prev => ({ ...prev, isStalled: true, isBuffering: true }));
     
-    // Quick recovery for mini player
+    // Conservative stall recovery - only reload if playback has completely stopped
     setTimeout(() => {
-      if (audioRef.current && audioState.isStalled) {
-        audioRef.current.load();
+      const audio = audioRef.current;
+      if (!audio) return;
+      
+      // Only intervene if audio is still stalled AND not playing AND no progress is being made
+      if (audioState.isStalled && !audioState.isPlaying && audio.readyState < 3) {
+        console.log("[MiniVoiceMemoPlayer] Stall recovery: Audio still stalled after 8s, reloading");
+        audio.load();
+      } else {
+        console.log("[MiniVoiceMemoPlayer] Stall recovery: Audio recovered naturally, clearing stall state");
+        setAudioState(prev => ({ ...prev, isStalled: false, isBuffering: false }));
       }
-    }, 2000);
-  }, [audioState.isStalled]);
+    }, 8000); // Increased from 2s to 8s to allow natural recovery
+  }, [audioState.isStalled, audioState.isPlaying]);
 
   const handleAudioEnded = useCallback(() => {
     setAudioState(prev => ({ ...prev, isPlaying: false }));
