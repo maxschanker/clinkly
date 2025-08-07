@@ -15,11 +15,6 @@ export interface TreatData {
   is_public?: boolean;
   expires_at?: string;
   voice_memo_url?: string;
-  song_title?: string;
-  song_artist?: string;
-  song_youtube_id?: string;
-  song_thumbnail_url?: string;
-  song_duration?: string;
 }
 
 export interface TreatResponse {
@@ -40,11 +35,6 @@ export interface TreatResponse {
   is_public: boolean;
   expires_at?: string;
   voice_memo_url?: string;
-  song_title?: string;
-  song_artist?: string;
-  song_youtube_id?: string;
-  song_thumbnail_url?: string;
-  song_duration?: string;
   created_at: string;
   updated_at: string;
 }

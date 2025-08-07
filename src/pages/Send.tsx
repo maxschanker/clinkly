@@ -5,11 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Edit, Music } from "lucide-react";
+import { Edit } from "lucide-react";
 import { CoverArtModal } from "@/components/CoverArtModal";
 import { CompactVoiceMemoRecorder } from "@/components/CompactVoiceMemoRecorder";
-import { MusicSearchModal } from "@/components/MusicSearchModal";
-import { SongPlayer } from "@/components/SongPlayer";
 import { createTreat, uploadVoiceMemo, type TreatData } from "@/lib/treatService";
 import { useToast } from "@/hooks/use-toast";
 import { saveTreatData, cleanupStaleData } from "@/lib/utils";
@@ -32,15 +30,7 @@ const Send = () => {
   });
   const [addCash, setAddCash] = useState(false);
   const [showCoverArtModal, setShowCoverArtModal] = useState(false);
-  const [showMusicModal, setShowMusicModal] = useState(false);
   const [voiceMemoBlob, setVoiceMemoBlob] = useState<Blob | null>(null);
-  const [selectedSong, setSelectedSong] = useState<{
-    id: string;
-    title: string;
-    artist: string;
-    thumbnailUrl: string;
-    duration: string;
-  } | null>(null);
 
   // Clean up stale data on component mount
   useEffect(() => {
@@ -107,12 +97,7 @@ const Send = () => {
         theme: 'gradient-warm',
         treat_type: 'coffee',
         is_public: true,
-        voice_memo_url: voiceMemoUrl,
-        song_title: selectedSong?.title,
-        song_artist: selectedSong?.artist,
-        song_youtube_id: selectedSong?.id,
-        song_thumbnail_url: selectedSong?.thumbnailUrl,
-        song_duration: selectedSong?.duration
+        voice_memo_url: voiceMemoUrl
       };
 
       const result = await createTreat(treatData);
@@ -226,39 +211,12 @@ const Send = () => {
           </button>
         </div>
 
-        {/* Voice Memo and Music Section */}
+        {/* Voice Memo Section */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex-1">
-              <CompactVoiceMemoRecorder 
-                onVoiceMemoChange={setVoiceMemoBlob}
-                existingUrl={null}
-              />
-            </div>
-            {!selectedSong && (
-              <Button
-                variant="outline"
-                onClick={() => setShowMusicModal(true)}
-                className="flex items-center gap-2 ml-4"
-              >
-                <Music className="h-4 w-4" />
-                Add Song
-              </Button>
-            )}
-          </div>
-          
-          {selectedSong && (
-            <div className="space-y-3">
-              <SongPlayer song={selectedSong} />
-              <Button
-                variant="ghost"
-                onClick={() => setSelectedSong(null)}
-                className="w-full text-muted-foreground"
-              >
-                Remove Song
-              </Button>
-            </div>
-          )}
+          <CompactVoiceMemoRecorder 
+            onVoiceMemoChange={setVoiceMemoBlob}
+            existingUrl={null}
+          />
         </div>
 
         {/* Sweet Message Section */}
@@ -363,13 +321,6 @@ const Send = () => {
         onOpenChange={setShowCoverArtModal}
         onSelect={handleCoverArtSelect}
         currentSelection={formData.coverArt}
-      />
-
-      {/* Music Search Modal */}
-      <MusicSearchModal
-        open={showMusicModal}
-        onOpenChange={setShowMusicModal}
-        onSongSelect={setSelectedSong}
       />
     </div>
   );
