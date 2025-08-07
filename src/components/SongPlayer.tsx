@@ -1,8 +1,11 @@
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Play, Pause, Music, Volume2, ExternalLink } from "lucide-react";
+import { useRef, useEffect, useCallback } from "react";
+import { Play, Pause, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useMobileAudioManager } from "@/hooks/useMobileAudioManager";
+import { InteractionGatekeeper } from "./InteractionGatekeeper";
+import { ProgressiveMusicLoader } from "./ProgressiveMusicLoader";
+import { FallbackMusicPlayer } from "./FallbackMusicPlayer";
 
 interface SongPlayerProps {
   song: {
@@ -16,35 +19,31 @@ interface SongPlayerProps {
 }
 
 export function SongPlayer({ song, className = "" }: SongPlayerProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const [playerReady, setPlayerReady] = useState(false);
-  const [fallbackToDirectLink, setFallbackToDirectLink] = useState(false);
+  const {
+    state,
+    isMobile,
+    clearTimeouts,
+    setUserInteracted,
+    setPlayerReady,
+    setPlaybackState,
+    setError,
+    setFallbackMode,
+    shouldUseFallback,
+    startPlayerReadyTimeout,
+    startPlaybackTimeout,
+    updateState
+  } = useMobileAudioManager();
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const playerReadyTimeoutRef = useRef<NodeJS.Timeout>();
-  const playbackTimeoutRef = useRef<NodeJS.Timeout>();
-  const isMobile = useIsMobile();
 
-  // Eager iframe initialization - load immediately when song is selected
-  const embedUrl = `https://www.youtube.com/embed/${song.id}?enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&controls=0&modestbranding=1&rel=0&showinfo=0&autoplay=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&widget_referrer=${encodeURIComponent(window.location.href)}`;
+  // Enhanced embed URL with better mobile parameters
+  const embedUrl = `https://www.youtube.com/embed/${song.id}?enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&controls=0&modestbranding=1&rel=0&showinfo=0&autoplay=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&widget_referrer=${encodeURIComponent(window.location.href)}&html5=1`;
 
-  // Direct YouTube link for mobile fallback
+  // Direct YouTube link for fallback
   const directYouTubeUrl = `https://www.youtube.com/watch?v=${song.id}`;
 
-  const clearTimeouts = useCallback(() => {
-    if (playerReadyTimeoutRef.current) {
-      clearTimeout(playerReadyTimeoutRef.current);
-      playerReadyTimeoutRef.current = undefined;
-    }
-    if (playbackTimeoutRef.current) {
-      clearTimeout(playbackTimeoutRef.current);
-      playbackTimeoutRef.current = undefined;
-    }
-  }, []);
-
   const sendPlayerCommand = useCallback((command: string) => {
-    if (!iframeRef.current?.contentWindow || !playerReady) {
+    if (!iframeRef.current?.contentWindow || !state.playerReady) {
       console.warn('Player not ready for command:', command);
       return false;
     }
@@ -63,96 +62,93 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
       console.error('Error sending player command:', error);
       return false;
     }
-  }, [playerReady]);
+  }, [state.playerReady]);
 
   const handleDirectPlayback = useCallback(() => {
-    // For mobile fallback - open YouTube directly in new tab
-    console.log('Using direct YouTube link fallback');
+    console.log('Opening YouTube directly');
     window.open(directYouTubeUrl, '_blank');
-    setFallbackToDirectLink(true);
-    setIsLoading(false);
-  }, [directYouTubeUrl]);
+    setFallbackMode('direct-link');
+  }, [directYouTubeUrl, setFallbackMode]);
+
+  const handleUserInteraction = useCallback(() => {
+    console.log('User interaction detected, initializing player');
+    setUserInteracted();
+    updateState({ isLoading: true });
+    
+    // Start loading the iframe after user gesture
+    if (iframeRef.current && !state.playerReady) {
+      try {
+        // Reload iframe to ensure fresh start with user gesture
+        iframeRef.current.src = embedUrl;
+        startPlayerReadyTimeout();
+      } catch (error) {
+        console.error('Error reloading iframe:', error);
+        setError();
+      }
+    }
+  }, [setUserInteracted, updateState, state.playerReady, embedUrl, startPlayerReadyTimeout, setError]);
+
+  const handleRetry = useCallback(() => {
+    console.log('Retrying playback');
+    clearTimeouts();
+    updateState({ 
+      hasError: false, 
+      fallbackMode: 'none',
+      isLoading: false,
+      playerReady: false 
+    });
+  }, [clearTimeouts, updateState]);
 
   const togglePlay = useCallback(() => {
     clearTimeouts();
     
-    // If already using fallback, just open the link again
-    if (fallbackToDirectLink) {
+    // Handle fallback modes
+    if (state.fallbackMode === 'direct-link') {
       handleDirectPlayback();
       return;
     }
 
-    // If player has error or not ready after timeout, use fallback on mobile
-    if (hasError || (!playerReady && isMobile)) {
+    // Check if we should use fallback
+    if (shouldUseFallback()) {
       handleDirectPlayback();
       return;
     }
 
-    if (!playerReady) {
+    if (!state.playerReady) {
       console.log('Player not ready, waiting...');
-      setIsLoading(true);
-      
-      // Wait for player to be ready, then try again
-      playerReadyTimeoutRef.current = setTimeout(() => {
-        if (!playerReady) {
-          if (isMobile) {
-            handleDirectPlayback();
-          } else {
-            setHasError(true);
-            setIsLoading(false);
-          }
-        } else {
-          togglePlay();
-        }
-      }, 2000);
+      setPlaybackState(false, true);
+      startPlayerReadyTimeout();
       return;
     }
 
-    setIsLoading(true);
-    setHasError(false);
+    setPlaybackState(state.isPlaying, true);
     
-    if (isPlaying) {
+    if (state.isPlaying) {
       console.log('Pausing video');
-      if (sendPlayerCommand('pauseVideo')) {
-        // Will be handled by onStateChange event
-      } else {
-        setIsLoading(false);
-        setHasError(true);
+      if (!sendPlayerCommand('pauseVideo')) {
+        setError();
       }
     } else {
-      console.log('Playing video', { isMobile, playerReady });
+      console.log('Playing video');
       
       if (sendPlayerCommand('playVideo')) {
-        // Set a timeout to detect if playback doesn't start
-        playbackTimeoutRef.current = setTimeout(() => {
-          if (isLoading && !isPlaying) {
-            console.warn('Playback timeout - player unresponsive');
-            if (isMobile) {
-              handleDirectPlayback();
-            } else {
-              setHasError(true);
-              setIsLoading(false);
-            }
-          }
-        }, isMobile ? 3000 : 2000);
+        startPlaybackTimeout();
       } else {
         if (isMobile) {
           handleDirectPlayback();
         } else {
-          setIsLoading(false);
-          setHasError(true);
+          setError();
         }
       }
     }
-  }, [isPlaying, playerReady, hasError, fallbackToDirectLink, sendPlayerCommand, handleDirectPlayback, isLoading, isMobile, clearTimeouts]);
+  }, [state, clearTimeouts, shouldUseFallback, handleDirectPlayback, setPlaybackState, startPlayerReadyTimeout, sendPlayerCommand, setError, startPlaybackTimeout, isMobile]);
 
-  // Initialize iframe and listen for ready state
+  // Initialize iframe only after user interaction
   useEffect(() => {
     const iframe = iframeRef.current;
-    if (!iframe) return;
+    if (!iframe || !state.hasUserInteracted) return;
 
-    console.log('Initializing player for song:', song.id);
-    setIsLoading(true);
+    console.log('Setting up iframe for song:', song.id);
 
     const handleIframeLoad = () => {
       console.log('Iframe loaded, setting up player communication');
@@ -163,17 +159,9 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
           iframe.contentWindow?.postMessage('{"event":"listening"}', '*');
         } catch (e) {
           console.warn('Error sending listening message:', e);
+          setError();
         }
       }, 500);
-
-      // Set player ready timeout
-      playerReadyTimeoutRef.current = setTimeout(() => {
-        if (!playerReady) {
-          console.log('Player ready timeout - assuming ready');
-          setPlayerReady(true);
-          setIsLoading(false);
-        }
-      }, isMobile ? 3000 : 2000);
     };
 
     iframe.addEventListener('load', handleIframeLoad);
@@ -187,7 +175,7 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
       iframe.removeEventListener('load', handleIframeLoad);
       clearTimeouts();
     };
-  }, [song.id, playerReady, isMobile, clearTimeouts]);
+  }, [song.id, state.hasUserInteracted, clearTimeouts, setError]);
 
   // Handle YouTube API messages
   useEffect(() => {
@@ -201,53 +189,42 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
         if (data.event === 'onReady') {
           console.log('Player ready confirmed');
           setPlayerReady(true);
-          setIsLoading(false);
-          setHasError(false);
+          updateState({ isLoading: false, hasError: false });
           clearTimeouts();
         } else if (data.event === 'onStateChange') {
-          const state = data.info;
-          console.log('Player state change:', state);
+          const ytState = data.info;
+          console.log('Player state change:', ytState);
           
-          switch (state) {
+          switch (ytState) {
             case 1: // Playing
-              setIsPlaying(true);
-              setIsLoading(false);
-              setHasError(false);
-              clearTimeouts();
+              setPlaybackState(true, false);
               break;
             case 2: // Paused
-              setIsPlaying(false);
-              setIsLoading(false);
-              clearTimeouts();
+              setPlaybackState(false, false);
               break;
             case 3: // Buffering
-              if (!isPlaying) {
-                setIsLoading(true);
+              if (!state.isPlaying) {
+                updateState({ isLoading: true });
               }
               break;
             case 5: // Cued
-              setIsLoading(false);
-              if (!playerReady) {
+              if (!state.playerReady) {
                 setPlayerReady(true);
               }
+              updateState({ isLoading: false });
               break;
             case 0: // Ended
-              setIsPlaying(false);
-              setIsLoading(false);
-              clearTimeouts();
+              setPlaybackState(false, false);
               break;
             case -1: // Unstarted
-              if (playerReady) {
-                setIsLoading(false);
+              if (state.playerReady) {
+                updateState({ isLoading: false });
               }
               break;
           }
         } else if (data.event === 'onError') {
           console.error('YouTube player error:', data.data);
-          setHasError(true);
-          setIsLoading(false);
-          setIsPlaying(false);
-          clearTimeouts();
+          setError();
         }
       } catch (e) {
         console.warn('Error parsing YouTube message:', e);
@@ -256,20 +233,58 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [isPlaying, playerReady, clearTimeouts]);
+  }, [state.isPlaying, state.playerReady, clearTimeouts, setPlayerReady, setPlaybackState, updateState, setError]);
 
   // Reset state when song changes
   useEffect(() => {
-    setIsPlaying(false);
-    setIsLoading(false);
-    setHasError(false);
-    setPlayerReady(false);
-    setFallbackToDirectLink(false);
+    updateState({
+      isPlaying: false,
+      isLoading: false,
+      hasError: false,
+      playerReady: false,
+      hasUserInteracted: false,
+      needsUserGesture: true,
+      fallbackMode: 'none'
+    });
     clearTimeouts();
-  }, [song.id, clearTimeouts]);
+  }, [song.id, clearTimeouts, updateState]);
+
+  // Render different states based on user interaction and loading
+  if (!state.hasUserInteracted) {
+    return (
+      <InteractionGatekeeper
+        song={song}
+        onUserInteraction={handleUserInteraction}
+        className={className}
+      />
+    );
+  }
+
+  if (state.isLoading && !state.playerReady) {
+    const progress = state.hasUserInteracted ? 40 : 0;
+    return (
+      <ProgressiveMusicLoader
+        stage="connecting"
+        progress={progress}
+        className={className}
+      />
+    );
+  }
+
+  if (state.fallbackMode !== 'none') {
+    return (
+      <FallbackMusicPlayer
+        song={song}
+        mode={state.fallbackMode}
+        onDirectLink={handleDirectPlayback}
+        onRetry={handleRetry}
+        className={className}
+      />
+    );
+  }
 
   return (
-    <div className={`bg-card border rounded-lg overflow-hidden ${className}`}>
+    <div className={`bg-gradient-card border rounded-lg overflow-hidden shadow-card ${className}`}>
       <div className="flex items-center gap-3 p-4">
         <div className="relative flex-shrink-0">
           <img
@@ -283,50 +298,45 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
               size="sm"
               variant="ghost"
               onClick={togglePlay}
-              disabled={isLoading}
-              className="h-8 w-8 p-0 text-white hover:bg-white/20"
+              disabled={state.isLoading}
+              className="h-8 w-8 p-0 text-primary-foreground hover:bg-white/20 transition-all duration-200"
             >
-              {isLoading ? (
-                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-              ) : fallbackToDirectLink ? (
-                <ExternalLink className="h-4 w-4" />
-              ) : hasError ? (
-                <Volume2 className="h-4 w-4 opacity-50" />
-              ) : isPlaying ? (
+              {state.isLoading ? (
+                <div className="animate-spin h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full" />
+              ) : state.isPlaying ? (
                 <Pause className="h-4 w-4" />
               ) : (
-                <Play className="h-4 w-4" />
+                <Play className="h-4 w-4 ml-0.5" />
               )}
             </Button>
           </div>
         </div>
         
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium truncate">{song.title}</h4>
+          <h4 className="font-medium truncate text-foreground">{song.title}</h4>
           <p className="text-sm text-muted-foreground truncate">{song.artist}</p>
-          {hasError && (
-            <p className="text-xs text-muted-foreground">Playback unavailable</p>
-          )}
-          {fallbackToDirectLink && (
-            <p className="text-xs text-muted-foreground">Opens in YouTube app</p>
+          {state.isLoading && (
+            <p className="text-xs text-primary animate-pulse">Loading audio...</p>
           )}
         </div>
         
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Music className="h-4 w-4" />
-          <span>{song.duration}</span>
+          <span className="font-medium">{song.duration}</span>
         </div>
       </div>
       
-      {/* Hidden YouTube iframe for audio playback */}
-      <iframe
-        ref={iframeRef}
-        src={embedUrl}
-        className="hidden"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-        onError={() => setHasError(true)}
-      />
+      {/* Hidden YouTube iframe for audio playback - only load after user interaction */}
+      {state.hasUserInteracted && (
+        <iframe
+          ref={iframeRef}
+          src=""
+          className="hidden"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          onError={() => setError()}
+        />
+      )}
     </div>
   );
 }
