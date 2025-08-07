@@ -5,11 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Edit, Music } from "lucide-react";
+import { Edit } from "lucide-react";
 import { CoverArtModal } from "@/components/CoverArtModal";
 import { CompactVoiceMemoRecorder } from "@/components/CompactVoiceMemoRecorder";
-import { MusicSearchModal } from "@/components/MusicSearchModal";
-import { SongPlayer } from "@/components/SongPlayer";
+import { CompactMusicSelector } from "@/components/CompactMusicSelector";
 import { createTreat, uploadVoiceMemo, type TreatData } from "@/lib/treatService";
 import { useToast } from "@/hooks/use-toast";
 import { saveTreatData, cleanupStaleData } from "@/lib/utils";
@@ -32,7 +31,7 @@ const Send = () => {
   });
   const [addCash, setAddCash] = useState(false);
   const [showCoverArtModal, setShowCoverArtModal] = useState(false);
-  const [showMusicModal, setShowMusicModal] = useState(false);
+  
   const [voiceMemoBlob, setVoiceMemoBlob] = useState<Blob | null>(null);
   const [selectedSong, setSelectedSong] = useState<{
     id: string;
@@ -236,36 +235,10 @@ const Send = () => {
 
         {/* Music Section */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">Add music</h2>
-            <Button
-              variant="outline"
-              onClick={() => setShowMusicModal(true)}
-              className="flex items-center gap-2"
-            >
-              <Music className="h-4 w-4" />
-              {selectedSong ? 'Change Song' : 'Add Song'}
-            </Button>
-          </div>
-          
-          {selectedSong ? (
-            <div className="space-y-3">
-              <SongPlayer song={selectedSong} />
-              <Button
-                variant="ghost"
-                onClick={() => setSelectedSong(null)}
-                className="w-full text-muted-foreground"
-              >
-                Remove Song
-              </Button>
-            </div>
-          ) : (
-            <div className="bg-card border-2 border-dashed border-border rounded-lg p-6 text-center text-muted-foreground">
-              <Music className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p>No song selected</p>
-              <p className="text-sm">Add music to make your clink extra special</p>
-            </div>
-          )}
+          <CompactMusicSelector 
+            onSongChange={setSelectedSong}
+            selectedSong={selectedSong}
+          />
         </div>
 
         {/* Sweet Message Section */}
@@ -372,12 +345,6 @@ const Send = () => {
         currentSelection={formData.coverArt}
       />
 
-      {/* Music Search Modal */}
-      <MusicSearchModal
-        open={showMusicModal}
-        onOpenChange={setShowMusicModal}
-        onSongSelect={setSelectedSong}
-      />
     </div>
   );
 };
