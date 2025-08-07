@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Play, Pause, Music, Volume2 } from "lucide-react";
+import { Play, Pause, Music, Volume2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -20,17 +20,31 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-  const [userInteracted, setUserInteracted] = useState(false);
+  const [fallbackToDirectLink, setFallbackToDirectLink] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const retryTimeoutRef = useRef<NodeJS.Timeout>();
+  const playerReadyTimeoutRef = useRef<NodeJS.Timeout>();
+  const playbackTimeoutRef = useRef<NodeJS.Timeout>();
   const isMobile = useIsMobile();
 
-  // Mobile-friendly embed URL with better compatibility
+  // Eager iframe initialization - load immediately when song is selected
   const embedUrl = `https://www.youtube.com/embed/${song.id}?enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&controls=0&modestbranding=1&rel=0&showinfo=0&autoplay=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&widget_referrer=${encodeURIComponent(window.location.href)}`;
 
-  const sendPlayerCommand = useCallback((command: string, args: string = "") => {
-    if (!iframeRef.current || !playerReady) {
+  // Direct YouTube link for mobile fallback
+  const directYouTubeUrl = `https://www.youtube.com/watch?v=${song.id}`;
+
+  const clearTimeouts = useCallback(() => {
+    if (playerReadyTimeoutRef.current) {
+      clearTimeout(playerReadyTimeoutRef.current);
+      playerReadyTimeoutRef.current = undefined;
+    }
+    if (playbackTimeoutRef.current) {
+      clearTimeout(playbackTimeoutRef.current);
+      playbackTimeoutRef.current = undefined;
+    }
+  }, []);
+
+  const sendPlayerCommand = useCallback((command: string) => {
+    if (!iframeRef.current?.contentWindow || !playerReady) {
       console.warn('Player not ready for command:', command);
       return false;
     }
@@ -39,11 +53,11 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
       const message = JSON.stringify({
         event: "command",
         func: command,
-        args: args
+        args: ""
       });
       
       console.log('Sending player command:', message);
-      iframeRef.current.contentWindow?.postMessage(message, '*');
+      iframeRef.current.contentWindow.postMessage(message, '*');
       return true;
     } catch (error) {
       console.error('Error sending player command:', error);
@@ -51,50 +65,47 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
     }
   }, [playerReady]);
 
-  const retryPlayback = useCallback(() => {
-    if (retryCount >= 3) {
-      console.error('Max retry attempts reached');
-      setHasError(true);
-      setIsLoading(false);
-      return;
-    }
-
-    console.log(`Retrying playback, attempt ${retryCount + 1}`);
-    setRetryCount(prev => prev + 1);
-    setHasError(false);
-    
-    // Clear any existing timeout
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
-    }
-
-    // Try to send play command again
-    retryTimeoutRef.current = setTimeout(() => {
-      if (sendPlayerCommand('playVideo')) {
-        setIsLoading(true);
-      } else {
-        setHasError(true);
-        setIsLoading(false);
-      }
-    }, 1000);
-  }, [retryCount, sendPlayerCommand]);
+  const handleDirectPlayback = useCallback(() => {
+    // For mobile fallback - open YouTube directly in new tab
+    console.log('Using direct YouTube link fallback');
+    window.open(directYouTubeUrl, '_blank');
+    setFallbackToDirectLink(true);
+    setIsLoading(false);
+  }, [directYouTubeUrl]);
 
   const togglePlay = useCallback(() => {
-    // Mark user interaction for mobile autoplay policy compliance
-    if (!userInteracted) {
-      setUserInteracted(true);
-    }
-
-    if (hasError && retryCount < 3) {
-      retryPlayback();
+    clearTimeouts();
+    
+    // If already using fallback, just open the link again
+    if (fallbackToDirectLink) {
+      handleDirectPlayback();
       return;
     }
 
-    // If player not ready, set it ready on user interaction (especially on mobile)
+    // If player has error or not ready after timeout, use fallback on mobile
+    if (hasError || (!playerReady && isMobile)) {
+      handleDirectPlayback();
+      return;
+    }
+
     if (!playerReady) {
-      console.log('Player not ready, setting ready state on user interaction');
-      setPlayerReady(true);
-      setIsLoading(false);
+      console.log('Player not ready, waiting...');
+      setIsLoading(true);
+      
+      // Wait for player to be ready, then try again
+      playerReadyTimeoutRef.current = setTimeout(() => {
+        if (!playerReady) {
+          if (isMobile) {
+            handleDirectPlayback();
+          } else {
+            setHasError(true);
+            setIsLoading(false);
+          }
+        } else {
+          togglePlay();
+        }
+      }, 2000);
+      return;
     }
 
     setIsLoading(true);
@@ -103,122 +114,114 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
     if (isPlaying) {
       console.log('Pausing video');
       if (sendPlayerCommand('pauseVideo')) {
-        // Don't set isPlaying to false immediately, wait for confirmation
-        setTimeout(() => {
-          if (isLoading) {
-            setIsLoading(false);
-          }
-        }, 1000);
+        // Will be handled by onStateChange event
       } else {
         setIsLoading(false);
         setHasError(true);
       }
     } else {
-      console.log('Playing video', { isMobile, userInteracted, playerReady });
+      console.log('Playing video', { isMobile, playerReady });
       
-      // On mobile, ensure we have user interaction before attempting playback
-      if (isMobile && !userInteracted) {
-        console.log('Mobile requires user interaction for playback');
-        setUserInteracted(true);
-      }
-
       if (sendPlayerCommand('playVideo')) {
-        // Set loading timeout with longer wait on mobile
-        const timeout = isMobile ? 5000 : 3000;
-        setTimeout(() => {
+        // Set a timeout to detect if playback doesn't start
+        playbackTimeoutRef.current = setTimeout(() => {
           if (isLoading && !isPlaying) {
-            console.warn('Playback timeout, trying retry');
-            retryPlayback();
+            console.warn('Playback timeout - player unresponsive');
+            if (isMobile) {
+              handleDirectPlayback();
+            } else {
+              setHasError(true);
+              setIsLoading(false);
+            }
           }
-        }, timeout);
+        }, isMobile ? 3000 : 2000);
       } else {
-        setIsLoading(false);
-        setHasError(true);
+        if (isMobile) {
+          handleDirectPlayback();
+        } else {
+          setIsLoading(false);
+          setHasError(true);
+        }
       }
     }
-  }, [isPlaying, playerReady, hasError, retryCount, sendPlayerCommand, retryPlayback, isLoading, isMobile, userInteracted]);
+  }, [isPlaying, playerReady, hasError, fallbackToDirectLink, sendPlayerCommand, handleDirectPlayback, isLoading, isMobile, clearTimeouts]);
 
-  // Handle iframe load and player ready detection
+  // Initialize iframe and listen for ready state
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
 
+    console.log('Initializing player for song:', song.id);
+    setIsLoading(true);
+
     const handleIframeLoad = () => {
-      console.log('Iframe loaded, waiting for player ready...', { isMobile });
-      setIsLoading(true);
+      console.log('Iframe loaded, setting up player communication');
       
-      // Send listening command to enable state change events
+      // Give iframe time to initialize, then send listening command
       setTimeout(() => {
         try {
           iframe.contentWindow?.postMessage('{"event":"listening"}', '*');
         } catch (e) {
           console.warn('Error sending listening message:', e);
         }
-      }, isMobile ? 2000 : 1000);
+      }, 500);
 
-      // Set a timeout to mark player as ready if we don't get confirmation
-      // Longer timeout on mobile due to potential slower loading
-      const readyTimeout = isMobile ? 5000 : 3000;
-      setTimeout(() => {
+      // Set player ready timeout
+      playerReadyTimeoutRef.current = setTimeout(() => {
         if (!playerReady) {
-          console.log('Player ready timeout, assuming ready', { isMobile });
+          console.log('Player ready timeout - assuming ready');
           setPlayerReady(true);
           setIsLoading(false);
         }
-      }, readyTimeout);
+      }, isMobile ? 3000 : 2000);
     };
 
     iframe.addEventListener('load', handleIframeLoad);
     
-    // If iframe is already loaded
+    // If already loaded
     if (iframe.contentDocument?.readyState === 'complete') {
       handleIframeLoad();
     }
 
     return () => {
       iframe.removeEventListener('load', handleIframeLoad);
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-      }
+      clearTimeouts();
     };
-  }, [playerReady, isMobile]);
+  }, [song.id, playerReady, isMobile, clearTimeouts]);
 
-  // Listen for iframe messages to sync play state
+  // Handle YouTube API messages
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== 'https://www.youtube.com') return;
       
       try {
         const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-        console.log('Received player message:', data);
+        console.log('YouTube message:', data);
         
         if (data.event === 'onReady') {
-          console.log('Player ready');
+          console.log('Player ready confirmed');
           setPlayerReady(true);
           setIsLoading(false);
           setHasError(false);
-          setRetryCount(0);
+          clearTimeouts();
         } else if (data.event === 'onStateChange') {
-          console.log('Player state change:', data.info);
-          // Handle different player states
-          switch (data.info) {
+          const state = data.info;
+          console.log('Player state change:', state);
+          
+          switch (state) {
             case 1: // Playing
               setIsPlaying(true);
               setIsLoading(false);
               setHasError(false);
-              setRetryCount(0);
+              clearTimeouts();
               break;
             case 2: // Paused
               setIsPlaying(false);
               setIsLoading(false);
-              break;
-            case -1: // Unstarted
-              if (playerReady) {
-                setIsLoading(false);
-              }
+              clearTimeouts();
               break;
             case 3: // Buffering
-              if (isPlaying || !playerReady) {
+              if (!isPlaying) {
                 setIsLoading(true);
               }
               break;
@@ -231,38 +234,20 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
             case 0: // Ended
               setIsPlaying(false);
               setIsLoading(false);
+              clearTimeouts();
+              break;
+            case -1: // Unstarted
+              if (playerReady) {
+                setIsLoading(false);
+              }
               break;
           }
         } else if (data.event === 'onError') {
           console.error('YouTube player error:', data.data);
-          // Handle specific YouTube error codes
-          const errorCode = data.data;
-          let shouldRetry = false;
-          
-          switch (errorCode) {
-            case 2: // Invalid parameter
-            case 5: // HTML5 player error
-            case 100: // Video not found
-            case 101: // Video not available
-            case 150: // Video not available (restricted)
-              console.error('YouTube error code:', errorCode, 'Not retryable');
-              break;
-            default:
-              // For other errors, attempt retry on mobile
-              if (isMobile && retryCount < 2) {
-                shouldRetry = true;
-                console.log('Mobile error, will retry:', errorCode);
-              }
-              break;
-          }
-          
-          if (shouldRetry) {
-            setTimeout(() => retryPlayback(), 1000);
-          } else {
-            setHasError(true);
-            setIsLoading(false);
-            setIsPlaying(false);
-          }
+          setHasError(true);
+          setIsLoading(false);
+          setIsPlaying(false);
+          clearTimeouts();
         }
       } catch (e) {
         console.warn('Error parsing YouTube message:', e);
@@ -271,7 +256,7 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [isPlaying, playerReady, isMobile, retryCount, retryPlayback]);
+  }, [isPlaying, playerReady, clearTimeouts]);
 
   // Reset state when song changes
   useEffect(() => {
@@ -279,13 +264,9 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
     setIsLoading(false);
     setHasError(false);
     setPlayerReady(false);
-    setRetryCount(0);
-    setUserInteracted(false);
-    
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
-    }
-  }, [song.id]);
+    setFallbackToDirectLink(false);
+    clearTimeouts();
+  }, [song.id, clearTimeouts]);
 
   return (
     <div className={`bg-card border rounded-lg overflow-hidden ${className}`}>
@@ -307,6 +288,8 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
             >
               {isLoading ? (
                 <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+              ) : fallbackToDirectLink ? (
+                <ExternalLink className="h-4 w-4" />
               ) : hasError ? (
                 <Volume2 className="h-4 w-4 opacity-50" />
               ) : isPlaying ? (
@@ -323,6 +306,9 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
           <p className="text-sm text-muted-foreground truncate">{song.artist}</p>
           {hasError && (
             <p className="text-xs text-muted-foreground">Playback unavailable</p>
+          )}
+          {fallbackToDirectLink && (
+            <p className="text-xs text-muted-foreground">Opens in YouTube app</p>
           )}
         </div>
         
