@@ -7,139 +7,119 @@ interface VoiceMemoPlayerProps {
   voiceMemoUrl: string;
 }
 
-// Enhanced audio state for comprehensive lifecycle tracking
+// Simplified audio state for more reliable playback
 interface AudioState {
   isPlaying: boolean;
-  isLoading: boolean;
-  isBuffering: boolean;
-  hasError: boolean;
+  isError: boolean;
   errorMessage?: string;
-  canPlay: boolean;
-  duration?: number;
 }
 
 const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
   const [audioState, setAudioState] = useState<AudioState>({
     isPlaying: false,
-    isLoading: true,
-    isBuffering: false,
-    hasError: false,
-    canPlay: false,
+    isError: false,
   });
   
   const audioRef = useRef<HTMLAudioElement>(null);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const playTimeoutRef = useRef<NodeJS.Timeout>();
+  const retryCountRef = useRef(0);
   const { toast } = useToast();
 
-  // Enhanced playback toggle with proper state management
+  // Simplified playback toggle with fallback strategy
   const togglePlayback = useCallback(async () => {
     const audio = audioRef.current;
-    if (!audio || audioState.hasError || !audioState.canPlay) return;
+    if (!audio || audioState.isError) return;
 
     console.log('🎵 Voice memo player toggle:', { 
       isPlaying: audioState.isPlaying, 
-      canPlay: audioState.canPlay,
       readyState: audio.readyState 
     });
 
     if (audioState.isPlaying) {
       audio.pause();
       audio.currentTime = 0;
-    } else {
-      // Clear any existing timeout
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+      return;
+    }
+
+    // Clear any existing timeout
+    if (playTimeoutRef.current) {
+      clearTimeout(playTimeoutRef.current);
+    }
+    
+    // Reset error state
+    setAudioState(prev => ({ ...prev, isError: false, errorMessage: undefined }));
+    
+    // Set a 5-second timeout for play attempt
+    playTimeoutRef.current = setTimeout(() => {
+      console.warn('⚠️ Audio play timeout after 5s');
+      setAudioState(prev => ({ 
+        ...prev, 
+        isError: true, 
+        isPlaying: false,
+        errorMessage: 'Playback timeout - try again'
+      }));
+    }, 5000);
+
+    try {
+      await audio.play();
+      // Clear timeout on successful play
+      if (playTimeoutRef.current) {
+        clearTimeout(playTimeoutRef.current);
+      }
+      retryCountRef.current = 0; // Reset retry count on success
+    } catch (error) {
+      console.error("🚫 Audio playback error:", error);
+      
+      if (playTimeoutRef.current) {
+        clearTimeout(playTimeoutRef.current);
       }
       
-      // Set a timeout for play attempt
-      timeoutRef.current = setTimeout(() => {
-        console.warn('⚠️ Audio play timeout - treating as error');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Handle specific errors
+      if (error.name === 'NotAllowedError') {
+        toast({
+          title: "Audio permission needed",
+          description: "Please allow audio playback and try again",
+          variant: "destructive",
+        });
         setAudioState(prev => ({ 
           ...prev, 
-          hasError: true, 
+          isError: true, 
           isPlaying: false,
-          isBuffering: false,
-          errorMessage: 'Playback timeout'
+          errorMessage: 'Permission denied'
         }));
-      }, 10000);
-
-      try {
-        setAudioState(prev => ({ ...prev, isBuffering: true }));
-        await audio.play();
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-      } catch (error) {
-        console.error("🚫 Audio playback error:", error);
-        
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-        
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        
-        if (error.name === 'NotAllowedError') {
-          toast({
-            title: "Audio permission needed",
-            description: "Please allow audio playback",
-            variant: "destructive",
-          });
-        }
+      } else {
+        // Implement exponential backoff for retries
+        retryCountRef.current += 1;
+        const retryDelay = Math.min(1000 * Math.pow(2, retryCountRef.current - 1), 5000);
         
         setAudioState(prev => ({ 
           ...prev, 
-          hasError: true, 
+          isError: true, 
           isPlaying: false,
-          isBuffering: false,
-          errorMessage
+          errorMessage: `Playback failed - retry ${retryCountRef.current}`
         }));
+        
+        // Auto-retry with exponential backoff (max 3 attempts)
+        if (retryCountRef.current <= 3) {
+          setTimeout(() => {
+            if (audioRef.current) {
+              audioRef.current.load();
+            }
+          }, retryDelay);
+        }
       }
     }
-  }, [audioState.isPlaying, audioState.canPlay, audioState.hasError, toast]);
+  }, [audioState.isPlaying, audioState.isError, toast]);
 
-  // Comprehensive audio event handlers
-  const handleLoadStart = useCallback(() => {
-    console.log('🔄 Audio load start');
-    setAudioState(prev => ({ ...prev, isLoading: true, hasError: false }));
-  }, []);
-
-  const handleLoadedMetadata = useCallback(() => {
-    const audio = audioRef.current;
-    console.log('📊 Audio metadata loaded', { duration: audio?.duration });
-    setAudioState(prev => ({ 
-      ...prev, 
-      duration: audio?.duration 
-    }));
-  }, []);
-
-  const handleCanPlay = useCallback(() => {
-    console.log('✅ Audio can play');
-    setAudioState(prev => ({ 
-      ...prev, 
-      canPlay: true,
-      isLoading: false,
-      hasError: false
-    }));
-  }, []);
-
-  const handleCanPlayThrough = useCallback(() => {
-    console.log('✅ Audio can play through');
-    setAudioState(prev => ({ 
-      ...prev, 
-      isLoading: false, 
-      isBuffering: false,
-      canPlay: true,
-      hasError: false
-    }));
-  }, []);
-
+  // Simplified audio event handlers - only track essential states
   const handlePlaying = useCallback(() => {
     console.log('▶️ Audio playing');
     setAudioState(prev => ({ 
       ...prev, 
       isPlaying: true, 
-      isBuffering: false,
-      hasError: false 
+      isError: false 
     }));
   }, []);
 
@@ -151,16 +131,6 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
   const handleEnded = useCallback(() => {
     console.log('🏁 Audio ended');
     setAudioState(prev => ({ ...prev, isPlaying: false }));
-  }, []);
-
-  const handleWaiting = useCallback(() => {
-    console.log('⏳ Audio waiting/buffering');
-    setAudioState(prev => ({ ...prev, isBuffering: true }));
-  }, []);
-
-  const handleStalled = useCallback(() => {
-    console.warn('🐌 Audio stalled');
-    setAudioState(prev => ({ ...prev, isBuffering: true }));
   }, []);
 
   const handleError = useCallback((event: Event) => {
@@ -189,23 +159,19 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
     setAudioState(prev => ({ 
       ...prev, 
       isPlaying: false, 
-      hasError: true, 
-      isLoading: false,
-      isBuffering: false,
+      isError: true, 
       errorMessage
     }));
   }, []);
 
   const retryPlayback = useCallback(() => {
-    console.log('🔄 Retrying audio playback');
-    setAudioState(prev => ({ 
-      ...prev, 
-      hasError: false, 
-      isLoading: true,
-      isBuffering: false,
-      canPlay: false,
+    console.log('🔄 Manual retry audio playback');
+    retryCountRef.current = 0; // Reset retry count
+    setAudioState({ 
+      isPlaying: false,
+      isError: false, 
       errorMessage: undefined
-    }));
+    });
     
     if (audioRef.current) {
       audioRef.current.load();
@@ -219,47 +185,34 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
 
     console.log('🎵 Setting up audio for URL:', voiceMemoUrl);
 
-    // Reset state when URL changes
+    // Reset state when URL changes - button is immediately functional
     setAudioState({
       isPlaying: false,
-      isLoading: true,
-      isBuffering: false,
-      hasError: false,
-      canPlay: false,
+      isError: false,
     });
 
-    // Comprehensive event listeners for full audio lifecycle
-    audio.addEventListener('loadstart', handleLoadStart);
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('canplay', handleCanPlay);
-    audio.addEventListener('canplaythrough', handleCanPlayThrough);
+    // Reset retry count for new audio
+    retryCountRef.current = 0;
+
+    // Only track essential events
     audio.addEventListener('playing', handlePlaying);
     audio.addEventListener('pause', handlePause);
     audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('waiting', handleWaiting);
-    audio.addEventListener('stalled', handleStalled);
     audio.addEventListener('error', handleError);
 
     return () => {
       // Clear any pending timeouts
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+      if (playTimeoutRef.current) {
+        clearTimeout(playTimeoutRef.current);
       }
       
-      // Remove all event listeners
-      audio.removeEventListener('loadstart', handleLoadStart);
-      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('canplay', handleCanPlay);
-      audio.removeEventListener('canplaythrough', handleCanPlayThrough);
+      // Remove event listeners
       audio.removeEventListener('playing', handlePlaying);
       audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('waiting', handleWaiting);
-      audio.removeEventListener('stalled', handleStalled);
       audio.removeEventListener('error', handleError);
     };
-  }, [voiceMemoUrl, handleLoadStart, handleLoadedMetadata, handleCanPlay, handleCanPlayThrough, 
-      handlePlaying, handlePause, handleEnded, handleWaiting, handleStalled, handleError]);
+  }, [voiceMemoUrl, handlePlaying, handlePause, handleEnded, handleError]);
 
   return (
     <div className="mb-4 text-center">
@@ -275,19 +228,17 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
           onClick={togglePlayback}
           variant="default"
           size="lg"
-          disabled={(audioState.isLoading && !audioState.hasError) || !audioState.canPlay}
+          disabled={false}
           className="w-20 h-16 rounded-xl bg-primary hover:bg-primary/90 hover:scale-105 transition-all duration-200 shadow-lg"
         >
-          {(audioState.isLoading || audioState.isBuffering) && !audioState.hasError ? (
-            <div className="w-6 h-6 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-          ) : audioState.isPlaying ? (
+          {audioState.isPlaying ? (
             <Square className="w-5 h-5 text-primary-foreground fill-current" />
           ) : (
             <Play className="w-6 h-6 text-primary-foreground ml-1" />
           )}
         </Button>
         
-        {audioState.hasError && (
+        {audioState.isError && (
           <div className="flex flex-col items-center gap-2">
             <div className="text-sm text-destructive">
               {audioState.errorMessage || 'Playback failed'}
@@ -307,7 +258,7 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
       
       <audio
         ref={audioRef}
-        preload="auto"
+        preload="metadata"
         crossOrigin="anonymous"
       >
         <source src={voiceMemoUrl} type="audio/webm" />
