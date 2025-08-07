@@ -92,11 +92,11 @@ const getClinkSubtext = (amount?: string, voiceMemoUrl?: string): string => {
   const hasVoiceMemo = voiceMemoUrl && voiceMemoUrl.trim() !== "";
   
   if (hasVenmo && hasVoiceMemo) {
-    return "💰 + 🎙️ includes Venmo & voice memo";
+    return "sent a voice memo and some venmo 🙌";
   } else if (hasVenmo) {
-    return "💰 includes Venmo";
+    return "sent some venmo 😉";
   } else if (hasVoiceMemo) {
-    return "🎙️ includes voice memo";
+    return "left you a voice memo 🎙️";
   }
   
   return "";
