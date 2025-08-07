@@ -56,5 +56,8 @@ verify_jwt = true
 [functions.upload-voice-memo]
 verify_jwt = false
 
+[functions.search-youtube]
+verify_jwt = false
+
 [functions.analytics]
 verify_jwt = true

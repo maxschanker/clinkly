@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getTreat, recordShare, type TreatResponse } from "@/lib/treatService";
 import { retrieveTreatData, loadTreatData, cleanupStaleData } from "@/lib/utils";
 import MiniVoiceMemoPlayer from "@/components/MiniVoiceMemoPlayer";
+import { SongPlayer } from "@/components/SongPlayer";
 
 const Treat = () => {
   const { slug } = useParams();
@@ -74,6 +75,11 @@ const Treat = () => {
             coverArtType: result.treat.cover_art_type,
             theme: result.treat.theme,
             voice_memo_url: result.treat.voice_memo_url,
+            song_title: result.treat.song_title,
+            song_artist: result.treat.song_artist,
+            song_youtube_id: result.treat.song_youtube_id,
+            song_thumbnail_url: result.treat.song_thumbnail_url,
+            song_duration: result.treat.song_duration,
             createdAt: result.treat.created_at,
             isPublic: result.treat.is_public
           };
@@ -326,6 +332,21 @@ const Treat = () => {
         {treatData.voice_memo_url && (
           <div className="mb-6">
             <MiniVoiceMemoPlayer voiceMemoUrl={treatData.voice_memo_url} />
+          </div>
+        )}
+
+        {/* 5.5 Song Player - Above message */}
+        {treatData.song_youtube_id && treatData.song_title && (
+          <div className="mb-6">
+            <SongPlayer 
+              song={{
+                id: treatData.song_youtube_id,
+                title: treatData.song_title,
+                artist: treatData.song_artist || 'Unknown Artist',
+                thumbnailUrl: treatData.song_thumbnail_url || '',
+                duration: treatData.song_duration || '0:00'
+              }}
+            />
           </div>
         )}
 

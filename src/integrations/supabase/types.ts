@@ -464,6 +464,11 @@ export type Database = {
           recipient_name: string
           sender_name: string
           slug: string
+          song_artist: string | null
+          song_duration: string | null
+          song_thumbnail_url: string | null
+          song_title: string | null
+          song_youtube_id: string | null
           theme: string
           treat_type: string
           updated_at: string
@@ -485,6 +490,11 @@ export type Database = {
           recipient_name: string
           sender_name: string
           slug: string
+          song_artist?: string | null
+          song_duration?: string | null
+          song_thumbnail_url?: string | null
+          song_title?: string | null
+          song_youtube_id?: string | null
           theme?: string
           treat_type?: string
           updated_at?: string
@@ -506,6 +516,11 @@ export type Database = {
           recipient_name?: string
           sender_name?: string
           slug?: string
+          song_artist?: string | null
+          song_duration?: string | null
+          song_thumbnail_url?: string | null
+          song_title?: string | null
+          song_youtube_id?: string | null
           theme?: string
           treat_type?: string
           updated_at?: string
