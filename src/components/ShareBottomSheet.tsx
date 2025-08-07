@@ -61,7 +61,9 @@ export const ShareBottomSheet = ({ treatData, trigger }: ShareBottomSheetProps) 
         coverArtType: treatData.coverArtType,
         treatType: treatData.treatType || "5",
         message: treatData.message,
-        theme: treatData.theme || "primary"
+        theme: treatData.theme || "primary",
+        amount: treatData.amount,
+        voice_memo_url: treatData.voice_memo_url
       };
 
       // Generate the image

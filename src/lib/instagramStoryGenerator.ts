@@ -12,6 +12,8 @@ export interface TreatImageData {
   treatType: string;
   message?: string;
   theme?: string;
+  amount?: string;
+  voice_memo_url?: string;
 }
 
 // Instagram Story dimensions
@@ -82,6 +84,22 @@ const getThemeColors = (theme?: string): { start: string; end: string } => {
     default: 
       return { start: '#7C3AED', end: '#A855F7' }; // violet-600 to purple-500
   }
+};
+
+// Get Clink subtext based on what's included
+const getClinkSubtext = (amount?: string, voiceMemoUrl?: string): string => {
+  const hasVenmo = amount && amount !== "0";
+  const hasVoiceMemo = voiceMemoUrl && voiceMemoUrl.trim() !== "";
+  
+  if (hasVenmo && hasVoiceMemo) {
+    return "💰 + 🎙️ includes Venmo & voice memo";
+  } else if (hasVenmo) {
+    return "💰 includes Venmo";
+  } else if (hasVoiceMemo) {
+    return "🎙️ includes voice memo";
+  }
+  
+  return "";
 };
 
 // Draw rounded rectangle
@@ -212,10 +230,21 @@ export const generateInstagramStory = async (treatData: TreatImageData): Promise
       ctx.fillText(line, STORY_WIDTH / 2, headerY + (index * 60));
     });
 
-    // 4. Cover art section (square in center)
+    // 4. Subtext for Venmo/Voice memo indication
+    const subtext = getClinkSubtext(treatData.amount, treatData.voice_memo_url);
+    let subtextY = headerY + (headerWrapped.lines.length * 60) + 30;
+    
+    if (subtext) {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.font = '28px system-ui, -apple-system, sans-serif';
+      ctx.fillText(subtext, STORY_WIDTH / 2, subtextY);
+      subtextY += 50; // Add spacing after subtext
+    }
+
+    // 5. Cover art section (square in center) - adjust position based on subtext
     const coverArtSize = 600;
     const coverArtX = (STORY_WIDTH - coverArtSize) / 2;
-    const coverArtY = 450;
+    const coverArtY = subtext ? subtextY + 20 : 450;
 
     // Draw cover art background with rounded corners
     ctx.save();
@@ -275,7 +304,7 @@ export const generateInstagramStory = async (treatData: TreatImageData): Promise
 
     ctx.restore();
 
-    // 5. Message section (if exists)
+    // 6. Message section (if exists)
     if (treatData.message) {
       const messageY = 1200;
       const messageMaxWidth = STORY_WIDTH - 120;
@@ -298,13 +327,13 @@ export const generateInstagramStory = async (treatData: TreatImageData): Promise
       });
     }
 
-    // 6. Bottom branding
+    // 7. Bottom branding
     const brandingY = STORY_HEIGHT - 200;
     ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
     ctx.font = '28px system-ui, -apple-system, sans-serif';
     ctx.fillText('💖 Sent with love via clink', STORY_WIDTH / 2, brandingY);
 
-    // 7. Call to action
+    // 8. Call to action
     const ctaY = STORY_HEIGHT - 120;
     ctx.fillStyle = 'white';
     ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
