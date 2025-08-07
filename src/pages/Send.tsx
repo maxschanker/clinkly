@@ -9,7 +9,7 @@ import { Edit, Music } from "lucide-react";
 import { CoverArtModal } from "@/components/CoverArtModal";
 import { CompactVoiceMemoRecorder } from "@/components/CompactVoiceMemoRecorder";
 import { MusicSearchModal } from "@/components/MusicSearchModal";
-import { SongPlayer } from "@/components/SongPlayer";
+import { CompactSongDisplay } from "@/components/CompactSongDisplay";
 import { createTreat, uploadVoiceMemo, type TreatData } from "@/lib/treatService";
 import { useToast } from "@/hooks/use-toast";
 import { saveTreatData, cleanupStaleData } from "@/lib/utils";
@@ -226,35 +226,38 @@ const Send = () => {
           </button>
         </div>
 
-        {/* Voice Memo and Music Section */}
+        {/* Voice Memo Section */}
+        <div className="mb-8">
+          <CompactVoiceMemoRecorder 
+            onVoiceMemoChange={setVoiceMemoBlob}
+            existingUrl={null}
+          />
+        </div>
+
+        {/* Music Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex-1">
-              <CompactVoiceMemoRecorder 
-                onVoiceMemoChange={setVoiceMemoBlob}
-                existingUrl={null}
-              />
-            </div>
+            <h2 className="text-xl font-bold">Add music</h2>
             <Button
               variant="outline"
               onClick={() => setShowMusicModal(true)}
-              className="flex items-center gap-2 ml-4"
+              className="flex items-center gap-2"
             >
               <Music className="h-4 w-4" />
               {selectedSong ? 'Change Song' : 'Add Song'}
             </Button>
           </div>
           
-          {selectedSong && (
-            <div className="space-y-3">
-              <SongPlayer song={selectedSong} />
-              <Button
-                variant="ghost"
-                onClick={() => setSelectedSong(null)}
-                className="w-full text-muted-foreground"
-              >
-                Remove Song
-              </Button>
+          {selectedSong ? (
+            <CompactSongDisplay 
+              song={selectedSong} 
+              onRemove={() => setSelectedSong(null)}
+            />
+          ) : (
+            <div className="bg-card border-2 border-dashed border-border rounded-lg p-6 text-center text-muted-foreground">
+              <Music className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p>No song selected</p>
+              <p className="text-sm">Add music to make your clink extra special</p>
             </div>
           )}
         </div>
