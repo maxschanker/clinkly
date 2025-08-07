@@ -2,10 +2,27 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import QRCode from "react-qr-code";
+import { ClinkLoadingScreen } from "@/components/ClinkLoadingScreen";
+import { useState, useEffect } from "react";
 
 const Index = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [showLoading, setShowLoading] = useState(true);
+
+  useEffect(() => {
+    // Ensure loading screen shows for at least 1 second
+    const minLoadingTime = setTimeout(() => {
+      setShowLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(minLoadingTime);
+  }, []);
+
+  // Show loading screen while mobile detection is undefined or during minimum loading time
+  if (isMobile === undefined || showLoading) {
+    return <ClinkLoadingScreen />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-hero flex flex-col relative overflow-hidden">
