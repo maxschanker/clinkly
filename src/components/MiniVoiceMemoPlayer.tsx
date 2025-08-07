@@ -127,13 +127,15 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   const handleStalled = useCallback(() => {
     setAudioState(prev => ({ ...prev, isStalled: true, isBuffering: true }));
     
-    // Quick recovery for mini player
+    // More conservative stall recovery - wait longer and check if actually needed
     setTimeout(() => {
-      if (audioRef.current && audioState.isStalled) {
+      if (audioRef.current && audioState.isStalled && !audioState.isPlaying && audioState.retryCount < 1) {
+        // Only reload if we've been stalled for a while and aren't currently playing
+        console.log("Stall recovery: reloading audio after extended timeout");
         audioRef.current.load();
       }
-    }, 2000);
-  }, [audioState.isStalled]);
+    }, 8000); // Increased from 2 seconds to 8 seconds
+  }, [audioState.isStalled, audioState.isPlaying, audioState.retryCount]);
 
   const handleAudioEnded = useCallback(() => {
     setAudioState(prev => ({ ...prev, isPlaying: false }));
