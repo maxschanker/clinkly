@@ -81,9 +81,6 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
 
     console.log('Starting playback', { isMobile, userInteracted, isCued });
     
-    // Reset to beginning to prevent cutoff from mobile preloading
-    sendPlayerCommand('seekTo', '0');
-    
     // Unmute and play
     sendPlayerCommand('unMute');
     
