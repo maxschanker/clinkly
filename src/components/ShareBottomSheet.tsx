@@ -128,24 +128,76 @@ export const ShareBottomSheet = ({ treatData, trigger }: ShareBottomSheetProps) 
     }
   };
 
-  // Messages (SMS) sharing
+  // Messages sharing using native share API
   const shareToMessages = async () => {
     try {
-      const smsBody = encodeURIComponent(`${shareText} ${shareUrl}`);
-      const smsUrl = `sms:?body=${smsBody}`;
-      window.location.href = smsUrl;
+      // Create optimized message content
+      const optimizedText = `${shareText}`;
+      const fullMessage = `${optimizedText} ${shareUrl}`;
       
-      await trackShare('sms');
-      setIsOpen(false);
+      // Check if message length is reasonable (most SMS apps handle ~160 chars well)
+      const finalText = fullMessage.length > 160 ? optimizedText : fullMessage;
+      const finalUrl = fullMessage.length > 160 ? shareUrl : undefined;
       
-      toast({
-        title: "Opening Messages... 💬",
-        description: "Share your clink via text message!",
-      });
+      if (navigator.share) {
+        // Use native share API to avoid random contact pre-filling
+        await navigator.share({
+          title: 'clink',
+          text: finalText,
+          url: finalUrl
+        });
+        
+        await trackShare('messages_native');
+        setIsOpen(false);
+        
+        toast({
+          title: "Shared! 💬",
+          description: "Choose Messages to send via text!",
+        });
+      } else {
+        // Fallback: Copy link with enhanced feedback
+        await navigator.clipboard.writeText(fullMessage);
+        
+        toast({
+          title: "Copied to clipboard! 📋",
+          description: "Message & link copied - paste in Messages app",
+          duration: 4000
+        });
+        
+        await trackShare('messages_fallback');
+        setIsOpen(false);
+      }
+      
     } catch (error) {
-      console.error('Error opening Messages:', error);
-      // Fallback to copy link
-      await copyLink();
+      if (error instanceof Error && error.name === 'AbortError') {
+        // User cancelled sharing - no error needed
+        setIsOpen(false);
+        return;
+      }
+      
+      console.error('Error sharing to Messages:', error);
+      
+      // Enhanced fallback: Copy link with instructions
+      try {
+        const fullMessage = `${shareText} ${shareUrl}`;
+        await navigator.clipboard.writeText(fullMessage);
+        
+        toast({
+          title: "Copied message! 📋",
+          description: "Open Messages app and paste to send",
+          duration: 5000
+        });
+        
+        await trackShare('messages_clipboard_fallback');
+        setIsOpen(false);
+      } catch (clipboardError) {
+        console.error('Clipboard fallback failed:', clipboardError);
+        toast({
+          title: "Share failed",
+          description: "Please copy this link manually to share",
+          variant: "destructive"
+        });
+      }
     }
   };
 
