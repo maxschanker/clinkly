@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { getTreat, recordShare, type TreatResponse } from "@/lib/treatService";
 import { retrieveTreatData, loadTreatData, cleanupStaleData } from "@/lib/utils";
-import MiniVoiceMemoPlayer from "@/components/MiniVoiceMemoPlayer";
+import OptimizedAudioPlayer from "@/components/OptimizedAudioPlayer";
 import { ShareBottomSheet } from "@/components/ShareBottomSheet";
 
 const Treat = () => {
@@ -286,7 +286,7 @@ const Treat = () => {
         {/* 5. Voice memo - Above message */}
         {treatData.voice_memo_url && (
           <div className="mb-6">
-            <MiniVoiceMemoPlayer voiceMemoUrl={treatData.voice_memo_url} />
+            <OptimizedAudioPlayer voiceMemoUrl={treatData.voice_memo_url} variant="mini" />
           </div>
         )}
 
