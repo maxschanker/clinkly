@@ -67,20 +67,62 @@ export const ShareBottomSheet = ({ treatData, trigger }: ShareBottomSheetProps) 
       // Generate the image
       const blob = await generateInstagramStory(imageData);
       
-      // Try to open Instagram Story directly on mobile
+      // Check if Web Share API with files is supported
+      const canShareFiles = navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'story.png')] });
+      
+      if (canShareFiles) {
+        try {
+          // Create a file from the blob
+          const file = new File([blob], `${treatData.senderName}-clink-story.png`, {
+            type: 'image/png',
+          });
+
+          // Use Web Share API to share the file
+          await navigator.share({
+            title: 'Check out this clink!',
+            text: 'Someone sent me a clink! ✨',
+            files: [file]
+          });
+
+          await trackShare('instagram_story_native');
+          setIsOpen(false);
+          
+          toast({
+            title: "Shared! 📱",
+            description: "Image ready to share to Instagram Stories!",
+          });
+          return;
+          
+        } catch (shareError) {
+          // If user cancels sharing, don't show error
+          if (shareError instanceof Error && shareError.name === 'AbortError') {
+            setIsOpen(false);
+            return;
+          }
+          console.log('Native sharing failed, falling back to download:', shareError);
+        }
+      }
+      
+      // Fallback: Try Instagram deep link on mobile
       if (isMobile && navigator.userAgent.includes('Instagram')) {
-        // If we're in Instagram app, try to use their sharing protocol
         const instagramUrl = `instagram://story-camera`;
         window.location.href = instagramUrl;
+        
+        // Also download the image for manual upload
+        downloadImage(blob, `${treatData.senderName}-clink-story.png`);
+        toast({
+          title: "Opening Instagram + Downloaded Image 📱",
+          description: "Upload the downloaded image to your story",
+        });
       } else if (isMobile) {
-        // On mobile, provide download with instructions
+        // On mobile without Instagram app, download with instructions
         downloadImage(blob, `${treatData.senderName}-clink-story.png`);
         toast({
           title: "Image Downloaded! 📱",
           description: "Open Instagram Stories and upload the image from your gallery",
         });
       } else {
-        // On desktop, just download with instructions
+        // On desktop, download with instructions
         downloadImage(blob, `${treatData.senderName}-clink-story.png`);
         toast({
           title: "Image Downloaded! 💻",
