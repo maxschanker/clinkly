@@ -100,7 +100,11 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
     }
   }, [audioState.isPlaying, audioState.retryCount, audioState.lastPlayPosition, scheduleRetry, toast]);
 
-  // Streamlined event handlers for mini player
+  // Event handlers for mini player - matching full player behavior
+  const handleLoadStart = useCallback(() => {
+    setAudioState(prev => ({ ...prev, isLoading: true }));
+  }, []);
+
   const handleLoadedMetadata = useCallback(() => {
     setAudioState(prev => ({ 
       ...prev, 
@@ -121,7 +125,44 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   }, []);
 
   const handleWaiting = useCallback(() => {
-    setAudioState(prev => ({ ...prev, isBuffering: true }));
+    // Only set buffering if we're not in initial loading state
+    setAudioState(prev => ({ 
+      ...prev, 
+      isBuffering: !prev.isLoading
+    }));
+  }, []);
+
+  const handleProgress = useCallback(() => {
+    // Clear buffering state during progress if we're playing
+    if (audioState.isPlaying) {
+      setAudioState(prev => ({ ...prev, isBuffering: false }));
+    }
+  }, [audioState.isPlaying]);
+
+  const handleSuspend = useCallback(() => {
+    // Handle suspend event - typically means download stopped
+    setAudioState(prev => ({ ...prev, isBuffering: false }));
+  }, []);
+
+  const handlePlay = useCallback(() => {
+    setAudioState(prev => ({ 
+      ...prev, 
+      isPlaying: true, 
+      isBuffering: false,
+      hasError: false 
+    }));
+  }, []);
+
+  const handlePlaying = useCallback(() => {
+    // Audio is actually playing - clear all loading/buffering states
+    setAudioState(prev => ({ 
+      ...prev, 
+      isPlaying: true, 
+      isLoading: false,
+      isBuffering: false,
+      isStalled: false,
+      hasError: false 
+    }));
   }, []);
 
   const handleStalled = useCallback(() => {
@@ -138,7 +179,12 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   }, [audioState.isStalled, audioState.isPlaying, audioState.retryCount]);
 
   const handleAudioEnded = useCallback(() => {
-    setAudioState(prev => ({ ...prev, isPlaying: false }));
+    setAudioState(prev => ({ 
+      ...prev, 
+      isPlaying: false,
+      isBuffering: false,
+      isLoading: false 
+    }));
     playPositionRef.current = 0;
   }, []);
 
@@ -195,10 +241,15 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
     });
     playPositionRef.current = 0;
 
-    // Essential event listeners for mini player
+    // Complete event listeners for mini player
+    audio.addEventListener('loadstart', handleLoadStart);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('canplaythrough', handleCanPlayThrough);
     audio.addEventListener('waiting', handleWaiting);
+    audio.addEventListener('progress', handleProgress);
+    audio.addEventListener('suspend', handleSuspend);
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('playing', handlePlaying);
     audio.addEventListener('stalled', handleStalled);
     audio.addEventListener('ended', handleAudioEnded);
     audio.addEventListener('timeupdate', handleTimeUpdate);
@@ -216,15 +267,20 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
         clearTimeout(retryTimeoutRef.current);
       }
       
+      audio.removeEventListener('loadstart', handleLoadStart);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('canplaythrough', handleCanPlayThrough);
       audio.removeEventListener('waiting', handleWaiting);
+      audio.removeEventListener('progress', handleProgress);
+      audio.removeEventListener('suspend', handleSuspend);
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('playing', handlePlaying);
       audio.removeEventListener('stalled', handleStalled);
       audio.removeEventListener('ended', handleAudioEnded);
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('error', handleAudioError);
     };
-  }, [voiceMemoUrl, handleLoadedMetadata, handleCanPlayThrough, handleWaiting, handleStalled, handleAudioEnded, handleTimeUpdate, handleAudioError]);
+  }, [voiceMemoUrl, handleLoadStart, handleLoadedMetadata, handleCanPlayThrough, handleWaiting, handleProgress, handleSuspend, handlePlay, handlePlaying, handleStalled, handleAudioEnded, handleTimeUpdate, handleAudioError]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-1 py-2">
@@ -235,7 +291,7 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
         disabled={audioState.isLoading && !audioState.hasError}
         className="w-12 h-12 rounded-full bg-primary hover:bg-primary/90 hover:scale-105 transition-all duration-200 shadow-lg"
       >
-        {audioState.isLoading || audioState.isBuffering ? (
+        {audioState.isLoading ? (
           <div className="w-4 h-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
         ) : audioState.isPlaying ? (
           <Square className="w-3 h-3 text-primary-foreground fill-current" />
