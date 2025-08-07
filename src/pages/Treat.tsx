@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { getTreat, recordShare, type TreatResponse } from "@/lib/treatService";
 import { retrieveTreatData, loadTreatData, cleanupStaleData } from "@/lib/utils";
-import MiniVoiceMemoPlayer from "@/components/MiniVoiceMemoPlayer";
+import { MiniVoiceMemoPlayer } from "@/components/MiniVoiceMemoPlayer";
 import { ShareBottomSheet } from "@/components/ShareBottomSheet";
 
 const Treat = () => {

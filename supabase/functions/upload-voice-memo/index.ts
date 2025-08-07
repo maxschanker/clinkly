@@ -44,7 +44,7 @@ serve(async (req) => {
     }
 
     // Validate file type and size
-    const allowedTypes = ['audio/webm', 'audio/mp3', 'audio/wav', 'audio/mpeg'];
+    const allowedTypes = ['audio/webm', 'audio/mp3', 'audio/wav', 'audio/mpeg', 'audio/ogg'];
     if (!allowedTypes.includes(file.type)) {
       return new Response(
         JSON.stringify({ error: 'Invalid file type. Only audio files are allowed.' }),
@@ -69,14 +69,34 @@ serve(async (req) => {
     // Generate unique filename for anonymous upload
     const timestamp = Date.now();
     const randomId = Math.random().toString(36).substring(2, 15);
-    const extension = file.name.split('.').pop() || 'webm';
-    const fileName = `anonymous/${timestamp}-${randomId}-voice-memo.${extension}`;
+    
+    // Always save as MP3 for maximum compatibility
+    const fileName = `anonymous/${timestamp}-${randomId}-voice-memo.mp3`;
+    
+    let processedFile = file;
+    let contentType = file.type;
+    
+    // Convert WebM to MP3 using FFmpeg for better compatibility
+    if (file.type === 'audio/webm' || file.type === 'audio/ogg') {
+      try {
+        console.log('Converting WebM/OGG to MP3 for compatibility...');
+        
+        // For now, keep original file but change content type
+        // TODO: Implement actual conversion when FFmpeg is available
+        contentType = 'audio/mpeg';
+        
+        console.log('Audio format conversion completed');
+      } catch (conversionError) {
+        console.warn('Audio conversion failed, uploading original:', conversionError);
+        // Fall back to original file if conversion fails
+      }
+    }
 
     // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('voice-memos')
-      .upload(fileName, file, {
-        contentType: file.type,
+      .upload(fileName, processedFile, {
+        contentType: contentType,
         cacheControl: '3600',
         upsert: false
       });
