@@ -73,14 +73,14 @@ export const ShareBottomSheet = ({ treatData, trigger }: ShareBottomSheetProps) 
       if (canShareFiles) {
         try {
           // Create a file from the blob
-          const file = new File([blob], `${treatData.senderName}-clink-story.png`, {
+          const file = new File([blob], `clink-story.png`, {
             type: 'image/png',
           });
 
-          // Use Web Share API to share the file
+          // Use Web Share API to share the file with specific text and title
           await navigator.share({
-            title: 'Check out this clink!',
-            text: 'Someone sent me a clink! ✨',
+            title: 'Clink',
+            text: 'Look what I got on Clink! 💌',
             files: [file]
           });
 
@@ -103,32 +103,13 @@ export const ShareBottomSheet = ({ treatData, trigger }: ShareBottomSheetProps) 
         }
       }
       
-      // Fallback: Try Instagram deep link on mobile
-      if (isMobile && navigator.userAgent.includes('Instagram')) {
-        const instagramUrl = `instagram://story-camera`;
-        window.location.href = instagramUrl;
-        
-        // Also download the image for manual upload
-        downloadImage(blob, `${treatData.senderName}-clink-story.png`);
-        toast({
-          title: "Opening Instagram + Downloaded Image 📱",
-          description: "Upload the downloaded image to your story",
-        });
-      } else if (isMobile) {
-        // On mobile without Instagram app, download with instructions
-        downloadImage(blob, `${treatData.senderName}-clink-story.png`);
-        toast({
-          title: "Image Downloaded! 📱",
-          description: "Open Instagram Stories and upload the image from your gallery",
-        });
-      } else {
-        // On desktop, download with instructions
-        downloadImage(blob, `${treatData.senderName}-clink-story.png`);
-        toast({
-          title: "Image Downloaded! 💻",
-          description: "Upload this image to your Instagram Story from your phone",
-        });
-      }
+      // Fallback: Download image and show instructions
+      downloadImage(blob, `clink-story.png`);
+      
+      toast({
+        title: "Saved! 📱",
+        description: "Open Instagram and choose it from your camera roll.",
+      });
 
       await trackShare('instagram_story');
       setIsOpen(false);
