@@ -7,10 +7,12 @@ interface VoiceMemoPlayerProps {
   voiceMemoUrl: string;
 }
 
-// Simplified audio state for more reliable playback
+// Enhanced audio state for better buffering and playback
 interface AudioState {
   isPlaying: boolean;
   isError: boolean;
+  isBuffering: boolean;
+  canPlay: boolean;
   errorMessage?: string;
 }
 
@@ -18,6 +20,8 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
   const [audioState, setAudioState] = useState<AudioState>({
     isPlaying: false,
     isError: false,
+    isBuffering: false,
+    canPlay: false,
   });
   
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -25,14 +29,16 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
   const retryCountRef = useRef(0);
   const { toast } = useToast();
 
-  // Simplified playback toggle with fallback strategy
+  // Enhanced playback toggle with buffering awareness
   const togglePlayback = useCallback(async () => {
     const audio = audioRef.current;
     if (!audio || audioState.isError) return;
 
     console.log('🎵 Voice memo player toggle:', { 
       isPlaying: audioState.isPlaying, 
-      readyState: audio.readyState 
+      readyState: audio.readyState,
+      canPlay: audioState.canPlay,
+      buffered: audio.buffered.length > 0 ? audio.buffered.end(0) : 0
     });
 
     if (audioState.isPlaying) {
@@ -41,24 +47,33 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
       return;
     }
 
+    // Wait for audio to be ready before playing
+    if (!audioState.canPlay) {
+      console.log('🔄 Audio not ready, triggering load');
+      setAudioState(prev => ({ ...prev, isBuffering: true }));
+      audio.load();
+      return;
+    }
+
     // Clear any existing timeout
     if (playTimeoutRef.current) {
       clearTimeout(playTimeoutRef.current);
     }
     
-    // Reset error state
-    setAudioState(prev => ({ ...prev, isError: false, errorMessage: undefined }));
+    // Reset error state and set buffering
+    setAudioState(prev => ({ ...prev, isError: false, isBuffering: true, errorMessage: undefined }));
     
-    // Set a 5-second timeout for play attempt
+    // Set a 10-second timeout for play attempt (increased for better buffering)
     playTimeoutRef.current = setTimeout(() => {
-      console.warn('⚠️ Audio play timeout after 5s');
+      console.warn('⚠️ Audio play timeout after 10s');
       setAudioState(prev => ({ 
         ...prev, 
         isError: true, 
         isPlaying: false,
+        isBuffering: false,
         errorMessage: 'Playback timeout - try again'
       }));
-    }, 5000);
+    }, 10000);
 
     try {
       await audio.play();
@@ -66,6 +81,7 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
       if (playTimeoutRef.current) {
         clearTimeout(playTimeoutRef.current);
       }
+      setAudioState(prev => ({ ...prev, isBuffering: false }));
       retryCountRef.current = 0; // Reset retry count on success
     } catch (error) {
       console.error("🚫 Audio playback error:", error);
@@ -87,6 +103,7 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
           ...prev, 
           isError: true, 
           isPlaying: false,
+          isBuffering: false,
           errorMessage: 'Permission denied'
         }));
       } else {
@@ -98,6 +115,7 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
           ...prev, 
           isError: true, 
           isPlaying: false,
+          isBuffering: false,
           errorMessage: `Playback failed - retry ${retryCountRef.current}`
         }));
         
@@ -111,15 +129,41 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
         }
       }
     }
-  }, [audioState.isPlaying, audioState.isError, toast]);
+  }, [audioState.isPlaying, audioState.isError, audioState.canPlay, toast]);
 
-  // Simplified audio event handlers - only track essential states
+  // Enhanced audio event handlers with buffering support
+  const handleLoadStart = useCallback(() => {
+    console.log('📥 Audio load started');
+    setAudioState(prev => ({ ...prev, isBuffering: true, canPlay: false }));
+  }, []);
+
+  const handleCanPlay = useCallback(() => {
+    console.log('✅ Audio can play');
+    setAudioState(prev => ({ ...prev, canPlay: true, isBuffering: false }));
+  }, []);
+
+  const handleCanPlayThrough = useCallback(() => {
+    console.log('🚀 Audio can play through');
+    setAudioState(prev => ({ ...prev, canPlay: true, isBuffering: false }));
+  }, []);
+
+  const handleWaiting = useCallback(() => {
+    console.log('⏳ Audio waiting for data');
+    setAudioState(prev => ({ ...prev, isBuffering: true }));
+  }, []);
+
+  const handleStalled = useCallback(() => {
+    console.log('🐌 Audio download stalled');
+    setAudioState(prev => ({ ...prev, isBuffering: true }));
+  }, []);
+
   const handlePlaying = useCallback(() => {
     console.log('▶️ Audio playing');
     setAudioState(prev => ({ 
       ...prev, 
       isPlaying: true, 
-      isError: false 
+      isError: false,
+      isBuffering: false 
     }));
   }, []);
 
@@ -169,7 +213,9 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
     retryCountRef.current = 0; // Reset retry count
     setAudioState({ 
       isPlaying: false,
-      isError: false, 
+      isError: false,
+      isBuffering: false,
+      canPlay: false,
       errorMessage: undefined
     });
     
@@ -189,12 +235,19 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
     setAudioState({
       isPlaying: false,
       isError: false,
+      isBuffering: false,
+      canPlay: false,
     });
 
     // Reset retry count for new audio
     retryCountRef.current = 0;
 
-    // Only track essential events
+    // Enhanced buffering event listeners
+    audio.addEventListener('loadstart', handleLoadStart);
+    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('canplaythrough', handleCanPlayThrough);
+    audio.addEventListener('waiting', handleWaiting);
+    audio.addEventListener('stalled', handleStalled);
     audio.addEventListener('playing', handlePlaying);
     audio.addEventListener('pause', handlePause);
     audio.addEventListener('ended', handleEnded);
@@ -206,13 +259,18 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
         clearTimeout(playTimeoutRef.current);
       }
       
-      // Remove event listeners
+      // Remove all event listeners
+      audio.removeEventListener('loadstart', handleLoadStart);
+      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('canplaythrough', handleCanPlayThrough);
+      audio.removeEventListener('waiting', handleWaiting);
+      audio.removeEventListener('stalled', handleStalled);
       audio.removeEventListener('playing', handlePlaying);
       audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
     };
-  }, [voiceMemoUrl, handlePlaying, handlePause, handleEnded, handleError]);
+  }, [voiceMemoUrl, handleLoadStart, handleCanPlay, handleCanPlayThrough, handleWaiting, handleStalled, handlePlaying, handlePause, handleEnded, handleError]);
 
   return (
     <div className="mb-4 text-center">
@@ -228,15 +286,23 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
           onClick={togglePlayback}
           variant="default"
           size="lg"
-          disabled={false}
+          disabled={audioState.isBuffering}
           className="w-20 h-16 rounded-xl bg-primary hover:bg-primary/90 hover:scale-105 transition-all duration-200 shadow-lg"
         >
-          {audioState.isPlaying ? (
+          {audioState.isBuffering ? (
+            <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+          ) : audioState.isPlaying ? (
             <Square className="w-5 h-5 text-primary-foreground fill-current" />
           ) : (
             <Play className="w-6 h-6 text-primary-foreground ml-1" />
           )}
         </Button>
+        
+        {audioState.isBuffering && !audioState.isError && (
+          <div className="text-sm text-muted-foreground">
+            Loading audio...
+          </div>
+        )}
         
         {audioState.isError && (
           <div className="flex flex-col items-center gap-2">
@@ -258,12 +324,12 @@ const VoiceMemoPlayer = ({ voiceMemoUrl }: VoiceMemoPlayerProps) => {
       
       <audio
         ref={audioRef}
-        preload="metadata"
+        preload="auto"
         crossOrigin="anonymous"
       >
-        <source src={voiceMemoUrl} type="audio/webm" />
         <source src={voiceMemoUrl} type="audio/mp4" />
         <source src={voiceMemoUrl} type="audio/mpeg" />
+        <source src={voiceMemoUrl} type="audio/webm" />
         <source src={voiceMemoUrl} type="audio/wav" />
         <source src={voiceMemoUrl} type="audio/ogg" />
       </audio>
