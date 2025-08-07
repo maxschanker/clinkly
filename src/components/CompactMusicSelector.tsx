@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Music, Play, Square } from "lucide-react";
+import { Music } from "lucide-react";
 import { MusicSearchModal } from "@/components/MusicSearchModal";
 
 interface Song {
@@ -18,21 +18,14 @@ interface CompactMusicSelectorProps {
 
 export function CompactMusicSelector({ onSongChange, selectedSong }: CompactMusicSelectorProps) {
   const [showMusicModal, setShowMusicModal] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
 
   const handleSongSelect = (song: Song) => {
     onSongChange(song);
     setShowMusicModal(false);
-    setIsPlaying(false);
   };
 
   const handleRemoveSong = () => {
     onSongChange(null);
-    setIsPlaying(false);
-  };
-
-  const togglePlayback = () => {
-    setIsPlaying(!isPlaying);
   };
 
   if (!selectedSong) {
@@ -61,23 +54,13 @@ export function CompactMusicSelector({ onSongChange, selectedSong }: CompactMusi
   return (
     <>
       <div className="flex items-center gap-3 p-3 bg-card border rounded-lg">
-        {/* Thumbnail with play/stop button overlay */}
-        <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+        {/* Thumbnail */}
+        <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
           <img
             src={selectedSong.thumbnailUrl}
             alt={selectedSong.title}
             className="w-full h-full object-cover"
           />
-          <button
-            onClick={togglePlayback}
-            className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
-          >
-            {isPlaying ? (
-              <Square className="h-4 w-4 text-white fill-white" />
-            ) : (
-              <Play className="h-4 w-4 text-white fill-white" />
-            )}
-          </button>
         </div>
 
         {/* Song info */}
