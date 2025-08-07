@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Play, Pause, Music, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SongPlayerProps {
   song: {
@@ -20,10 +21,13 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
   const [hasError, setHasError] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [userInteracted, setUserInteracted] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const retryTimeoutRef = useRef<NodeJS.Timeout>();
+  const isMobile = useIsMobile();
 
-  const embedUrl = `https://www.youtube.com/embed/${song.id}?enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&controls=0&modestbranding=1&rel=0&showinfo=0&autoplay=0&iv_load_policy=3&fs=0&disablekb=1`;
+  // Mobile-friendly embed URL with better compatibility
+  const embedUrl = `https://www.youtube.com/embed/${song.id}?enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&controls=0&modestbranding=1&rel=0&showinfo=0&autoplay=0&iv_load_policy=3&fs=0&disablekb=1&playsinline=1&widget_referrer=${encodeURIComponent(window.location.href)}`;
 
   const sendPlayerCommand = useCallback((command: string, args: string = "") => {
     if (!iframeRef.current || !playerReady) {
@@ -76,13 +80,23 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
   }, [retryCount, sendPlayerCommand]);
 
   const togglePlay = useCallback(() => {
+    // Mark user interaction for mobile autoplay policy compliance
+    if (!userInteracted) {
+      setUserInteracted(true);
+    }
+
     if (hasError && retryCount < 3) {
       retryPlayback();
       return;
     }
 
-    if (!playerReady || hasError) {
-      console.warn('Cannot toggle play - player not ready or has error');
+    if (!playerReady) {
+      console.warn('Cannot toggle play - player not ready');
+      // On mobile, try to force player ready state after user interaction
+      if (isMobile) {
+        setPlayerReady(true);
+        setIsLoading(false);
+      }
       return;
     }
 
@@ -93,27 +107,39 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
       console.log('Pausing video');
       if (sendPlayerCommand('pauseVideo')) {
         // Don't set isPlaying to false immediately, wait for confirmation
-        setTimeout(() => setIsLoading(false), 500);
+        setTimeout(() => {
+          if (isLoading) {
+            setIsLoading(false);
+          }
+        }, 1000);
       } else {
         setIsLoading(false);
         setHasError(true);
       }
     } else {
-      console.log('Playing video');
+      console.log('Playing video', { isMobile, userInteracted });
+      
+      // On mobile, ensure we have user interaction before attempting playback
+      if (isMobile && !userInteracted) {
+        console.log('Mobile requires user interaction for playback');
+        setUserInteracted(true);
+      }
+
       if (sendPlayerCommand('playVideo')) {
-        // Set loading timeout
+        // Set loading timeout with longer wait on mobile
+        const timeout = isMobile ? 5000 : 3000;
         setTimeout(() => {
           if (isLoading && !isPlaying) {
             console.warn('Playback timeout, trying retry');
             retryPlayback();
           }
-        }, 3000);
+        }, timeout);
       } else {
         setIsLoading(false);
         setHasError(true);
       }
     }
-  }, [isPlaying, playerReady, hasError, retryCount, sendPlayerCommand, retryPlayback, isLoading]);
+  }, [isPlaying, playerReady, hasError, retryCount, sendPlayerCommand, retryPlayback, isLoading, isMobile, userInteracted]);
 
   // Handle iframe load and player ready detection
   useEffect(() => {
@@ -121,22 +147,28 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
     if (!iframe) return;
 
     const handleIframeLoad = () => {
-      console.log('Iframe loaded, waiting for player ready...');
+      console.log('Iframe loaded, waiting for player ready...', { isMobile });
       setIsLoading(true);
       
       // Send listening command to enable state change events
       setTimeout(() => {
-        iframe.contentWindow?.postMessage('{"event":"listening"}', '*');
-      }, 1000);
+        try {
+          iframe.contentWindow?.postMessage('{"event":"listening"}', '*');
+        } catch (e) {
+          console.warn('Error sending listening message:', e);
+        }
+      }, isMobile ? 2000 : 1000);
 
       // Set a timeout to mark player as ready if we don't get confirmation
+      // Longer timeout on mobile due to potential slower loading
+      const readyTimeout = isMobile ? 5000 : 3000;
       setTimeout(() => {
         if (!playerReady) {
-          console.log('Player ready timeout, assuming ready');
+          console.log('Player ready timeout, assuming ready', { isMobile });
           setPlayerReady(true);
           setIsLoading(false);
         }
-      }, 3000);
+      }, readyTimeout);
     };
 
     iframe.addEventListener('load', handleIframeLoad);
@@ -152,7 +184,7 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
         clearTimeout(retryTimeoutRef.current);
       }
     };
-  }, [playerReady]);
+  }, [playerReady, isMobile]);
 
   // Listen for iframe messages to sync play state
   useEffect(() => {
@@ -206,9 +238,34 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
           }
         } else if (data.event === 'onError') {
           console.error('YouTube player error:', data.data);
-          setHasError(true);
-          setIsLoading(false);
-          setIsPlaying(false);
+          // Handle specific YouTube error codes
+          const errorCode = data.data;
+          let shouldRetry = false;
+          
+          switch (errorCode) {
+            case 2: // Invalid parameter
+            case 5: // HTML5 player error
+            case 100: // Video not found
+            case 101: // Video not available
+            case 150: // Video not available (restricted)
+              console.error('YouTube error code:', errorCode, 'Not retryable');
+              break;
+            default:
+              // For other errors, attempt retry on mobile
+              if (isMobile && retryCount < 2) {
+                shouldRetry = true;
+                console.log('Mobile error, will retry:', errorCode);
+              }
+              break;
+          }
+          
+          if (shouldRetry) {
+            setTimeout(() => retryPlayback(), 1000);
+          } else {
+            setHasError(true);
+            setIsLoading(false);
+            setIsPlaying(false);
+          }
         }
       } catch (e) {
         console.warn('Error parsing YouTube message:', e);
@@ -217,7 +274,7 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [isPlaying, playerReady]);
+  }, [isPlaying, playerReady, isMobile, retryCount, retryPlayback]);
 
   // Reset state when song changes
   useEffect(() => {
@@ -226,6 +283,7 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
     setHasError(false);
     setPlayerReady(false);
     setRetryCount(0);
+    setUserInteracted(false);
     
     if (retryTimeoutRef.current) {
       clearTimeout(retryTimeoutRef.current);
