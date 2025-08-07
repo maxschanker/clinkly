@@ -101,40 +101,12 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   }, [audioState.isPlaying, audioState.retryCount, audioState.lastPlayPosition, scheduleRetry, toast]);
 
   // Streamlined event handlers for mini player
-  const handleLoadStart = useCallback(() => {
-    setAudioState(prev => ({ ...prev, isLoading: true, hasError: false }));
-  }, []);
-
   const handleLoadedMetadata = useCallback(() => {
     setAudioState(prev => ({ 
       ...prev, 
       isLoading: false, 
       hasError: false
     }));
-  }, []);
-
-  const handleProgress = useCallback(() => {
-    // Clear stalled state when download progress is made
-    setAudioState(prev => ({ ...prev, isStalled: false }));
-  }, []);
-
-  const handlePlay = useCallback(() => {
-    setAudioState(prev => ({ ...prev, isPlaying: true, hasError: false }));
-  }, []);
-
-  const handlePlaying = useCallback(() => {
-    setAudioState(prev => ({ 
-      ...prev, 
-      isPlaying: true, 
-      isBuffering: false, 
-      isStalled: false,
-      hasError: false 
-    }));
-  }, []);
-
-  const handleSuspend = useCallback(() => {
-    // Audio loading suspended, but don't treat as error for mini player
-    setAudioState(prev => ({ ...prev, isBuffering: false }));
   }, []);
 
   const handleCanPlayThrough = useCallback(() => {
@@ -153,24 +125,15 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   }, []);
 
   const handleStalled = useCallback(() => {
-    console.log("[MiniVoiceMemoPlayer] Audio stalled, entering stall state");
     setAudioState(prev => ({ ...prev, isStalled: true, isBuffering: true }));
     
-    // Conservative stall recovery - only reload if playback has completely stopped
+    // Quick recovery for mini player
     setTimeout(() => {
-      const audio = audioRef.current;
-      if (!audio) return;
-      
-      // Only intervene if audio is still stalled AND not playing AND no progress is being made
-      if (audioState.isStalled && !audioState.isPlaying && audio.readyState < 3) {
-        console.log("[MiniVoiceMemoPlayer] Stall recovery: Audio still stalled after 8s, reloading");
-        audio.load();
-      } else {
-        console.log("[MiniVoiceMemoPlayer] Stall recovery: Audio recovered naturally, clearing stall state");
-        setAudioState(prev => ({ ...prev, isStalled: false, isBuffering: false }));
+      if (audioRef.current && audioState.isStalled) {
+        audioRef.current.load();
       }
-    }, 8000); // Increased from 2s to 8s to allow natural recovery
-  }, [audioState.isStalled, audioState.isPlaying]);
+    }, 2000);
+  }, [audioState.isStalled]);
 
   const handleAudioEnded = useCallback(() => {
     setAudioState(prev => ({ ...prev, isPlaying: false }));
@@ -231,15 +194,10 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
     playPositionRef.current = 0;
 
     // Essential event listeners for mini player
-    audio.addEventListener('loadstart', handleLoadStart);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('canplaythrough', handleCanPlayThrough);
-    audio.addEventListener('progress', handleProgress);
     audio.addEventListener('waiting', handleWaiting);
     audio.addEventListener('stalled', handleStalled);
-    audio.addEventListener('suspend', handleSuspend);
-    audio.addEventListener('play', handlePlay);
-    audio.addEventListener('playing', handlePlaying);
     audio.addEventListener('ended', handleAudioEnded);
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('error', handleAudioError);
@@ -256,20 +214,15 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
         clearTimeout(retryTimeoutRef.current);
       }
       
-      audio.removeEventListener('loadstart', handleLoadStart);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('canplaythrough', handleCanPlayThrough);
-      audio.removeEventListener('progress', handleProgress);
       audio.removeEventListener('waiting', handleWaiting);
       audio.removeEventListener('stalled', handleStalled);
-      audio.removeEventListener('suspend', handleSuspend);
-      audio.removeEventListener('play', handlePlay);
-      audio.removeEventListener('playing', handlePlaying);
       audio.removeEventListener('ended', handleAudioEnded);
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('error', handleAudioError);
     };
-  }, [voiceMemoUrl, handleLoadStart, handleLoadedMetadata, handleCanPlayThrough, handleProgress, handleWaiting, handleStalled, handleSuspend, handlePlay, handlePlaying, handleAudioEnded, handleTimeUpdate, handleAudioError]);
+  }, [voiceMemoUrl, handleLoadedMetadata, handleCanPlayThrough, handleWaiting, handleStalled, handleAudioEnded, handleTimeUpdate, handleAudioError]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-1 py-2">
