@@ -7,56 +7,24 @@ interface MiniVoiceMemoPlayerProps {
   voiceMemoUrl: string;
 }
 
-// Audio state management for mini player
+// Simplified audio state for mini player
 interface AudioState {
   isPlaying: boolean;
   isLoading: boolean;
-  isBuffering: boolean;
   hasError: boolean;
-  isStalled: boolean;
-  retryCount: number;
-  lastPlayPosition: number;
 }
 
 const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
   const [audioState, setAudioState] = useState<AudioState>({
     isPlaying: false,
     isLoading: true,
-    isBuffering: false,
     hasError: false,
-    isStalled: false,
-    retryCount: 0,
-    lastPlayPosition: 0,
   });
   
   const audioRef = useRef<HTMLAudioElement>(null);
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const playPositionRef = useRef<number>(0);
   const { toast } = useToast();
 
-  // Retry logic with exponential backoff
-  const scheduleRetry = useCallback((attempt: number) => {
-    const delay = Math.min(1000 * Math.pow(2, attempt), 5000); // Max 5s delay for mini player
-    
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
-    }
-    
-    retryTimeoutRef.current = setTimeout(() => {
-      setAudioState(prev => ({ 
-        ...prev, 
-        hasError: false, 
-        isLoading: true,
-        retryCount: attempt 
-      }));
-      
-      if (audioRef.current) {
-        audioRef.current.load();
-      }
-    }, delay);
-  }, []);
-
-  // Enhanced playback with recovery
+  // Simple playback toggle
   const togglePlayback = useCallback(async () => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -64,16 +32,9 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
     if (audioState.isPlaying) {
       audio.pause();
       audio.currentTime = 0;
-      playPositionRef.current = 0;
       setAudioState(prev => ({ ...prev, isPlaying: false }));
     } else {
       try {
-        playPositionRef.current = audio.currentTime;
-        
-        if (audioState.lastPlayPosition > 0 && audio.currentTime === 0) {
-          audio.currentTime = audioState.lastPlayPosition;
-        }
-        
         await audio.play();
         setAudioState(prev => ({ ...prev, isPlaying: true, hasError: false }));
       } catch (error) {
@@ -85,27 +46,19 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
             description: "Please allow audio playback",
             variant: "destructive",
           });
-        } else if (audioState.retryCount < 2) { // Fewer retries for mini player
-          scheduleRetry(audioState.retryCount + 1);
-          return;
         }
         
         setAudioState(prev => ({ 
           ...prev, 
           hasError: true, 
-          isPlaying: false,
-          lastPlayPosition: playPositionRef.current
+          isPlaying: false
         }));
       }
     }
-  }, [audioState.isPlaying, audioState.retryCount, audioState.lastPlayPosition, scheduleRetry, toast]);
+  }, [audioState.isPlaying, toast]);
 
-  // Event handlers for mini player - matching full player behavior
-  const handleLoadStart = useCallback(() => {
-    setAudioState(prev => ({ ...prev, isLoading: true }));
-  }, []);
-
-  const handleLoadedMetadata = useCallback(() => {
+  // Essential event handlers for mini player
+  const handleCanPlayThrough = useCallback(() => {
     setAudioState(prev => ({ 
       ...prev, 
       isLoading: false, 
@@ -113,111 +66,27 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
     }));
   }, []);
 
-  const handleCanPlayThrough = useCallback(() => {
-    setAudioState(prev => ({ 
-      ...prev, 
-      isLoading: false, 
-      isBuffering: false, 
-      hasError: false,
-      isStalled: false,
-      retryCount: 0
-    }));
-  }, []);
-
-  const handleWaiting = useCallback(() => {
-    // Only set buffering if we're not in initial loading state
-    setAudioState(prev => ({ 
-      ...prev, 
-      isBuffering: !prev.isLoading
-    }));
-  }, []);
-
-  const handleProgress = useCallback(() => {
-    // Clear buffering state during progress if we're playing
-    if (audioState.isPlaying) {
-      setAudioState(prev => ({ ...prev, isBuffering: false }));
-    }
-  }, [audioState.isPlaying]);
-
-  const handleSuspend = useCallback(() => {
-    // Handle suspend event - typically means download stopped
-    setAudioState(prev => ({ ...prev, isBuffering: false }));
-  }, []);
-
-  const handlePlay = useCallback(() => {
-    setAudioState(prev => ({ 
-      ...prev, 
-      isPlaying: true, 
-      isBuffering: false,
-      hasError: false 
-    }));
-  }, []);
-
-  const handlePlaying = useCallback(() => {
-    // Audio is actually playing - clear all loading/buffering states
-    setAudioState(prev => ({ 
-      ...prev, 
-      isPlaying: true, 
-      isLoading: false,
-      isBuffering: false,
-      isStalled: false,
-      hasError: false 
-    }));
-  }, []);
-
-  const handleStalled = useCallback(() => {
-    setAudioState(prev => ({ ...prev, isStalled: true, isBuffering: true }));
-    
-    // More conservative stall recovery - wait longer and check if actually needed
-    setTimeout(() => {
-      if (audioRef.current && audioState.isStalled && !audioState.isPlaying && audioState.retryCount < 1) {
-        // Only reload if we've been stalled for a while and aren't currently playing
-        console.log("Stall recovery: reloading audio after extended timeout");
-        audioRef.current.load();
-      }
-    }, 8000); // Increased from 2 seconds to 8 seconds
-  }, [audioState.isStalled, audioState.isPlaying, audioState.retryCount]);
-
   const handleAudioEnded = useCallback(() => {
     setAudioState(prev => ({ 
       ...prev, 
-      isPlaying: false,
-      isBuffering: false,
-      isLoading: false 
+      isPlaying: false
     }));
-    playPositionRef.current = 0;
   }, []);
 
-  const handleTimeUpdate = useCallback(() => {
-    if (audioRef.current) {
-      playPositionRef.current = audioRef.current.currentTime;
-    }
-  }, []);
-
-  const handleAudioError = useCallback((e: any) => {
-    const error = e.target?.error;
-    
-    if (error?.code === MediaError.MEDIA_ERR_NETWORK && audioState.retryCount < 2) {
-      scheduleRetry(audioState.retryCount + 1);
-      return;
-    }
-    
+  const handleAudioError = useCallback(() => {
     setAudioState(prev => ({ 
       ...prev, 
       isPlaying: false, 
       hasError: true, 
-      isLoading: false, 
-      isBuffering: false,
-      lastPlayPosition: playPositionRef.current
+      isLoading: false
     }));
-  }, [audioState.retryCount, scheduleRetry]);
+  }, []);
 
   const retryPlayback = useCallback(() => {
     setAudioState(prev => ({ 
       ...prev, 
       hasError: false, 
-      isLoading: true, 
-      retryCount: 0 
+      isLoading: true
     }));
     
     if (audioRef.current) {
@@ -233,54 +102,20 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
     setAudioState({
       isPlaying: false,
       isLoading: true,
-      isBuffering: false,
       hasError: false,
-      isStalled: false,
-      retryCount: 0,
-      lastPlayPosition: 0,
     });
-    playPositionRef.current = 0;
 
-    // Complete event listeners for mini player
-    audio.addEventListener('loadstart', handleLoadStart);
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    // Essential event listeners only
     audio.addEventListener('canplaythrough', handleCanPlayThrough);
-    audio.addEventListener('waiting', handleWaiting);
-    audio.addEventListener('progress', handleProgress);
-    audio.addEventListener('suspend', handleSuspend);
-    audio.addEventListener('play', handlePlay);
-    audio.addEventListener('playing', handlePlaying);
-    audio.addEventListener('stalled', handleStalled);
     audio.addEventListener('ended', handleAudioEnded);
-    audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('error', handleAudioError);
 
-    // Mobile optimizations
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile) {
-      audio.preload = 'auto';
-      audio.crossOrigin = 'anonymous';
-    }
-
     return () => {
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-      }
-      
-      audio.removeEventListener('loadstart', handleLoadStart);
-      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('canplaythrough', handleCanPlayThrough);
-      audio.removeEventListener('waiting', handleWaiting);
-      audio.removeEventListener('progress', handleProgress);
-      audio.removeEventListener('suspend', handleSuspend);
-      audio.removeEventListener('play', handlePlay);
-      audio.removeEventListener('playing', handlePlaying);
-      audio.removeEventListener('stalled', handleStalled);
       audio.removeEventListener('ended', handleAudioEnded);
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('error', handleAudioError);
     };
-  }, [voiceMemoUrl, handleLoadStart, handleLoadedMetadata, handleCanPlayThrough, handleWaiting, handleProgress, handleSuspend, handlePlay, handlePlaying, handleStalled, handleAudioEnded, handleTimeUpdate, handleAudioError]);
+  }, [voiceMemoUrl, handleCanPlayThrough, handleAudioEnded, handleAudioError]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-1 py-2">
@@ -300,11 +135,6 @@ const MiniVoiceMemoPlayer = ({ voiceMemoUrl }: MiniVoiceMemoPlayerProps) => {
         )}
       </Button>
       
-      {audioState.isStalled && !audioState.hasError && (
-        <div className="text-xs text-amber-500">
-          Retrying...
-        </div>
-      )}
       
       {audioState.hasError && (
         <div className="flex flex-col items-center gap-1">
