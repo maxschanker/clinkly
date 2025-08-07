@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Play, Square, Music, Volume2 } from "lucide-react";
+import { Play, Pause, Music, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -107,10 +107,9 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
     }
 
     if (isPlaying) {
-      console.log('Stopping video');
-      // Stop and reset to beginning
-      sendPlayerCommand('stopVideo');
-      setIsPlaying(false);
+      console.log('Pausing video');
+      setIsLoading(true); // Show loading state immediately
+      sendPlayerCommand('pauseVideo');
       return;
     }
 
@@ -240,19 +239,6 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
               setIsLoading(false);
               break;
           }
-        } else if (data.event === 'infoDelivery' && data.info) {
-          // Use infoDelivery for more reliable playback state detection
-          const { currentTime, playbackRate } = data.info;
-          const actuallyPlaying = playbackRate > 0 && currentTime > 0;
-          
-          if (actuallyPlaying !== isPlaying) {
-            console.log('infoDelivery state change:', { currentTime, playbackRate, actuallyPlaying });
-            setIsPlaying(actuallyPlaying);
-            if (actuallyPlaying) {
-              setIsLoading(false);
-              setHasError(false);
-            }
-          }
         } else if (data.event === 'onError') {
           console.error('YouTube player error:', data.data);
           const errorCode = data.data;
@@ -285,7 +271,7 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [isPlaying, userInteracted, playerReady, sendPlayerCommand, song.id]);
+  }, [userInteracted, playerReady, sendPlayerCommand, song.id]);
 
   // Reset state when song changes
   useEffect(() => {
@@ -328,7 +314,7 @@ export function SongPlayer({ song, className = "" }: SongPlayerProps) {
               ) : hasError ? (
                 <Volume2 className="h-4 w-4 opacity-50" />
               ) : isPlaying ? (
-                <Square className="h-4 w-4" />
+                <Pause className="h-4 w-4" />
               ) : (
                 <Play className="h-4 w-4" />
               )}
