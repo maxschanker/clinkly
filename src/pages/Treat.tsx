@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getTreat, recordShare, type TreatResponse } from "@/lib/treatService";
 import { retrieveTreatData, loadTreatData, cleanupStaleData } from "@/lib/utils";
 import MiniVoiceMemoPlayer from "@/components/MiniVoiceMemoPlayer";
+import { ShareBottomSheet } from "@/components/ShareBottomSheet";
 
 const Treat = () => {
   const { slug } = useParams();
@@ -180,46 +181,6 @@ const Treat = () => {
     }
   };
 
-  const shareThis = async () => {
-    const url = window.location.href;
-    const text = `Someone sent me a clink! Check it out ✨`;
-    
-    // Record sharing analytics
-    if (treatData?.id) {
-      try {
-        await recordShare(treatData.id, navigator.share ? 'native_share' : 'clipboard');
-      } catch (error) {
-        console.error('Failed to record share:', error);
-      }
-    }
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'clink',
-          text: text,
-          url: url
-        });
-        toast({
-          title: "Shared! 📤",
-          description: "Thanks for sharing the love!"
-        });
-      } catch (err) {
-        // Fallback to clipboard
-        await navigator.clipboard.writeText(url);
-        toast({
-          title: "Link copied! 🔗",
-          description: "Share this link with friends"
-        });
-      }
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast({
-        title: "Link copied! 🔗",
-        description: "Share this link with friends"
-      });
-    }
-  };
 
   if (isLoading || !treatData) {
     return (
@@ -346,12 +307,7 @@ const Treat = () => {
         {/* Action Buttons - Only show in non-preview mode and not for error states */}
         {!isPreviewMode && !treatData.isError && (
           <div className="space-y-3">
-            <Button
-              onClick={shareThis}
-              className="w-full h-14 text-lg font-bold rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-button hover:shadow-glow transition-all duration-300"
-            >
-              📤 Share This
-            </Button>
+            <ShareBottomSheet treatData={treatData} />
 
             <Button
               onClick={() => {
