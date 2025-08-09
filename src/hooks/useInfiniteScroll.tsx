@@ -12,7 +12,7 @@ export const useInfiniteScroll = ({
   hasMore,
   loading,
   onLoadMore,
-  rootMargin = '100px',
+  rootMargin = '20px',
   threshold = 0.1
 }: UseInfiniteScrollOptions) => {
   const sentinelRef = useRef<HTMLDivElement | null>(null);

@@ -11,6 +11,7 @@ import { CompactVoiceMemoRecorder } from "@/components/CompactVoiceMemoRecorder"
 import { createTreat, uploadVoiceMemo, type TreatData } from "@/lib/treatService";
 import { useToast } from "@/hooks/use-toast";
 import { saveTreatData, cleanupStaleData, loadTreatData } from "@/lib/utils";
+import { smartScrollToTop } from "@/lib/scrollUtils";
 
 const Send = () => {
   const navigate = useNavigate();
@@ -64,15 +65,20 @@ const Send = () => {
     };
   }, []);
 
-  // Auto-scroll to amount field when cash toggle is enabled
+  // Auto-scroll to amount field when cash toggle is enabled (with user scroll detection)
   useEffect(() => {
     if (addCash && amountFieldRef.current) {
-      setTimeout(() => {
-        amountFieldRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }, 100);
+      // Check if user is actively scrolling
+      const checkScroll = () => {
+        if (window.scrollY === 0 || Math.abs(window.scrollY - window.innerHeight) > 100) {
+          amountFieldRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+        }
+      };
+      
+      setTimeout(checkScroll, 100);
     }
   }, [addCash]);
 
@@ -145,8 +151,7 @@ const Send = () => {
         shareUrl: result.shareUrl
       });
       
-      
-      window.scrollTo(0, 0);
+      smartScrollToTop();
       navigate('/send/complete');
     } catch (error) {
       console.error('Error creating treat:', error);
@@ -177,7 +182,7 @@ const Send = () => {
             onClick={() => {
               // Clear edit data when going home
               localStorage.removeItem('editData');
-              window.scrollTo(0, 0);
+              smartScrollToTop();
               navigate('/');
             }}
             className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"

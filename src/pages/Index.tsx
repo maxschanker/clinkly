@@ -4,6 +4,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import QRCode from "react-qr-code";
 import { ClinkLoadingScreen } from "@/components/ClinkLoadingScreen";
 import { useState, useEffect } from "react";
+import { smartScrollToTop, trackUserScrolling } from "@/lib/scrollUtils";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -14,12 +15,18 @@ const Index = () => {
     // Clear any lingering edit data when starting fresh
     localStorage.removeItem('editData');
     
+    // Track user scrolling to prevent interruptions
+    const cleanup = trackUserScrolling();
+    
     // Ensure loading screen shows for at least 1 second
     const minLoadingTime = setTimeout(() => {
       setShowLoading(false);
     }, 1000);
 
-    return () => clearTimeout(minLoadingTime);
+    return () => {
+      clearTimeout(minLoadingTime);
+      cleanup?.();
+    };
   }, []);
 
   // Show loading screen while mobile detection is undefined or during minimum loading time
@@ -42,7 +49,6 @@ const Index = () => {
             onClick={() => {
               // Clear edit data when clicking logo
               localStorage.removeItem('editData');
-              window.scrollTo(0, 0);
               window.location.href = '/';
             }}
             className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
@@ -77,7 +83,7 @@ const Index = () => {
                   onClick={() => {
                     // Clear edit data when starting fresh clink
                     localStorage.removeItem('editData');
-                    window.scrollTo(0, 0);
+                    smartScrollToTop();
                     navigate('/send');
                   }}
                   className="h-16 px-16 text-xl font-semibold rounded-full bg-gradient-primary hover:shadow-glow transition-all duration-500 transform hover:scale-110 hover:rotate-1 shadow-button border border-white/20"
