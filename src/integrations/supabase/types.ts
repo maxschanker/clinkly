@@ -452,6 +452,7 @@ export type Database = {
       treats: {
         Row: {
           amount: number | null
+          background_color: string | null
           cover_art_content: string
           cover_art_type: string
           created_at: string
@@ -473,6 +474,7 @@ export type Database = {
         }
         Insert: {
           amount?: number | null
+          background_color?: string | null
           cover_art_content?: string
           cover_art_type?: string
           created_at?: string
@@ -494,6 +496,7 @@ export type Database = {
         }
         Update: {
           amount?: number | null
+          background_color?: string | null
           cover_art_content?: string
           cover_art_type?: string
           created_at?: string
