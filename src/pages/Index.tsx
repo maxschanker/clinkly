@@ -11,6 +11,9 @@ const Index = () => {
   const [showLoading, setShowLoading] = useState(true);
 
   useEffect(() => {
+    // Clear any lingering edit data when starting fresh
+    localStorage.removeItem('editData');
+    
     // Ensure loading screen shows for at least 1 second
     const minLoadingTime = setTimeout(() => {
       setShowLoading(false);
@@ -37,6 +40,8 @@ const Index = () => {
         <div className="max-w-6xl mx-auto">
           <button
             onClick={() => {
+              // Clear edit data when clicking logo
+              localStorage.removeItem('editData');
               window.scrollTo(0, 0);
               window.location.href = '/';
             }}
@@ -70,6 +75,8 @@ const Index = () => {
                 {/* Get Started Button */}
                 <Button
                   onClick={() => {
+                    // Clear edit data when starting fresh clink
+                    localStorage.removeItem('editData');
                     window.scrollTo(0, 0);
                     navigate('/send');
                   }}

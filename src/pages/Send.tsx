@@ -54,9 +54,14 @@ const Send = () => {
         setAddCash(true);
       }
       
-      // Clear the edit data after loading
-      localStorage.removeItem('treatData_editData');
+      // Clear the edit data immediately after loading (fixed key)
+      localStorage.removeItem('editData');
     }
+
+    // Cleanup function to clear edit data when navigating away
+    return () => {
+      localStorage.removeItem('editData');
+    };
   }, []);
 
   // Auto-scroll to amount field when cash toggle is enabled
@@ -170,6 +175,8 @@ const Send = () => {
         <div className="max-w-6xl mx-auto">
           <button
             onClick={() => {
+              // Clear edit data when going home
+              localStorage.removeItem('editData');
               window.scrollTo(0, 0);
               navigate('/');
             }}
