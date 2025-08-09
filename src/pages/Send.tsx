@@ -20,6 +20,10 @@ const Send = () => {
   const [isLoading, setIsLoading] = useState(false);
   const amountFieldRef = useRef<HTMLDivElement>(null);
   const headerInputRef = useRef<HTMLInputElement>(null);
+  const messageTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const toInputRef = useRef<HTMLInputElement>(null);
+  const fromInputRef = useRef<HTMLInputElement>(null);
+  const amountInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     headerText: "",
@@ -87,6 +91,18 @@ const Send = () => {
     const handleScroll = () => {
       if (headerInputRef.current) {
         headerInputRef.current.blur();
+      }
+      if (messageTextareaRef.current) {
+        messageTextareaRef.current.blur();
+      }
+      if (toInputRef.current) {
+        toInputRef.current.blur();
+      }
+      if (fromInputRef.current) {
+        fromInputRef.current.blur();
+      }
+      if (amountInputRef.current) {
+        amountInputRef.current.blur();
       }
     };
 
@@ -315,15 +331,22 @@ const Send = () => {
           <h2 className="text-xl font-bold mb-4">Sweet message</h2>
           <div className="relative">
             <Textarea
+              ref={messageTextareaRef}
               value={formData.message}
               onChange={(e) => {
                 if (e.target.value.length <= 300) {
                   setFormData({...formData, message: e.target.value});
                 }
               }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && messageTextareaRef.current) {
+                  messageTextareaRef.current.blur();
+                }
+              }}
               placeholder="Hope you have a good week! ❣️"
               className="w-full min-h-[120px] text-lg resize-none border-2 border-border rounded-2xl p-6 bg-card focus:border-primary focus:ring-2 focus:ring-primary/20"
               maxLength={300}
+              enterKeyHint="done"
             />
             <div className={`text-sm mt-2 text-right ${
               formData.message.length >= 280 ? 'text-destructive' : 
@@ -343,22 +366,36 @@ const Send = () => {
             <div>
               <Label className="text-lg font-medium mb-2 block">🎁 To:</Label>
               <Input
+                ref={toInputRef}
                 type="text"
                 value={formData.recipientName}
                 onChange={(e) => setFormData({...formData, recipientName: e.target.value})}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && toInputRef.current) {
+                    toInputRef.current.blur();
+                  }
+                }}
                 placeholder="Their name"
                 className="w-full h-12 text-lg border-2 rounded-2xl"
+                enterKeyHint="done"
               />
             </div>
             
             <div>
               <Label className="text-lg font-medium mb-2 block">💌 From:</Label>
               <Input
+                ref={fromInputRef}
                 type="text"
                 value={formData.senderName}
                 onChange={(e) => setFormData({...formData, senderName: e.target.value})}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && fromInputRef.current) {
+                    fromInputRef.current.blur();
+                  }
+                }}
                 placeholder="Your name"
                 className="w-full h-12 text-lg border-2 rounded-2xl"
+                enterKeyHint="done"
               />
             </div>
 
@@ -378,13 +415,20 @@ const Send = () => {
                     $
                   </div>
                   <Input
+                    ref={amountInputRef}
                     type="number"
                     value={formData.amount}
                     onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && amountInputRef.current) {
+                        amountInputRef.current.blur();
+                      }
+                    }}
                     placeholder="0"
                     className="w-full h-12 text-lg border-2 rounded-2xl pl-8"
                     min="1"
                     max="500"
+                    enterKeyHint="done"
                   />
                 </div>
               </div>
