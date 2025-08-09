@@ -120,7 +120,37 @@
     @apply border-border;
   }
 
+  html {
+    /* Prevent bounce/rubber band scrolling */
+    overscroll-behavior-y: contain;
+    scroll-behavior: smooth;
+    /* Prevent horizontal scroll issues */
+    overflow-x: hidden;
+    /* iOS smooth scrolling */
+    -webkit-overflow-scrolling: touch;
+  }
+
   body {
     @apply bg-background text-foreground;
+    /* Prevent bounce/rubber band scrolling */
+    overscroll-behavior-y: contain;
+    /* Prevent horizontal scroll issues */
+    overflow-x: hidden;
+    /* iOS smooth scrolling */
+    -webkit-overflow-scrolling: touch;
+    /* Ensure proper mobile viewport */
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
+  }
+
+  /* Optimize scroll containers for mobile */
+  .scroll-container {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent scroll interference with fixed elements */
+  .fixed-bottom-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
