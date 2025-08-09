@@ -276,14 +276,14 @@ const Send = () => {
 
         {/* Voice Memo & Background Color Section */}
         <div className="mb-8 space-y-6">
-          <CompactVoiceMemoRecorder 
-            onVoiceMemoChange={setVoiceMemoBlob}
-            existingUrl={null}
-          />
-          
           <BackgroundColorPicker
             selectedColor={formData.backgroundColor}
             onColorChange={(color) => setFormData({...formData, backgroundColor: color})}
+          />
+          
+          <CompactVoiceMemoRecorder 
+            onVoiceMemoChange={setVoiceMemoBlob}
+            existingUrl={null}
           />
         </div>
 
