@@ -58,6 +58,16 @@ const Send = () => {
 
 
   const handleSave = async () => {
+    // Check for required header text
+    if (!formData.headerText || !formData.headerText.trim()) {
+      toast({
+        title: "Header Required",
+        description: "Please add a header to personalize your clink.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!formData.senderName || !formData.recipientName) {
       toast({
         title: "Missing Information",
@@ -86,7 +96,7 @@ const Send = () => {
       }
 
       const treatData: TreatData = {
-        header_text: formData.headerText || "Someone sent you a clink",
+        header_text: formData.headerText.trim(),
         font_id: `font-${formData.headerFont}`,
         cover_art_type: formData.coverArtType === 'poster' ? 'image' : formData.coverArtType,
         cover_art_content: formData.coverArt,
@@ -152,6 +162,11 @@ const Send = () => {
       <div className="max-w-2xl mx-auto px-6 py-2 pb-24">
         {/* Header Input */}
         <div className="mb-8">
+          <div className="mb-2 text-center">
+            <Label className="text-sm text-muted-foreground">
+              Header <span className="text-destructive">*</span>
+            </Label>
+          </div>
           <Input
             value={formData.headerText}
             onChange={(e) => {
@@ -159,13 +174,16 @@ const Send = () => {
                 setFormData({...formData, headerText: e.target.value});
               }
             }}
-            placeholder="Header"
+            placeholder="Add a personal header..."
             className={`w-full bg-transparent border-none outline-none placeholder:text-muted-foreground text-center resize-none leading-tight min-h-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${selectedFont?.class} ${
               formData.headerText.length > 20 ? "text-2xl" : 
               formData.headerText.length > 12 ? "text-4xl" : "text-5xl"
             } font-bold h-auto py-2`}
             maxLength={25}
           />
+          <div className="text-xs text-center text-muted-foreground mt-1">
+            {formData.headerText.length}/25 characters
+          </div>
         </div>
 
         {/* Font Selection */}
