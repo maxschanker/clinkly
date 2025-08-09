@@ -222,22 +222,46 @@ const Confirmation = () => {
     const amount = treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType);
     const note = generateVenmoMessage();
     const timestamp = Date.now();
-    const clinkId = Math.random().toString(36).substr(2, 9);
-    const version = Math.random().toString(36).substr(2, 6);
-    const venmoUrl = `https://venmo.com/?txn=pay&audience=public&amount=${amount}&note=${encodeURIComponent(note)}&ts=${timestamp}&clink_id=${clinkId}&ref=clink&v=${version}`;
+    
+    // Try venmo:// scheme instead of https to potentially avoid web caching
+    const venmoUrl = `venmo://paycharge?txn=pay&audience=public&amount=${amount}&note=${encodeURIComponent(note)}&ts=${timestamp}`;
     
     try {
+      // Open Venmo with the transaction
       window.open(venmoUrl, '_blank');
       setStepCompleted(prev => ({ ...prev, venmo: true }));
       setShowVenmoModal(false);
       
-      // Toast removed - redundant message after Venmo modal
+      // Clear Venmo cache after a delay to prevent parameter persistence
+      setTimeout(() => {
+        try {
+          // Open a "clean" Venmo link to reset cached parameters
+          const cleanUrl = 'venmo://paycharge';
+          const hiddenWindow = window.open(cleanUrl, '_blank');
+          // Close it immediately so user doesn't see it
+          if (hiddenWindow) {
+            setTimeout(() => hiddenWindow.close(), 100);
+          }
+        } catch (cleanupError) {
+          // Silently fail - cache clearing is optional
+          console.log('Cache cleanup failed:', cleanupError);
+        }
+      }, 3000);
+      
     } catch (error) {
-      toast({
-        title: "Can't open Venmo",
-        description: "Please open Venmo manually to send the payment.",
-        duration: 5000,
-      });
+      // Fallback to https scheme if venmo:// fails
+      try {
+        const fallbackUrl = `https://venmo.com/?txn=pay&audience=public&amount=${amount}&note=${encodeURIComponent(note)}&ts=${timestamp}`;
+        window.open(fallbackUrl, '_blank');
+        setStepCompleted(prev => ({ ...prev, venmo: true }));
+        setShowVenmoModal(false);
+      } catch (fallbackError) {
+        toast({
+          title: "Can't open Venmo",
+          description: "Please open Venmo manually to send the payment.",
+          duration: 5000,
+        });
+      }
     }
   };
 
