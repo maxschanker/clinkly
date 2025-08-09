@@ -201,10 +201,11 @@ const Treat = () => {
     const colorId = backgroundColorFromData || "secondary";
     switch (colorId) {
       case "secondary": return "bg-gradient-secondary";
-      case "card": return "bg-gradient-card";
-      case "sunset": return "bg-gradient-sunset";
-      case "ocean": return "bg-gradient-ocean";
-      case "warmth": return "bg-gradient-warmth";
+      case "soft-lavender": return "bg-gradient-soft-lavender";
+      case "pale-lilac": return "bg-gradient-pale-lilac";
+      case "warm-cream": return "bg-gradient-warm-cream";
+      case "light-pink": return "bg-gradient-light-pink";
+      case "cool-mist": return "bg-gradient-cool-mist";
       default: return "bg-gradient-secondary";
     }
   };
