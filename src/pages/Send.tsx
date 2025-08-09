@@ -29,7 +29,7 @@ const Send = () => {
     senderName: "",
     recipientName: "",
     amount: "",
-    backgroundColor: "primary"
+    backgroundColor: "secondary"
   });
   const [addCash, setAddCash] = useState(false);
   const [showCoverArtModal, setShowCoverArtModal] = useState(false);
@@ -51,7 +51,7 @@ const Send = () => {
         senderName: editData.senderName || '',
         recipientName: editData.recipientName || '',
         amount: editData.amount || '',
-        backgroundColor: editData.backgroundColor || 'primary'
+        backgroundColor: editData.backgroundColor || 'secondary'
       });
       
       if (editData.addCash) {
@@ -173,16 +173,14 @@ const Send = () => {
   const selectedFont = fontOptions.find(f => f.id === formData.headerFont);
 
   const getThemeGradient = (backgroundColorFromData?: string) => {
-    const colorId = backgroundColorFromData || "primary";
+    const colorId = backgroundColorFromData || "secondary";
     switch (colorId) {
       case "secondary": return "bg-gradient-secondary";
       case "card": return "bg-gradient-card";
       case "sunset": return "bg-gradient-sunset";
       case "ocean": return "bg-gradient-ocean";
-      case "forest": return "bg-gradient-forest";
       case "warmth": return "bg-gradient-warmth";
-      case "midnight": return "bg-gradient-midnight";
-      default: return "bg-gradient-primary";
+      default: return "bg-gradient-secondary";
     }
   };
 

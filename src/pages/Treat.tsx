@@ -196,21 +196,19 @@ const Treat = () => {
   }
 
   const getThemeGradient = (backgroundColorFromData?: string) => {
-    const colorId = backgroundColorFromData || "primary";
+    const colorId = backgroundColorFromData || "secondary";
     switch (colorId) {
       case "secondary": return "bg-gradient-secondary";
       case "card": return "bg-gradient-card";
       case "sunset": return "bg-gradient-sunset";
       case "ocean": return "bg-gradient-ocean";
-      case "forest": return "bg-gradient-forest";
       case "warmth": return "bg-gradient-warmth";
-      case "midnight": return "bg-gradient-midnight";
-      default: return "bg-gradient-primary";
+      default: return "bg-gradient-secondary";
     }
   };
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-background p-4 touch-pan-y overscroll-none">
+    <div className={`min-h-[100dvh] ${getThemeGradient(treatData.background_color)} p-4 touch-pan-y overscroll-none`}>
       <div className="max-w-md mx-auto">
         {/* Header */}
         <header className="w-full p-4 pb-2 md:p-6 md:pb-2 relative z-10">
