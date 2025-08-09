@@ -65,20 +65,16 @@ const Send = () => {
     };
   }, []);
 
-  // Auto-scroll to amount field when cash toggle is enabled (with user scroll detection)
+  // Gentle focus on amount field when cash toggle is enabled (no smooth scroll)
   useEffect(() => {
     if (addCash && amountFieldRef.current) {
-      // Check if user is actively scrolling
-      const checkScroll = () => {
-        if (window.scrollY === 0 || Math.abs(window.scrollY - window.innerHeight) > 100) {
-          amountFieldRef.current?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-          });
-        }
-      };
-      
-      setTimeout(checkScroll, 100);
+      // Only gentle scroll without animation to prevent conflicts
+      setTimeout(() => {
+        amountFieldRef.current?.scrollIntoView({
+          behavior: 'auto',
+          block: 'nearest'
+        });
+      }, 100);
     }
   }, [addCash]);
 
@@ -193,7 +189,7 @@ const Send = () => {
       </header>
 
       {/* Main Content */}
-      <div className="max-w-2xl mx-auto px-6 py-2 pb-32 overscroll-contain">
+      <div className="max-w-2xl mx-auto px-6 py-2 pb-32">
         {/* Header Input */}
         <div className="mb-8">
           <Input
