@@ -198,15 +198,16 @@ const Treat = () => {
   }
 
   const getThemeBackground = (backgroundColorFromData?: string) => {
-    const colorId = backgroundColorFromData || "hero";
+    const colorId = backgroundColorFromData || "background";
     switch (colorId) {
+      case "background": return "bg-gradient-background";
       case "hero": return "bg-gradient-hero";
       case "soft-lavender": return "bg-soft-lavender";
       case "pale-lilac": return "bg-pale-lilac";
       case "warm-cream": return "bg-warm-cream";
       case "light-pink": return "bg-light-pink";
       case "cool-mist": return "bg-cool-mist";
-      default: return "bg-gradient-hero";
+      default: return "bg-gradient-background";
     }
   };
 
