@@ -7,7 +7,6 @@ interface BackgroundColorPickerProps {
 
 const colorOptions = [
   { id: "background", name: "Light Background", gradient: "bg-gradient-background" },
-  { id: "hero", name: "Clink Purple", gradient: "bg-gradient-hero" },
   { id: "soft-lavender", name: "Soft Lavender", gradient: "bg-soft-lavender" },
   { id: "pale-lilac", name: "Pale Lilac", gradient: "bg-pale-lilac" },
   { id: "warm-cream", name: "Warm Cream", gradient: "bg-warm-cream" },
