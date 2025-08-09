@@ -221,16 +221,7 @@ const Confirmation = () => {
     if (!treatData) return;
     const amount = treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType);
     const note = generateVenmoMessage();
-    
-    // Construct universal Venmo URL with timestamp to prevent caching
-    const timestamp = Date.now();
-    let venmoUrl = `https://venmo.com/?txn=pay&audience=public&amount=${amount}&note=${encodeURIComponent(note)}&ts=${timestamp}`;
-    
-    // Add recipient if venmo_handle is available
-    if (treatData.venmo_handle) {
-      const handle = treatData.venmo_handle.startsWith('@') ? treatData.venmo_handle : `@${treatData.venmo_handle}`;
-      venmoUrl += `&recipients=${encodeURIComponent(handle)}`;
-    }
+    const venmoUrl = `venmo://paycharge?txn=pay&amount=${amount}&note=${encodeURIComponent(note)}`;
     
     try {
       window.open(venmoUrl, '_blank');
