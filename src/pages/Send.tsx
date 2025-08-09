@@ -108,28 +108,26 @@ const Send = () => {
         clearTimeout(scrollTimeout);
       }
       
-      // Only blur on significant scroll (>30px) after a delay to ensure intentional scrolling
-      if (scrollDistance > 30) {
-        scrollTimeout = setTimeout(() => {
-          const now = Date.now();
-          const refs = [
-            headerInputRef.current,
-            messageTextareaRef.current,
-            recipientInputRef.current,
-            senderInputRef.current,
-            amountInputRef.current
-          ];
+      // Only blur on moderate scroll (>15px) with brief focus protection
+      if (scrollDistance > 15) {
+        const now = Date.now();
+        const refs = [
+          headerInputRef.current,
+          messageTextareaRef.current,
+          recipientInputRef.current,
+          senderInputRef.current,
+          amountInputRef.current
+        ];
 
-          refs.forEach(ref => {
-            if (ref && document.activeElement === ref) {
-              const focusTime = focusTimestamps.get(ref) || 0;
-              // Only blur if focused for more than 800ms (gives time for keyboard to settle)
-              if (now - focusTime > 800) {
-                ref.blur();
-              }
+        refs.forEach(ref => {
+          if (ref && document.activeElement === ref) {
+            const focusTime = focusTimestamps.get(ref) || 0;
+            // Only blur if focused for more than 400ms (protects against keyboard opening)
+            if (now - focusTime > 400) {
+              ref.blur();
             }
-          });
-        }, 150); // Delay to detect sustained scrolling
+          }
+        });
       }
       
       previousScrollY = currentScrollY;
