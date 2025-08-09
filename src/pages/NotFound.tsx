@@ -12,13 +12,12 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-gradient-background">
+    <div className="min-h-[100dvh] bg-gradient-background touch-pan-y overscroll-none">
       {/* Header */}
       <header className="w-full p-4 pb-2 md:p-6 md:pb-2 relative z-10">
         <div className="max-w-6xl mx-auto">
           <button
             onClick={() => {
-              window.scrollTo(0, 0);
               window.location.href = '/';
             }}
             className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
@@ -35,7 +34,6 @@ const NotFound = () => {
           <p className="text-xl text-muted-foreground mb-4">Oops! Page not found</p>
           <button 
             onClick={() => {
-              window.scrollTo(0, 0);
               window.location.href = '/';
             }}
             className="text-primary hover:text-primary/80 underline font-semibold"

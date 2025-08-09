@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { recordShare } from "@/lib/treatService";
 import { loadTreatData, clearAllTreatData, saveTreatData } from "@/lib/utils";
+import { smartScrollToTop } from "@/lib/scrollUtils";
 
 const Confirmation = () => {
   const navigate = useNavigate();
@@ -311,7 +312,7 @@ const Confirmation = () => {
     };
     
     saveTreatData('currentTreat', previewData, true); // Mark as preview
-    window.scrollTo(0, 0);
+    // No scroll needed - stays on same page context
     navigate(`/t/${treatSlug}?preview=true`); // Navigate with preview parameter
   };
 
@@ -320,14 +321,14 @@ const Confirmation = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-background p-4">
+    <div className="min-h-[100dvh] bg-gradient-background p-4 touch-pan-y overscroll-none">
       <div className="max-w-md mx-auto">
         {/* Header */}
         <header className="w-full p-4 pb-2 md:p-6 md:pb-2 relative z-10">
           <div className="max-w-6xl mx-auto">
             <button
               onClick={() => {
-                window.scrollTo(0, 0);
+                smartScrollToTop();
                 navigate('/');
               }}
               className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
@@ -412,7 +413,7 @@ const Confirmation = () => {
             <Button
               variant="outline"
               onClick={() => {
-                window.scrollTo(0, 0);
+                smartScrollToTop();
                 navigate('/');
               }}
               className="border-border bg-background hover:bg-accent hover:text-accent-foreground"
@@ -443,7 +444,7 @@ const Confirmation = () => {
                     addCash: !!treatData.amount
                   });
                   
-                  window.scrollTo(0, 0);
+                  smartScrollToTop();
                   navigate('/send');
                 }}
                 className="text-muted-foreground hover:text-foreground flex items-center gap-2"

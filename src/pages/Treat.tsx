@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { getTreat, recordShare, type TreatResponse } from "@/lib/treatService";
 import { retrieveTreatData, loadTreatData, cleanupStaleData } from "@/lib/utils";
+import { smartScrollToTop } from "@/lib/scrollUtils";
 import OptimizedAudioPlayer from "@/components/OptimizedAudioPlayer";
 import { ShareBottomSheet } from "@/components/ShareBottomSheet";
 
@@ -202,14 +203,14 @@ const Treat = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-background p-4">
+    <div className="min-h-[100dvh] bg-gradient-background p-4 touch-pan-y overscroll-none">
       <div className="max-w-md mx-auto">
         {/* Header */}
         <header className="w-full p-4 pb-2 md:p-6 md:pb-2 relative z-10">
           <div className="max-w-6xl mx-auto flex justify-between items-center">
             <button
               onClick={() => {
-                window.scrollTo(0, 0);
+                smartScrollToTop();
                 navigate('/');
               }}
               className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
@@ -218,10 +219,10 @@ const Treat = () => {
             </button>
             
             {isPreviewMode && (
-              <Button
+                <Button
                 variant="ghost"
                 onClick={() => {
-                  window.scrollTo(0, 0);
+                  smartScrollToTop();
                   navigate('/send/complete', { replace: true });
                 }}
                 className="text-muted-foreground hover:text-foreground"
@@ -311,7 +312,7 @@ const Treat = () => {
 
             <Button
               onClick={() => {
-                window.scrollTo(0, 0);
+                smartScrollToTop();
                 navigate('/');
               }}
               variant="outline"
@@ -327,7 +328,7 @@ const Treat = () => {
           <div className="space-y-3">
             <Button
               onClick={() => {
-                window.scrollTo(0, 0);
+                smartScrollToTop();
                 navigate('/');
               }}
               className="w-full h-14 text-lg font-bold rounded-2xl bg-gradient-primary hover:shadow-glow"
@@ -340,10 +341,10 @@ const Treat = () => {
         {/* Bottom Navigation */}
         <div className="mt-8 text-center">
           {isPreviewMode ? (
-            <Button
+              <Button
               variant="ghost"
               onClick={() => {
-                window.scrollTo(0, 0);
+                smartScrollToTop();
                 navigate('/send/complete', { replace: true });
               }}
               className="text-muted-foreground hover:text-foreground"
@@ -355,7 +356,7 @@ const Treat = () => {
               <div className="text-center">
                 <button
                   onClick={() => {
-                    window.scrollTo(0, 0);
+                    smartScrollToTop();
                     navigate('/');
                   }}
                   className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"

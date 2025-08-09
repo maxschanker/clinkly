@@ -35,7 +35,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex flex-col relative overflow-hidden">
+    <div className="min-h-[100dvh] bg-gradient-hero flex flex-col relative overflow-hidden touch-pan-y overscroll-none">
       {/* Sparkle Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-40 right-32 w-1 h-1 bg-sparkle-2 rounded-full animate-sparkle animation-delay-1000 opacity-70"></div>
@@ -49,7 +49,7 @@ const Index = () => {
             onClick={() => {
               // Clear edit data when clicking logo
               localStorage.removeItem('editData');
-              window.location.href = '/';
+              smartScrollToTop();
             }}
             className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
           >
