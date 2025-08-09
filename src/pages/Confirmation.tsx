@@ -235,9 +235,9 @@ const Confirmation = () => {
       // Clear Venmo cache after a delay to prevent parameter persistence
       setTimeout(() => {
         try {
-          // Open a "clean" Venmo link to reset cached parameters
-          const cleanUrl = 'venmo://paycharge';
-          const hiddenWindow = window.open(cleanUrl, '_blank');
+          // Open a "neutral" Venmo link with empty parameters to overwrite cache
+          const neutralUrl = 'venmo://paycharge?amount=&note=';
+          const hiddenWindow = window.open(neutralUrl, '_blank');
           // Close it immediately so user doesn't see it
           if (hiddenWindow) {
             setTimeout(() => hiddenWindow.close(), 100);
