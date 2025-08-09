@@ -19,6 +19,7 @@ const Send = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const amountFieldRef = useRef<HTMLDivElement>(null);
+  const headerInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     headerText: "",
@@ -80,6 +81,21 @@ const Send = () => {
       }, 100);
     }
   }, [addCash]);
+
+  // Dismiss keyboard on scroll for mobile
+  useEffect(() => {
+    const handleScroll = () => {
+      if (headerInputRef.current) {
+        headerInputRef.current.blur();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const fontOptions = [
     { id: "inter", name: "Classic", class: "font-sans" },
@@ -216,10 +232,16 @@ const Send = () => {
         {/* Header Input */}
         <div className="mb-8">
           <Input
+            ref={headerInputRef}
             value={formData.headerText}
             onChange={(e) => {
               if (e.target.value.length <= 25) {
                 setFormData({...formData, headerText: e.target.value});
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && headerInputRef.current) {
+                headerInputRef.current.blur();
               }
             }}
             placeholder="Header"
@@ -228,6 +250,7 @@ const Send = () => {
               formData.headerText.length > 12 ? "text-4xl" : "text-5xl"
             } font-bold h-auto py-2`}
             maxLength={25}
+            enterKeyHint="done"
           />
         </div>
 
