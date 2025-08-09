@@ -295,6 +295,9 @@ const Confirmation = () => {
   );
 
   const previewTreat = () => {
+    console.log('🔍 PREVIEW DEBUG - treatData.background_color:', treatData.background_color);
+    console.log('🔍 PREVIEW DEBUG - full treatData:', treatData);
+    
     // Transform backend data format to frontend format for preview
     const previewData = {
       senderName: treatData.sender_name,
@@ -312,7 +315,16 @@ const Confirmation = () => {
       createdAt: new Date().toISOString()
     };
     
+    console.log('🔍 PREVIEW DEBUG - previewData object:', previewData);
+    console.log('🔍 PREVIEW DEBUG - previewData.background_color:', previewData.background_color);
+    
     saveTreatData('currentTreat', previewData, true); // Mark as preview
+    
+    console.log('🔍 PREVIEW DEBUG - data saved, checking localStorage...');
+    const savedData = loadTreatData('currentTreat');
+    console.log('🔍 PREVIEW DEBUG - loaded from localStorage:', savedData);
+    console.log('🔍 PREVIEW DEBUG - loaded background_color:', savedData?.background_color);
+    
     // No scroll needed - stays on same page context
     navigate(`/t/${treatSlug}?preview=true`); // Navigate with preview parameter
   };

@@ -45,6 +45,8 @@ const Treat = () => {
         // 1. If preview parameter is present, use cached preview data
         if (isPreviewMode && previewData && previewData.slug === slug) {
           console.log('✅ Using preview mode with cached data');
+          console.log('🔍 TREAT DEBUG - previewData loaded:', previewData);
+          console.log('🔍 TREAT DEBUG - previewData.background_color:', previewData.background_color);
           setTreatData(previewData);
           setIsPreviewMode(true);
           setIsLoading(false);
