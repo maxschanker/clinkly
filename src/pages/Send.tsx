@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Edit } from "lucide-react";
 import { CoverArtModal } from "@/components/CoverArtModal";
 import { CompactVoiceMemoRecorder } from "@/components/CompactVoiceMemoRecorder";
+import { BackgroundColorPicker } from "@/components/BackgroundColorPicker";
 import { createTreat, uploadVoiceMemo, type TreatData } from "@/lib/treatService";
 import { useToast } from "@/hooks/use-toast";
 import { saveTreatData, cleanupStaleData, loadTreatData } from "@/lib/utils";
@@ -27,7 +28,8 @@ const Send = () => {
     message: "",
     senderName: "",
     recipientName: "",
-    amount: ""
+    amount: "",
+    backgroundColor: "primary"
   });
   const [addCash, setAddCash] = useState(false);
   const [showCoverArtModal, setShowCoverArtModal] = useState(false);
@@ -48,7 +50,8 @@ const Send = () => {
         message: editData.message || '',
         senderName: editData.senderName || '',
         recipientName: editData.recipientName || '',
-        amount: editData.amount || ''
+        amount: editData.amount || '',
+        backgroundColor: editData.backgroundColor || 'primary'
       });
       
       if (editData.addCash) {
@@ -136,7 +139,8 @@ const Send = () => {
         theme: 'gradient-warm',
         treat_type: 'coffee',
         is_public: true,
-        voice_memo_url: voiceMemoUrl
+        voice_memo_url: voiceMemoUrl,
+        background_color: formData.backgroundColor
       };
 
       const result = await createTreat(treatData);
@@ -251,11 +255,16 @@ const Send = () => {
           </button>
         </div>
 
-        {/* Voice Memo Section */}
-        <div className="mb-8">
+        {/* Voice Memo & Background Color Section */}
+        <div className="mb-8 space-y-6">
           <CompactVoiceMemoRecorder 
             onVoiceMemoChange={setVoiceMemoBlob}
             existingUrl={null}
+          />
+          
+          <BackgroundColorPicker
+            selectedColor={formData.backgroundColor}
+            onColorChange={(color) => setFormData({...formData, backgroundColor: color})}
           />
         </div>
 

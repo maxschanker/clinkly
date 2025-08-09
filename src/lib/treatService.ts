@@ -15,6 +15,7 @@ export interface TreatData {
   is_public?: boolean;
   expires_at?: string;
   voice_memo_url?: string;
+  background_color?: string;
 }
 
 export interface TreatResponse {
@@ -35,6 +36,7 @@ export interface TreatResponse {
   is_public: boolean;
   expires_at?: string;
   voice_memo_url?: string;
+  background_color?: string;
   created_at: string;
   updated_at: string;
 }

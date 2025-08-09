@@ -84,7 +84,12 @@ export default {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-secondary': 'var(--gradient-secondary)', 
 				'gradient-background': 'var(--gradient-background)',
-				'gradient-card': 'var(--gradient-card)'
+				'gradient-card': 'var(--gradient-card)',
+				'gradient-sunset': 'var(--gradient-sunset)',
+				'gradient-ocean': 'var(--gradient-ocean)',
+				'gradient-forest': 'var(--gradient-forest)',
+				'gradient-warmth': 'var(--gradient-warmth)',
+				'gradient-midnight': 'var(--gradient-midnight)'
 			},
 			boxShadow: {
 				'soft': 'var(--shadow-soft)',

@@ -75,6 +75,7 @@ const Treat = () => {
             coverArt: result.treat.cover_art_content,
             coverArtType: result.treat.cover_art_type,
             theme: result.treat.theme,
+            background_color: result.treat.background_color,
             voice_memo_url: result.treat.voice_memo_url,
             createdAt: result.treat.created_at,
             isPublic: result.treat.is_public
@@ -194,10 +195,16 @@ const Treat = () => {
     );
   }
 
-  const getThemeGradient = (theme: string) => {
-    switch (theme) {
+  const getThemeGradient = (backgroundColorFromData?: string) => {
+    const colorId = backgroundColorFromData || "primary";
+    switch (colorId) {
       case "secondary": return "bg-gradient-secondary";
       case "card": return "bg-gradient-card";
+      case "sunset": return "bg-gradient-sunset";
+      case "ocean": return "bg-gradient-ocean";
+      case "forest": return "bg-gradient-forest";
+      case "warmth": return "bg-gradient-warmth";
+      case "midnight": return "bg-gradient-midnight";
       default: return "bg-gradient-primary";
     }
   };
@@ -254,7 +261,7 @@ const Treat = () => {
 
         {/* 3. Cover Art Image */}
         <div className="mb-8">
-          <Card className={`shadow-glow rounded-3xl border-0 relative overflow-hidden aspect-square ${treatData.coverArt ? 'bg-black' : getThemeGradient(treatData.theme)}`}>
+          <Card className={`shadow-glow rounded-3xl border-0 relative overflow-hidden aspect-square ${treatData.coverArt ? 'bg-black' : getThemeGradient(treatData.background_color)}`}>
             {/* Floating sparkles */}
             <div className="absolute top-4 right-4 text-white/70 animate-float z-20">✨</div>
             <div className="absolute bottom-4 left-4 text-white/70 animate-float z-20" style={{animationDelay: '1s'}}>💫</div>
