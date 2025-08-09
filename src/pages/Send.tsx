@@ -172,6 +172,20 @@ const Send = () => {
 
   const selectedFont = fontOptions.find(f => f.id === formData.headerFont);
 
+  const getThemeGradient = (backgroundColorFromData?: string) => {
+    const colorId = backgroundColorFromData || "primary";
+    switch (colorId) {
+      case "secondary": return "bg-gradient-secondary";
+      case "card": return "bg-gradient-card";
+      case "sunset": return "bg-gradient-sunset";
+      case "ocean": return "bg-gradient-ocean";
+      case "forest": return "bg-gradient-forest";
+      case "warmth": return "bg-gradient-warmth";
+      case "midnight": return "bg-gradient-midnight";
+      default: return "bg-gradient-primary";
+    }
+  };
+
 
   return (
     <div className="min-h-[100dvh] bg-gradient-background touch-pan-y overscroll-none">
@@ -266,6 +280,20 @@ const Send = () => {
             selectedColor={formData.backgroundColor}
             onColorChange={(color) => setFormData({...formData, backgroundColor: color})}
           />
+          
+          {/* Background Preview */}
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-foreground">Preview</span>
+            <div className={`w-full h-24 rounded-2xl shadow-card relative overflow-hidden ${getThemeGradient(formData.backgroundColor)}`}>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-white/90 text-sm font-medium bg-black/20 backdrop-blur-sm px-3 py-1 rounded-full">
+                  {formData.headerText || "Your header will appear here"}
+                </div>
+              </div>
+              <div className="absolute top-2 right-2 text-white/70 text-sm">✨</div>
+              <div className="absolute bottom-2 left-2 text-white/70 text-sm">💫</div>
+            </div>
+          </div>
         </div>
 
         {/* Sweet Message Section */}
