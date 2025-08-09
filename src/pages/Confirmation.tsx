@@ -307,6 +307,7 @@ const Confirmation = () => {
       coverArtType: treatData.cover_art_type,
       treatType: treatData.treat_type,
       voice_memo_url: treatData.voice_memo_url,
+      background_color: treatData.background_color,
       slug: treatSlug,
       createdAt: new Date().toISOString()
     };
