@@ -153,4 +153,18 @@
   .fixed-bottom-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+
+  /* Touch and scroll optimizations */
+  .touch-pan-y {
+    touch-action: pan-y;
+    will-change: scroll-position;
+  }
+
+  .overscroll-none {
+    overscroll-behavior: none;
+  }
+
+  .overscroll-contain {
+    overscroll-behavior-y: contain;
+  }
 }

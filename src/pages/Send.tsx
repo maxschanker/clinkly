@@ -174,7 +174,7 @@ const Send = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-background">
+    <div className="min-h-[100dvh] bg-gradient-background touch-pan-y overscroll-none">
       {/* Header */}
       <header className="w-full p-4 pb-2 md:p-6 md:pb-2 relative z-10">
         <div className="max-w-6xl mx-auto">
@@ -193,7 +193,7 @@ const Send = () => {
       </header>
 
       {/* Main Content */}
-      <div className="max-w-2xl mx-auto px-6 py-2 pb-24">
+      <div className="max-w-2xl mx-auto px-6 py-2 pb-32 overscroll-contain">
         {/* Header Input */}
         <div className="mb-8">
           <Input
@@ -344,11 +344,14 @@ const Send = () => {
             )}
           </div>
         </div>
+        
+        {/* Scroll boundary spacer */}
+        <div className="h-8"></div>
       </div>
 
       {/* Sticky Save Button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-background to-background/80 backdrop-blur-sm p-6">
-        <div className="max-w-2xl mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border">
+        <div className="max-w-2xl mx-auto p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
           <Button
             onClick={handleSave}
             disabled={isLoading}
