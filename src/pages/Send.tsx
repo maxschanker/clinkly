@@ -162,11 +162,6 @@ const Send = () => {
       <div className="max-w-2xl mx-auto px-6 py-2 pb-24">
         {/* Header Input */}
         <div className="mb-8">
-          <div className="mb-2 text-center">
-            <Label className="text-sm text-muted-foreground">
-              Header <span className="text-destructive">*</span>
-            </Label>
-          </div>
           <Input
             value={formData.headerText}
             onChange={(e) => {
@@ -174,16 +169,13 @@ const Send = () => {
                 setFormData({...formData, headerText: e.target.value});
               }
             }}
-            placeholder="Add a personal header..."
+            placeholder="Header"
             className={`w-full bg-transparent border-none outline-none placeholder:text-muted-foreground text-center resize-none leading-tight min-h-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${selectedFont?.class} ${
               formData.headerText.length > 20 ? "text-2xl" : 
               formData.headerText.length > 12 ? "text-4xl" : "text-5xl"
             } font-bold h-auto py-2`}
             maxLength={25}
           />
-          <div className="text-xs text-center text-muted-foreground mt-1">
-            {formData.headerText.length}/25 characters
-          </div>
         </div>
 
         {/* Font Selection */}
