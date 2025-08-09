@@ -188,7 +188,7 @@ const Send = () => {
 
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-background touch-pan-y overscroll-none">
+    <div className={`min-h-[100dvh] ${getThemeGradient(formData.backgroundColor)} touch-pan-y overscroll-none`}>
       {/* Header */}
       <header className="w-full p-4 pb-2 md:p-6 md:pb-2 relative z-10">
         <div className="max-w-6xl mx-auto">
@@ -280,20 +280,6 @@ const Send = () => {
             selectedColor={formData.backgroundColor}
             onColorChange={(color) => setFormData({...formData, backgroundColor: color})}
           />
-          
-          {/* Background Preview */}
-          <div className="flex flex-col gap-2">
-            <span className="text-sm font-medium text-foreground">Preview</span>
-            <div className={`w-full h-24 rounded-2xl shadow-card relative overflow-hidden ${getThemeGradient(formData.backgroundColor)}`}>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-white/90 text-sm font-medium bg-black/20 backdrop-blur-sm px-3 py-1 rounded-full">
-                  {formData.headerText || "Your header will appear here"}
-                </div>
-              </div>
-              <div className="absolute top-2 right-2 text-white/70 text-sm">✨</div>
-              <div className="absolute bottom-2 left-2 text-white/70 text-sm">💫</div>
-            </div>
-          </div>
         </div>
 
         {/* Sweet Message Section */}
