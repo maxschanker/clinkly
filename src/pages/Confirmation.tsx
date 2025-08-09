@@ -222,7 +222,9 @@ const Confirmation = () => {
     const amount = treatData.amount || (treatData.treatType === "custom" ? "25" : treatData.treatType);
     const note = generateVenmoMessage();
     const timestamp = Date.now();
-    const venmoUrl = `https://venmo.com/?txn=pay&audience=public&amount=${amount}&note=${encodeURIComponent(note)}&ts=${timestamp}`;
+    const clinkId = Math.random().toString(36).substr(2, 9);
+    const version = Math.random().toString(36).substr(2, 6);
+    const venmoUrl = `https://venmo.com/?txn=pay&audience=public&amount=${amount}&note=${encodeURIComponent(note)}&ts=${timestamp}&clink_id=${clinkId}&ref=clink&v=${version}`;
     
     try {
       window.open(venmoUrl, '_blank');
