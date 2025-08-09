@@ -86,11 +86,18 @@ const Send = () => {
     }
   }, [addCash]);
 
-  // Smart scroll detection to dismiss keyboard only on intentional user scrolling
+  // Smart scroll detection with focus protection to prevent keyboard auto-close
   useEffect(() => {
-    let previousScrollY = window.scrollY;
+    const focusTimestamps = new Map<HTMLElement, number>();
     let scrollTimeout: NodeJS.Timeout | null = null;
-    let isKeyboardScroll = false;
+    let previousScrollY = window.scrollY;
+
+    const handleFocus = (event: FocusEvent) => {
+      const target = event.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+        focusTimestamps.set(target, Date.now());
+      }
+    };
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -101,40 +108,38 @@ const Send = () => {
         clearTimeout(scrollTimeout);
       }
       
-      // If it's a very small scroll (< 10px), likely keyboard-induced
-      if (scrollDistance < 10) {
-        isKeyboardScroll = true;
+      // Only blur on significant scroll (>30px) after a delay to ensure intentional scrolling
+      if (scrollDistance > 30) {
         scrollTimeout = setTimeout(() => {
-          isKeyboardScroll = false;
-        }, 300);
-        return;
-      }
-      
-      // Only blur inputs if it's a significant scroll and not keyboard-induced
-      if (!isKeyboardScroll && scrollDistance > 10) {
-        if (headerInputRef.current) {
-          headerInputRef.current.blur();
-        }
-        if (messageTextareaRef.current) {
-          messageTextareaRef.current.blur();
-        }
-        if (recipientInputRef.current) {
-          recipientInputRef.current.blur();
-        }
-        if (senderInputRef.current) {
-          senderInputRef.current.blur();
-        }
-        if (amountInputRef.current) {
-          amountInputRef.current.blur();
-        }
+          const now = Date.now();
+          const refs = [
+            headerInputRef.current,
+            messageTextareaRef.current,
+            recipientInputRef.current,
+            senderInputRef.current,
+            amountInputRef.current
+          ];
+
+          refs.forEach(ref => {
+            if (ref && document.activeElement === ref) {
+              const focusTime = focusTimestamps.get(ref) || 0;
+              // Only blur if focused for more than 800ms (gives time for keyboard to settle)
+              if (now - focusTime > 800) {
+                ref.blur();
+              }
+            }
+          });
+        }, 150); // Delay to detect sustained scrolling
       }
       
       previousScrollY = currentScrollY;
     };
 
+    document.addEventListener('focusin', handleFocus);
     window.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => {
+      document.removeEventListener('focusin', handleFocus);
       window.removeEventListener('scroll', handleScroll);
       if (scrollTimeout) {
         clearTimeout(scrollTimeout);
