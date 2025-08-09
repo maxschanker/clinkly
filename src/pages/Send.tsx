@@ -12,7 +12,7 @@ import { BackgroundColorPicker } from "@/components/BackgroundColorPicker";
 import { createTreat, uploadVoiceMemo, type TreatData } from "@/lib/treatService";
 import { useToast } from "@/hooks/use-toast";
 import { saveTreatData, cleanupStaleData, loadTreatData } from "@/lib/utils";
-import { smartScrollToTop } from "@/lib/scrollUtils";
+import { smartScrollToTop, trackUserScrolling } from "@/lib/scrollUtils";
 
 const Send = () => {
   const navigate = useNavigate();
@@ -86,30 +86,59 @@ const Send = () => {
     }
   }, [addCash]);
 
-  // Dismiss keyboard on scroll for mobile
+  // Smart scroll detection to dismiss keyboard only on intentional user scrolling
   useEffect(() => {
+    let previousScrollY = window.scrollY;
+    let scrollTimeout: NodeJS.Timeout | null = null;
+    let isKeyboardScroll = false;
+
     const handleScroll = () => {
-      if (headerInputRef.current) {
-        headerInputRef.current.blur();
+      const currentScrollY = window.scrollY;
+      const scrollDistance = Math.abs(currentScrollY - previousScrollY);
+      
+      // Clear any existing timeout
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
       }
-      if (messageTextareaRef.current) {
-        messageTextareaRef.current.blur();
+      
+      // If it's a very small scroll (< 10px), likely keyboard-induced
+      if (scrollDistance < 10) {
+        isKeyboardScroll = true;
+        scrollTimeout = setTimeout(() => {
+          isKeyboardScroll = false;
+        }, 300);
+        return;
       }
-      if (recipientInputRef.current) {
-        recipientInputRef.current.blur();
+      
+      // Only blur inputs if it's a significant scroll and not keyboard-induced
+      if (!isKeyboardScroll && scrollDistance > 10) {
+        if (headerInputRef.current) {
+          headerInputRef.current.blur();
+        }
+        if (messageTextareaRef.current) {
+          messageTextareaRef.current.blur();
+        }
+        if (recipientInputRef.current) {
+          recipientInputRef.current.blur();
+        }
+        if (senderInputRef.current) {
+          senderInputRef.current.blur();
+        }
+        if (amountInputRef.current) {
+          amountInputRef.current.blur();
+        }
       }
-      if (senderInputRef.current) {
-        senderInputRef.current.blur();
-      }
-      if (amountInputRef.current) {
-        amountInputRef.current.blur();
-      }
+      
+      previousScrollY = currentScrollY;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
     };
   }, []);
 
