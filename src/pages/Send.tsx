@@ -12,7 +12,7 @@ import { BackgroundColorPicker } from "@/components/BackgroundColorPicker";
 import { createTreat, uploadVoiceMemo, type TreatData } from "@/lib/treatService";
 import { useToast } from "@/hooks/use-toast";
 import { saveTreatData, cleanupStaleData, loadTreatData } from "@/lib/utils";
-import { smartScrollToTop } from "@/lib/scrollUtils";
+import { smartScrollToTop, trackUserScrolling } from "@/lib/scrollUtils";
 
 const Send = () => {
   const navigate = useNavigate();
@@ -86,30 +86,45 @@ const Send = () => {
     }
   }, [addCash]);
 
-  // Dismiss keyboard on scroll for mobile
+  // Smart scroll tracking and input blur for mobile
   useEffect(() => {
+    const cleanupScrollTracking = trackUserScrolling();
+    let lastScrollY = window.scrollY;
+    
     const handleScroll = () => {
-      if (headerInputRef.current) {
-        headerInputRef.current.blur();
+      // Only blur inputs during intentional user scrolling (not micro-scrolls)
+      const scrollY = window.scrollY;
+      const scrollDelta = Math.abs(scrollY - lastScrollY);
+      
+      // Only blur if scroll is significant (>10px) to avoid micro-scroll issues
+      if (scrollDelta > 10) {
+        if (headerInputRef.current && document.activeElement === headerInputRef.current) {
+          headerInputRef.current.blur();
+        }
+        if (messageTextareaRef.current && document.activeElement === messageTextareaRef.current) {
+          messageTextareaRef.current.blur();
+        }
+        if (toInputRef.current && document.activeElement === toInputRef.current) {
+          toInputRef.current.blur();
+        }
+        if (fromInputRef.current && document.activeElement === fromInputRef.current) {
+          fromInputRef.current.blur();
+        }
+        if (amountInputRef.current && document.activeElement === amountInputRef.current) {
+          amountInputRef.current.blur();
+        }
       }
-      if (messageTextareaRef.current) {
-        messageTextareaRef.current.blur();
-      }
-      if (toInputRef.current) {
-        toInputRef.current.blur();
-      }
-      if (fromInputRef.current) {
-        fromInputRef.current.blur();
-      }
-      if (amountInputRef.current) {
-        amountInputRef.current.blur();
-      }
+      
+      lastScrollY = scrollY;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      if (cleanupScrollTracking) {
+        cleanupScrollTracking();
+      }
     };
   }, []);
 
