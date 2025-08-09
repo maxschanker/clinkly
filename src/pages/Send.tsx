@@ -281,10 +281,12 @@ const Send = () => {
             onColorChange={(color) => setFormData({...formData, backgroundColor: color})}
           />
           
-          <CompactVoiceMemoRecorder 
-            onVoiceMemoChange={setVoiceMemoBlob}
-            existingUrl={null}
-          />
+          <div className="flex justify-center">
+            <CompactVoiceMemoRecorder 
+              onVoiceMemoChange={setVoiceMemoBlob}
+              existingUrl={null}
+            />
+          </div>
         </div>
 
         {/* Sweet Message Section */}
