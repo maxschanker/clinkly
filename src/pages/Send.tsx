@@ -73,16 +73,24 @@ const Send = () => {
     };
   }, []);
 
-  // Gentle focus on amount field when cash toggle is enabled (no smooth scroll)
+  // Auto-scroll and focus on amount field when cash toggle is enabled
   useEffect(() => {
     if (addCash && amountFieldRef.current) {
-      // Only gentle scroll without animation to prevent conflicts
+      // Temporarily disable scroll detection during auto-scroll
+      const scrollDetectionEnabled = false;
+      
       setTimeout(() => {
+        // Scroll to center the amount field for better visibility
         amountFieldRef.current?.scrollIntoView({
-          behavior: 'auto',
-          block: 'nearest'
+          behavior: 'smooth',
+          block: 'center'
         });
-      }, 100);
+        
+        // Focus the amount input after a brief delay for better UX
+        setTimeout(() => {
+          amountInputRef.current?.focus();
+        }, 300);
+      }, 200);
     }
   }, [addCash]);
 
