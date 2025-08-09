@@ -254,7 +254,8 @@ const Confirmation = () => {
     
     try {
       await navigator.clipboard.writeText(shareUrl);
-      setStepCompleted(prev => ({ ...prev, share: true }));
+      // Mark both steps as complete since copying the link indicates user satisfaction
+      setStepCompleted(prev => ({ ...prev, share: true, venmo: true }));
       toast({
         title: "Copied! 📋",
         description: "Link copied to clipboard"
@@ -409,45 +410,47 @@ const Confirmation = () => {
         <div className="mt-8 text-center">
           {allStepsComplete ? (
             <Button
-              variant="ghost"
+              variant="outline"
               onClick={() => {
                 window.scrollTo(0, 0);
                 navigate('/');
               }}
-              className="text-muted-foreground hover:text-foreground"
+              className="border-border bg-background hover:bg-accent hover:text-accent-foreground"
             >
               Send another clink ✨
             </Button>
           ) : (
-            <Button
-              variant="ghost"
-              onClick={() => {
-                // Transform backend data back to frontend format for editing
-                const editData = {
-                  headerText: treatData.header_text || '',
-                  headerFont: treatData.font_id?.replace('font-', '') || 'inter',
-                  coverArt: treatData.cover_art_content || '',
-                  coverArtType: treatData.cover_art_type === 'image' ? 'poster' : treatData.cover_art_type,
-                  message: treatData.message || '',
-                  senderName: treatData.sender_name || '',
-                  recipientName: treatData.recipient_name || '',
-                  amount: treatData.amount?.toString() || ''
-                };
-                
-                // Save the edit data and voice memo info
-                saveTreatData('editData', {
-                  ...editData,
-                  voiceMemoUrl: treatData.voice_memo_url,
-                  addCash: !!treatData.amount
-                });
-                
-                window.scrollTo(0, 0);
-                navigate('/send');
-              }}
-              className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-            >
-              ← Back to Edit
-            </Button>
+            <div className="flex justify-center">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  // Transform backend data back to frontend format for editing
+                  const editData = {
+                    headerText: treatData.header_text || '',
+                    headerFont: treatData.font_id?.replace('font-', '') || 'inter',
+                    coverArt: treatData.cover_art_content || '',
+                    coverArtType: treatData.cover_art_type === 'image' ? 'poster' : treatData.cover_art_type,
+                    message: treatData.message || '',
+                    senderName: treatData.sender_name || '',
+                    recipientName: treatData.recipient_name || '',
+                    amount: treatData.amount?.toString() || ''
+                  };
+                  
+                  // Save the edit data and voice memo info
+                  saveTreatData('editData', {
+                    ...editData,
+                    voiceMemoUrl: treatData.voice_memo_url,
+                    addCash: !!treatData.amount
+                  });
+                  
+                  window.scrollTo(0, 0);
+                  navigate('/send');
+                }}
+                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+              >
+                ← Back to Edit
+              </Button>
+            </div>
           )}
         </div>
       </div>
