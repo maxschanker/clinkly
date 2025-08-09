@@ -85,11 +85,14 @@ export default {
 				'gradient-secondary': 'var(--gradient-secondary)', 
 				'gradient-background': 'var(--gradient-background)',
 				'gradient-card': 'var(--gradient-card)',
-				'gradient-sunset': 'var(--gradient-sunset)',
-				'gradient-ocean': 'var(--gradient-ocean)',
-				'gradient-forest': 'var(--gradient-forest)',
-				'gradient-warmth': 'var(--gradient-warmth)',
-				'gradient-midnight': 'var(--gradient-midnight)'
+				'gradient-hero': 'var(--gradient-hero)'
+			},
+			backgroundColor: {
+				'soft-lavender': 'var(--bg-soft-lavender)',
+				'pale-lilac': 'var(--bg-pale-lilac)',
+				'warm-cream': 'var(--bg-warm-cream)',
+				'light-pink': 'var(--bg-light-pink)',
+				'cool-mist': 'var(--bg-cool-mist)'
 			},
 			boxShadow: {
 				'soft': 'var(--shadow-soft)',

@@ -29,7 +29,7 @@ const Send = () => {
     senderName: "",
     recipientName: "",
     amount: "",
-    backgroundColor: "secondary"
+    backgroundColor: "hero"
   });
   const [addCash, setAddCash] = useState(false);
   const [showCoverArtModal, setShowCoverArtModal] = useState(false);
@@ -51,7 +51,7 @@ const Send = () => {
         senderName: editData.senderName || '',
         recipientName: editData.recipientName || '',
         amount: editData.amount || '',
-        backgroundColor: editData.backgroundColor || 'secondary'
+        backgroundColor: editData.backgroundColor || 'hero'
       });
       
       if (editData.addCash) {
@@ -177,21 +177,22 @@ const Send = () => {
 
   const selectedFont = fontOptions.find(f => f.id === formData.headerFont);
 
-  const getThemeGradient = (backgroundColorFromData?: string) => {
-    const colorId = backgroundColorFromData || "secondary";
+  const getThemeBackground = (backgroundColorFromData?: string) => {
+    const colorId = backgroundColorFromData || "hero";
     switch (colorId) {
-      case "secondary": return "bg-gradient-secondary";
-      case "card": return "bg-gradient-card";
-      case "sunset": return "bg-gradient-sunset";
-      case "ocean": return "bg-gradient-ocean";
-      case "warmth": return "bg-gradient-warmth";
-      default: return "bg-gradient-secondary";
+      case "hero": return "bg-gradient-hero";
+      case "soft-lavender": return "bg-soft-lavender";
+      case "pale-lilac": return "bg-pale-lilac";
+      case "warm-cream": return "bg-warm-cream";
+      case "light-pink": return "bg-light-pink";
+      case "cool-mist": return "bg-cool-mist";
+      default: return "bg-gradient-hero";
     }
   };
 
 
   return (
-    <div className={`min-h-[100dvh] ${getThemeGradient(formData.backgroundColor)} touch-pan-y overscroll-none`}>
+    <div className={`min-h-[100dvh] ${getThemeBackground(formData.backgroundColor)} touch-pan-y overscroll-none`}>
       {/* Header */}
       <header className="w-full p-4 pb-2 md:p-6 md:pb-2 relative z-10">
         <div className="max-w-6xl mx-auto">
