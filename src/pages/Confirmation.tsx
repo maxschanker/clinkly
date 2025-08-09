@@ -447,7 +447,8 @@ const Confirmation = () => {
                     message: treatData.message || '',
                     senderName: treatData.sender_name || '',
                     recipientName: treatData.recipient_name || '',
-                    amount: treatData.amount?.toString() || ''
+                    amount: treatData.amount?.toString() || '',
+                    backgroundColor: treatData.background_color || 'background'
                   };
                   
                   // Save the edit data and voice memo info
