@@ -10,7 +10,7 @@ import { CoverArtModal } from "@/components/CoverArtModal";
 import { CompactVoiceMemoRecorder } from "@/components/CompactVoiceMemoRecorder";
 import { createTreat, uploadVoiceMemo, type TreatData } from "@/lib/treatService";
 import { useToast } from "@/hooks/use-toast";
-import { saveTreatData, cleanupStaleData } from "@/lib/utils";
+import { saveTreatData, cleanupStaleData, loadTreatData } from "@/lib/utils";
 
 const Send = () => {
   const navigate = useNavigate();
@@ -32,9 +32,31 @@ const Send = () => {
   const [showCoverArtModal, setShowCoverArtModal] = useState(false);
   const [voiceMemoBlob, setVoiceMemoBlob] = useState<Blob | null>(null);
 
-  // Clean up stale data on component mount
+  // Clean up stale data on component mount and load edit data if available
   useEffect(() => {
     cleanupStaleData();
+    
+    // Check for edit data from confirmation page
+    const editData = loadTreatData('editData');
+    if (editData) {
+      setFormData({
+        headerText: editData.headerText || '',
+        headerFont: editData.headerFont || 'inter',
+        coverArt: editData.coverArt || 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?w=800&h=400&fit=crop',
+        coverArtType: editData.coverArtType || 'poster',
+        message: editData.message || '',
+        senderName: editData.senderName || '',
+        recipientName: editData.recipientName || '',
+        amount: editData.amount || ''
+      });
+      
+      if (editData.addCash) {
+        setAddCash(true);
+      }
+      
+      // Clear the edit data after loading
+      localStorage.removeItem('treatData_editData');
+    }
   }, []);
 
   // Auto-scroll to amount field when cash toggle is enabled

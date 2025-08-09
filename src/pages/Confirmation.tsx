@@ -406,28 +406,49 @@ const Confirmation = () => {
         </div>
 
         {/* Bottom Actions */}
-        <div className="mt-8 text-center space-y-3">
-          <Button
-            variant="ghost"
-            onClick={() => {
-              window.scrollTo(0, 0);
-              navigate('/send');
-            }}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            Send Another ✨
-          </Button>
-          
-          <Button
-            variant="ghost"
-            onClick={() => {
-              window.scrollTo(0, 0);
-              navigate('/');
-            }}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            ← Back to Home
-          </Button>
+        <div className="mt-8 text-center">
+          {allStepsComplete ? (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                window.scrollTo(0, 0);
+                navigate('/');
+              }}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Send another clink ✨
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                // Transform backend data back to frontend format for editing
+                const editData = {
+                  headerText: treatData.header_text || '',
+                  headerFont: treatData.font_id?.replace('font-', '') || 'inter',
+                  coverArt: treatData.cover_art_content || '',
+                  coverArtType: treatData.cover_art_type === 'image' ? 'poster' : treatData.cover_art_type,
+                  message: treatData.message || '',
+                  senderName: treatData.sender_name || '',
+                  recipientName: treatData.recipient_name || '',
+                  amount: treatData.amount?.toString() || ''
+                };
+                
+                // Save the edit data and voice memo info
+                saveTreatData('editData', {
+                  ...editData,
+                  voiceMemoUrl: treatData.voice_memo_url,
+                  addCash: !!treatData.amount
+                });
+                
+                window.scrollTo(0, 0);
+                navigate('/send');
+              }}
+              className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+            >
+              ← Back to Edit
+            </Button>
+          )}
         </div>
       </div>
 
