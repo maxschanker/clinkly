@@ -77,7 +77,8 @@ serve(async (req) => {
         treat_type: treatData.treat_type,
         is_public: treatData.is_public !== false,
         expires_at: treatData.expires_at ? new Date(treatData.expires_at).toISOString() : null,
-        voice_memo_url: treatData.voice_memo_url
+        voice_memo_url: treatData.voice_memo_url,
+        background_color: treatData.background_color
       })
       .select()
       .single();
