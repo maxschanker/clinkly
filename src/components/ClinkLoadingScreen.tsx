@@ -2,7 +2,7 @@ import React from 'react';
 
 export const ClinkLoadingScreen = () => {
   return (
-    <div className="min-h-screen bg-gradient-hero flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-background flex flex-col items-center justify-center relative overflow-hidden">
       {/* Sparkle Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-40 right-32 w-1 h-1 bg-sparkle-2 rounded-full animate-sparkle animation-delay-1000 opacity-70"></div>
