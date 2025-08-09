@@ -56,6 +56,9 @@ export interface GetTreatResult {
 // Create a new treat
 export async function createTreat(treatData: TreatData): Promise<CreateTreatResult> {
   try {
+    console.log('🔍 TREAT SERVICE DEBUG - treatData being sent to backend:', treatData);
+    console.log('🔍 TREAT SERVICE DEBUG - treatData.background_color:', treatData.background_color);
+    
     const { data, error } = await supabase.functions.invoke('create-treat', {
       body: treatData
     });

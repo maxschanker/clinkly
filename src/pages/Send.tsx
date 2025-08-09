@@ -127,6 +127,8 @@ const Send = () => {
         }
       }
 
+      console.log('🔍 SEND DEBUG - formData.backgroundColor:', formData.backgroundColor);
+      
       const treatData: TreatData = {
         header_text: formData.headerText.trim(),
         font_id: `font-${formData.headerFont}`,
@@ -142,6 +144,9 @@ const Send = () => {
         voice_memo_url: voiceMemoUrl,
         background_color: formData.backgroundColor
       };
+      
+      console.log('🔍 SEND DEBUG - treatData object:', treatData);
+      console.log('🔍 SEND DEBUG - treatData.background_color:', treatData.background_color);
 
       const result = await createTreat(treatData);
       
