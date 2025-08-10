@@ -89,11 +89,17 @@ const Send = () => {
         
         // Focus the amount input after a brief delay for better UX
         setTimeout(() => {
-          amountInputRef.current?.focus();
-          // Clear the flag after auto-scroll and focus complete
+          if (amountInputRef.current) {
+            amountInputRef.current.focus();
+            // Set focus timestamp to protect from scroll dismissal
+            const focusEvent = new FocusEvent('focus', { bubbles: true });
+            Object.defineProperty(focusEvent, 'target', { value: amountInputRef.current });
+            document.dispatchEvent(focusEvent);
+          }
+          // Clear the flag after smooth scroll animation completes (1200ms total protection)
           setTimeout(() => {
             isAutoScrollingRef.current = false;
-          }, 100);
+          }, 1200);
         }, 300);
       }, 200);
     }
