@@ -384,7 +384,7 @@ const Send = () => {
 
         {/* Sweet Message Section */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Sweet message</h2>
+          <h2 className="text-xl font-bold mb-4">Message</h2>
           <div className="relative">
             <Textarea
               ref={messageTextareaRef}
@@ -465,7 +465,7 @@ const Send = () => {
 
             {addCash && (
               <div ref={amountFieldRef}>
-                <Label className="text-lg font-medium mb-2 block">💲 Amount ($)</Label>
+                <Label className="text-lg font-medium mb-2 block">💲 Venmo Amount</Label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-lg font-medium text-foreground pointer-events-none">
                     $
