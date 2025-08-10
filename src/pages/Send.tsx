@@ -40,6 +40,8 @@ const Send = () => {
   const [addCash, setAddCash] = useState(false);
   const [showCoverArtModal, setShowCoverArtModal] = useState(false);
   const [voiceMemoBlob, setVoiceMemoBlob] = useState<Blob | null>(null);
+  const [existingVoiceMemoUrl, setExistingVoiceMemoUrl] = useState<string | null>(null);
+  const isLoadingEditDataRef = useRef(false);
 
   // Clean up stale data on component mount and load edit data if available
   useEffect(() => {
@@ -48,6 +50,8 @@ const Send = () => {
     // Check for edit data from confirmation page
     const editData = loadTreatData('editData');
     if (editData) {
+      isLoadingEditDataRef.current = true;
+      
       setFormData({
         headerText: editData.headerText || '',
         headerFont: editData.headerFont || 'inter',
@@ -64,8 +68,18 @@ const Send = () => {
         setAddCash(true);
       }
       
+      // Load voice memo URL if present
+      if (editData.voiceMemoUrl) {
+        setExistingVoiceMemoUrl(editData.voiceMemoUrl);
+      }
+      
       // Clear the edit data immediately after loading (fixed key)
       localStorage.removeItem('editData');
+      
+      // Reset loading flag after state updates
+      setTimeout(() => {
+        isLoadingEditDataRef.current = false;
+      }, 100);
     }
 
     // Cleanup function to clear edit data when navigating away
@@ -76,7 +90,7 @@ const Send = () => {
 
   // Auto-scroll and focus on amount field when cash toggle is enabled
   useEffect(() => {
-    if (addCash && amountFieldRef.current) {
+    if (addCash && amountFieldRef.current && !isLoadingEditDataRef.current) {
       // Set flag to disable scroll detection during auto-scroll
       isAutoScrollingRef.current = true;
       
@@ -378,7 +392,7 @@ const Send = () => {
           
           <CompactVoiceMemoRecorder 
             onVoiceMemoChange={setVoiceMemoBlob}
-            existingUrl={null}
+            existingUrl={existingVoiceMemoUrl}
           />
         </div>
 
