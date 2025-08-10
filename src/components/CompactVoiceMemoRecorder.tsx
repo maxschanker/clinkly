@@ -16,7 +16,7 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
   onVoiceMemoChange,
   existingUrl
 }) => {
-  const [state, setState] = useState<RecorderState>(existingUrl ? 'completed' : 'initial');
+  const [state, setState] = useState<RecorderState>(existingUrl ? 'post-record' : 'initial');
   const [isRecording, setIsRecording] = useState(false);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -36,7 +36,7 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
   useEffect(() => {
     if (existingUrl) {
       setUploadedUrl(existingUrl);
-      setState('completed');
+      setState('post-record');
     }
   }, [existingUrl]);
 
@@ -102,7 +102,8 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
   };
 
   const playRecording = async () => {
-    if (!recordedBlob) return;
+    // Handle both recorded blob and existing URL
+    if (!recordedBlob && !uploadedUrl) return;
 
     try {
       if (isPlaying && audioRef.current) {
@@ -110,7 +111,8 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
         setIsPlaying(false);
         setPlaybackTime(0);
       } else {
-        const audioUrl = URL.createObjectURL(recordedBlob);
+        // Use existing URL if available, otherwise create from blob
+        const audioUrl = uploadedUrl || URL.createObjectURL(recordedBlob!);
         audioRef.current = new Audio(audioUrl);
         audioRef.current.preload = "auto";
         
@@ -148,6 +150,7 @@ export const CompactVoiceMemoRecorder: React.FC<CompactVoiceMemoRecorderProps> =
 
   const deleteRecording = () => {
     setRecordedBlob(null);
+    setUploadedUrl(null);
     setRecordingTime(0);
     setPlaybackTime(0);
     setIsPlaying(false);
