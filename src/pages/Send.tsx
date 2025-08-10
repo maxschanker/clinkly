@@ -24,6 +24,7 @@ const Send = () => {
   const recipientInputRef = useRef<HTMLInputElement>(null);
   const senderInputRef = useRef<HTMLInputElement>(null);
   const amountInputRef = useRef<HTMLInputElement>(null);
+  const isAutoScrollingRef = useRef(false);
   
   const [formData, setFormData] = useState({
     headerText: "",
@@ -76,8 +77,8 @@ const Send = () => {
   // Auto-scroll and focus on amount field when cash toggle is enabled
   useEffect(() => {
     if (addCash && amountFieldRef.current) {
-      // Temporarily disable scroll detection during auto-scroll
-      const scrollDetectionEnabled = false;
+      // Set flag to disable scroll detection during auto-scroll
+      isAutoScrollingRef.current = true;
       
       setTimeout(() => {
         // Scroll to center the amount field for better visibility
@@ -89,6 +90,10 @@ const Send = () => {
         // Focus the amount input after a brief delay for better UX
         setTimeout(() => {
           amountInputRef.current?.focus();
+          // Clear the flag after auto-scroll and focus complete
+          setTimeout(() => {
+            isAutoScrollingRef.current = false;
+          }, 100);
         }, 300);
       }, 200);
     }
@@ -108,6 +113,11 @@ const Send = () => {
     };
 
     const handleScroll = () => {
+      // Don't process scroll events during auto-scroll
+      if (isAutoScrollingRef.current) {
+        return;
+      }
+      
       const currentScrollY = window.scrollY;
       const scrollDistance = Math.abs(currentScrollY - previousScrollY);
       
