@@ -11,7 +11,6 @@ export interface PublicProfile {
 
 export interface PrivateProfile extends PublicProfile {
   bio: string | null;
-  venmo_handle: string | null;
 }
 
 // Get a user's own complete profile (includes sensitive data)

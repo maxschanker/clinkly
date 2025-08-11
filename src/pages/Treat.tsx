@@ -70,7 +70,6 @@ const Treat = () => {
             headerFont: result.treat.font_id.replace('font-', ''),
             senderName: result.treat.sender_name,
             recipientName: result.treat.recipient_name,
-            venmoHandle: result.treat.venmo_handle,
             amount: result.treat.amount,
             treatType: result.treat.treat_type,
             message: result.treat.message,

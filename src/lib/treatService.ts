@@ -8,7 +8,6 @@ export interface TreatData {
   message?: string;
   sender_name: string;
   recipient_name: string;
-  venmo_handle?: string;
   amount?: number;
   theme: string;
   treat_type: string;
@@ -29,7 +28,6 @@ export interface TreatResponse {
   message?: string;
   sender_name: string;
   recipient_name: string;
-  venmo_handle?: string;
   amount?: number;
   theme: string;
   treat_type: string;

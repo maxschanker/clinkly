@@ -261,7 +261,6 @@ export type Database = {
           id: string
           updated_at: string
           user_id: string
-          venmo_handle: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -271,7 +270,6 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id: string
-          venmo_handle?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -281,7 +279,6 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
-          venmo_handle?: string | null
         }
         Relationships: []
       }
@@ -469,7 +466,6 @@ export type Database = {
           treat_type: string
           updated_at: string
           user_id: string | null
-          venmo_handle: string | null
           voice_memo_url: string | null
         }
         Insert: {
@@ -491,7 +487,6 @@ export type Database = {
           treat_type?: string
           updated_at?: string
           user_id?: string | null
-          venmo_handle?: string | null
           voice_memo_url?: string | null
         }
         Update: {
@@ -513,7 +508,6 @@ export type Database = {
           treat_type?: string
           updated_at?: string
           user_id?: string | null
-          venmo_handle?: string | null
           voice_memo_url?: string | null
         }
         Relationships: []
@@ -606,7 +600,6 @@ export type Database = {
           updated_at: string
           expires_at: string
           is_public: boolean
-          venmo_handle: string
         }[]
       }
     }
