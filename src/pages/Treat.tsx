@@ -61,6 +61,8 @@ const Treat = () => {
         
         if (result.success && result.treat) {
           console.log('✅ Successfully fetched treat from backend');
+          console.log('🔍 VOICE MEMO DEBUG - Backend response:', result.treat);
+          console.log('🔍 VOICE MEMO DEBUG - voice_memo_url:', result.treat.voice_memo_url);
           
           // Map backend response to expected format
           const mappedData = {
@@ -83,6 +85,8 @@ const Treat = () => {
             isPublic: result.treat.is_public
           };
           
+          console.log('🔍 VOICE MEMO DEBUG - Mapped data:', mappedData);
+          console.log('🔍 VOICE MEMO DEBUG - voice_memo_url in mapped data:', mappedData.voice_memo_url);
           setTreatData(mappedData);
           setIsPreviewMode(false);
           
@@ -294,8 +298,13 @@ const Treat = () => {
         )}
 
         {/* 5. Voice memo - Above message */}
+        {(() => {
+          console.log('🔍 VOICE MEMO RENDER DEBUG - treatData.voice_memo_url:', treatData.voice_memo_url);
+          return null;
+        })()}
         {treatData.voice_memo_url && (
           <div className="mb-6">
+            <p className="text-xs text-muted-foreground mb-2">Voice memo URL: {treatData.voice_memo_url}</p>
             <OptimizedAudioPlayer voiceMemoUrl={treatData.voice_memo_url} variant="mini" />
           </div>
         )}
