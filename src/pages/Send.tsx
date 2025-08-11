@@ -409,14 +409,14 @@ const Send = () => {
                 }
               }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && messageTextareaRef.current) {
-                  messageTextareaRef.current.blur();
+                if (e.key === 'Enter' && recipientInputRef.current) {
+                  recipientInputRef.current.focus();
                 }
               }}
               placeholder="Hope you have a good week! ❣️"
               className="w-full min-h-[120px] text-lg resize-none border-2 border-border rounded-2xl p-6 bg-card focus:border-primary focus:ring-2 focus:ring-primary/20"
               maxLength={300}
-              enterKeyHint="done"
+              enterKeyHint="next"
             />
             <div className={`text-sm mt-2 text-right ${
               formData.message.length >= 280 ? 'text-destructive' : 
@@ -441,13 +441,13 @@ const Send = () => {
                 value={formData.recipientName}
                 onChange={(e) => setFormData({...formData, recipientName: e.target.value})}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && recipientInputRef.current) {
-                    recipientInputRef.current.blur();
+                  if (e.key === 'Enter' && senderInputRef.current) {
+                    senderInputRef.current.focus();
                   }
                 }}
                 placeholder="Their name"
                 className="w-full h-12 text-lg border-2 rounded-2xl"
-                enterKeyHint="done"
+                enterKeyHint="next"
               />
             </div>
             
