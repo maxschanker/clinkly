@@ -77,11 +77,20 @@ export async function createTreat(treatData: TreatData): Promise<CreateTreatResu
 // Get a treat by slug
 export async function getTreat(slug: string): Promise<GetTreatResult> {
   try {
+    // Get current session to include auth header if user is logged in
+    const { data: { session } } = await supabase.auth.getSession();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Include auth header if user is authenticated to get full treat details
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
+    }
+    
     const response = await fetch(`https://kncphogikrwsrehzhghc.supabase.co/functions/v1/get-treat?slug=${slug}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
+      headers
     });
 
     if (!response.ok) {

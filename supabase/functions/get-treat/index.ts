@@ -111,10 +111,18 @@ serve(async (req) => {
 
     console.log('Treat retrieved successfully:', { slug, treatId: treat.id });
 
+    // Privacy protection: Hide venmo_handle for non-owners when treat is public
+    const responseData = { ...treat };
+    if (treat.is_public && (!userId || userId !== treat.user_id)) {
+      // Remove venmo_handle for public treats viewed by non-owners
+      delete responseData.venmo_handle;
+      console.log('Venmo handle hidden for non-owner viewing public treat');
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
-        treat 
+        treat: responseData 
       }),
       { 
         status: 200,
