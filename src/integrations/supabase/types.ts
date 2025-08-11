@@ -47,6 +47,13 @@ export type Database = {
             foreignKeyName: "abuse_reports_treat_id_fkey"
             columns: ["treat_id"]
             isOneToOne: false
+            referencedRelation: "public_treats_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abuse_reports_treat_id_fkey"
+            columns: ["treat_id"]
+            isOneToOne: false
             referencedRelation: "treats"
             referencedColumns: ["id"]
           },
@@ -77,6 +84,13 @@ export type Database = {
             columns: ["collection_id"]
             isOneToOne: false
             referencedRelation: "treat_collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_treats_treat_id_fkey"
+            columns: ["treat_id"]
+            isOneToOne: false
+            referencedRelation: "public_treats_safe"
             referencedColumns: ["id"]
           },
           {
@@ -138,6 +152,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "favorites_treat_id_fkey"
+            columns: ["treat_id"]
+            isOneToOne: false
+            referencedRelation: "public_treats_safe"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "favorites_treat_id_fkey"
             columns: ["treat_id"]
@@ -339,6 +360,13 @@ export type Database = {
             foreignKeyName: "treat_reactions_treat_id_fkey"
             columns: ["treat_id"]
             isOneToOne: false
+            referencedRelation: "public_treats_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treat_reactions_treat_id_fkey"
+            columns: ["treat_id"]
+            isOneToOne: false
             referencedRelation: "treats"
             referencedColumns: ["id"]
           },
@@ -377,6 +405,13 @@ export type Database = {
             foreignKeyName: "treat_reminders_treat_id_fkey"
             columns: ["treat_id"]
             isOneToOne: false
+            referencedRelation: "public_treats_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treat_reminders_treat_id_fkey"
+            columns: ["treat_id"]
+            isOneToOne: false
             referencedRelation: "treats"
             referencedColumns: ["id"]
           },
@@ -402,6 +437,13 @@ export type Database = {
           treat_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "treat_sharing_stats_treat_id_fkey"
+            columns: ["treat_id"]
+            isOneToOne: false
+            referencedRelation: "public_treats_safe"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "treat_sharing_stats_treat_id_fkey"
             columns: ["treat_id"]
@@ -440,6 +482,13 @@ export type Database = {
           viewer_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "treat_views_treat_id_fkey"
+            columns: ["treat_id"]
+            isOneToOne: false
+            referencedRelation: "public_treats_safe"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "treat_views_treat_id_fkey"
             columns: ["treat_id"]
@@ -545,6 +594,13 @@ export type Database = {
             foreignKeyName: "user_treat_history_treat_id_fkey"
             columns: ["treat_id"]
             isOneToOne: false
+            referencedRelation: "public_treats_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_treat_history_treat_id_fkey"
+            columns: ["treat_id"]
+            isOneToOne: false
             referencedRelation: "treats"
             referencedColumns: ["id"]
           },
@@ -582,7 +638,69 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_treats_safe: {
+        Row: {
+          amount: number | null
+          background_color: string | null
+          cover_art_content: string | null
+          cover_art_type: string | null
+          created_at: string | null
+          expires_at: string | null
+          font_id: string | null
+          header_text: string | null
+          id: string | null
+          is_public: boolean | null
+          message: string | null
+          recipient_name: string | null
+          sender_name: string | null
+          slug: string | null
+          theme: string | null
+          treat_type: string | null
+          updated_at: string | null
+          voice_memo_url: string | null
+        }
+        Insert: {
+          amount?: number | null
+          background_color?: string | null
+          cover_art_content?: string | null
+          cover_art_type?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          font_id?: string | null
+          header_text?: string | null
+          id?: string | null
+          is_public?: boolean | null
+          message?: string | null
+          recipient_name?: string | null
+          sender_name?: string | null
+          slug?: string | null
+          theme?: string | null
+          treat_type?: string | null
+          updated_at?: string | null
+          voice_memo_url?: string | null
+        }
+        Update: {
+          amount?: number | null
+          background_color?: string | null
+          cover_art_content?: string | null
+          cover_art_type?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          font_id?: string | null
+          header_text?: string | null
+          id?: string | null
+          is_public?: boolean | null
+          message?: string | null
+          recipient_name?: string | null
+          sender_name?: string | null
+          slug?: string | null
+          theme?: string | null
+          treat_type?: string | null
+          updated_at?: string | null
+          voice_memo_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_treat_with_privacy: {
