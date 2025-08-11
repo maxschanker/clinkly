@@ -40,14 +40,22 @@ serve(async (req) => {
       );
     }
 
-    // Get treat data
-    const { data: treat, error: treatError } = await supabase
-      .from('treats')
-      .select('*')
-      .eq('slug', slug)
-      .single();
+    // Use the secure privacy-aware function to get treat data
+    const { data: treatRows, error: treatError } = await supabase
+      .rpc('get_treat_with_privacy', { treat_slug: slug });
 
-    if (treatError || !treat) {
+    if (treatError) {
+      console.log('Error calling get_treat_with_privacy:', treatError);
+      return new Response(
+        JSON.stringify({ error: 'Error retrieving treat' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    if (!treatRows || treatRows.length === 0) {
       console.log('Treat not found:', slug);
       return new Response(
         JSON.stringify({ error: 'Treat not found' }),
@@ -57,6 +65,8 @@ serve(async (req) => {
         }
       );
     }
+
+    const treat = treatRows[0];
 
     // Check if treat has expired
     if (treat.expires_at && new Date(treat.expires_at) < new Date()) {
@@ -111,18 +121,10 @@ serve(async (req) => {
 
     console.log('Treat retrieved successfully:', { slug, treatId: treat.id });
 
-    // Privacy protection: Hide venmo_handle for non-owners when treat is public
-    const responseData = { ...treat };
-    if (treat.is_public && (!userId || userId !== treat.user_id)) {
-      // Remove venmo_handle for public treats viewed by non-owners
-      delete responseData.venmo_handle;
-      console.log('Venmo handle hidden for non-owner viewing public treat');
-    }
-
     return new Response(
       JSON.stringify({ 
         success: true, 
-        treat: responseData 
+        treat: treat
       }),
       { 
         status: 200,

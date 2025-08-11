@@ -585,7 +585,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_treat_with_privacy: {
+        Args: { treat_slug: string }
+        Returns: {
+          id: string
+          slug: string
+          treat_type: string
+          header_text: string
+          message: string
+          sender_name: string
+          recipient_name: string
+          cover_art_type: string
+          cover_art_content: string
+          font_id: string
+          theme: string
+          background_color: string
+          voice_memo_url: string
+          amount: number
+          created_at: string
+          updated_at: string
+          expires_at: string
+          is_public: boolean
+          venmo_handle: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
