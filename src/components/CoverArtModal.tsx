@@ -24,7 +24,7 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 interface CoverArtModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelect: (url: string, type: 'photo' | 'gif' | 'poster' | 'upload') => void;
+  onSelect: (url: string | File, type: 'photo' | 'gif' | 'poster' | 'upload') => void;
   currentSelection?: string;
 }
 
@@ -441,16 +441,12 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result as string;
-      onSelect(dataUrl, 'upload');
-      toast({
-        title: "Image uploaded",
-        description: "Your custom image has been selected.",
-      });
-    };
-    reader.readAsDataURL(file);
+    // Pass the actual File object instead of base64 data
+    onSelect(file as any, 'upload');
+    toast({
+      title: "Image selected",
+      description: "Your custom image will be uploaded when you save.",
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

@@ -9,7 +9,7 @@ import { Edit } from "lucide-react";
 import { CoverArtModal } from "@/components/CoverArtModal";
 import { CompactVoiceMemoRecorder } from "@/components/CompactVoiceMemoRecorder";
 import { BackgroundColorPicker } from "@/components/BackgroundColorPicker";
-import { createTreat, uploadVoiceMemo, type TreatData } from "@/lib/treatService";
+import { createTreat, uploadVoiceMemo, uploadCoverArt, type TreatData } from "@/lib/treatService";
 import { useToast } from "@/hooks/use-toast";
 import { saveTreatData, cleanupStaleData, loadTreatData } from "@/lib/utils";
 import { smartScrollToTop, trackUserScrolling } from "@/lib/scrollUtils";
@@ -30,7 +30,7 @@ const Send = () => {
     headerText: "",
     headerFont: "inter",
     coverArt: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?w=800&h=400&fit=crop", // Default ocean wave
-    coverArtType: "poster" as 'photo' | 'gif' | 'poster',
+    coverArtType: "poster" as 'photo' | 'gif' | 'poster' | 'upload',
     message: "",
     senderName: "",
     recipientName: "",
@@ -272,8 +272,31 @@ const Send = () => {
     }
   };
 
-  const handleCoverArtSelect = (url: string, type: 'photo' | 'gif' | 'poster') => {
-    setFormData({...formData, coverArt: url, coverArtType: type});
+  const handleCoverArtSelect = async (url: string | File, type: 'photo' | 'gif' | 'poster' | 'upload') => {
+    if (type === 'upload' && url instanceof File) {
+      // Handle file upload
+      try {
+        setIsLoading(true);
+        const uploadResult = await uploadCoverArt(url);
+        setFormData({...formData, coverArt: uploadResult.file_url, coverArtType: 'upload'});
+        toast({
+          title: "Upload successful",
+          description: "Your image has been uploaded.",
+        });
+      } catch (error) {
+        console.error('Upload failed:', error);
+        toast({
+          title: "Upload failed",
+          description: "Failed to upload your image. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      setFormData({...formData, coverArt: url as string, coverArtType: type});
+    }
     setShowCoverArtModal(false);
   };
 
