@@ -279,10 +279,7 @@ const Send = () => {
         setIsLoading(true);
         const uploadResult = await uploadCoverArt(url);
         setFormData({...formData, coverArt: uploadResult.file_url, coverArtType: 'upload'});
-        toast({
-          title: "Upload successful",
-          description: "Your image has been uploaded.",
-        });
+        // Removed success toast - seamless experience like GIFs
       } catch (error: any) {
         console.error('Upload failed:', error);
         

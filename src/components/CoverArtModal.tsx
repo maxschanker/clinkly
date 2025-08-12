@@ -443,10 +443,7 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
 
     // Pass the actual File object instead of base64 data
     onSelect(file as any, 'upload');
-    toast({
-      title: "Image selected",
-      description: "Your custom image will be uploaded when you save.",
-    });
+    // Removed redundant toast - upload will happen seamlessly
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
