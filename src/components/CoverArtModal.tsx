@@ -26,6 +26,7 @@ interface CoverArtModalProps {
   onOpenChange: (open: boolean) => void;
   onSelect: (url: string | File, type: 'photo' | 'gif' | 'poster' | 'upload') => void;
   currentSelection?: string;
+  isUploadingCoverArt?: boolean;
 }
 
 interface UnsplashPhoto {
@@ -145,7 +146,7 @@ const POSTER_COLLECTION = [
   }
 ];
 
-export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }: CoverArtModalProps) => {
+export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection, isUploadingCoverArt = false }: CoverArtModalProps) => {
   const { toast } = useToast();
   
   // Search and filter states
@@ -443,7 +444,7 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
 
     // Pass the actual File object instead of base64 data
     onSelect(file as any, 'upload');
-    // Removed redundant toast - upload will happen seamlessly
+    // Don't close modal here - parent will close it after upload completes
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -455,14 +456,13 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl w-full h-[90vh] p-0 flex flex-col">
-        <DialogHeader className="p-6 pb-0 flex-shrink-0">
-            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-primary" />
-              Choose Art
-            </DialogTitle>
-        </DialogHeader>
+    <Dialog open={open} onOpenChange={isUploadingCoverArt ? undefined : onOpenChange}>
+      <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] p-0">
+        <div className="p-6 border-b">
+          <h2 className="text-2xl font-bold">
+            {isUploadingCoverArt ? "Uploading..." : "Select Cover Art"}
+          </h2>
+        </div>
         
         <div className="flex flex-col flex-1 min-h-0">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col min-h-0">
@@ -518,20 +518,31 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection }
                 )}
                 
                 {/* Custom Upload */}
-                <label className="cursor-pointer">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                  <Button variant="outline" size="default" asChild>
-                    <span className="flex items-center gap-2">
-                      <Upload className="w-4 h-4" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = (e) => handleFileUpload(e as any);
+                    input.click();
+                  }}
+                  disabled={isUploadingCoverArt}
+                  className="flex items-center gap-2"
+                >
+                  {isUploadingCoverArt ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={16} />
                       Upload
-                    </span>
-                  </Button>
-                </label>
+                    </>
+                  )}
+                </Button>
               </div>
               
               {/* Error Display */}

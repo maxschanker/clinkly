@@ -18,6 +18,7 @@ const Send = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingCoverArt, setIsUploadingCoverArt] = useState(false);
   const amountFieldRef = useRef<HTMLDivElement>(null);
   const headerInputRef = useRef<HTMLInputElement>(null);
   const messageTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -266,20 +267,21 @@ const Send = () => {
         title: "Error",
         description: "Failed to create clink. Please try again.",
         variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
+        });
+      } finally {
+        setIsUploadingCoverArt(false);
+      }
   };
 
   const handleCoverArtSelect = async (url: string | File, type: 'photo' | 'gif' | 'poster' | 'upload') => {
     if (type === 'upload' && url instanceof File) {
       // Handle file upload
       try {
-        setIsLoading(true);
+        setIsUploadingCoverArt(true);
         const uploadResult = await uploadCoverArt(url);
         setFormData({...formData, coverArt: uploadResult.file_url, coverArtType: 'upload'});
-        // Removed success toast - seamless experience like GIFs
+        // Close modal after successful upload
+        setShowCoverArtModal(false);
       } catch (error: any) {
         console.error('Upload failed:', error);
         
@@ -292,7 +294,7 @@ const Send = () => {
         });
         return;
       } finally {
-        setIsLoading(false);
+        setIsUploadingCoverArt(false);
       }
     } else {
       setFormData({...formData, coverArt: url as string, coverArtType: type});
@@ -399,10 +401,11 @@ const Send = () => {
           )}
           <button
             onClick={() => setShowCoverArtModal(true)}
-            className="absolute bottom-4 right-4 bg-card/90 backdrop-blur-sm hover:bg-card text-foreground px-4 py-2 rounded-full flex items-center gap-2 transition-all shadow-soft"
+            disabled={isUploadingCoverArt}
+            className="absolute bottom-4 right-4 bg-card/90 backdrop-blur-sm hover:bg-card text-foreground px-4 py-2 rounded-full flex items-center gap-2 transition-all shadow-soft disabled:opacity-50"
           >
             <Edit size={16} />
-            Edit
+            {isUploadingCoverArt ? 'Uploading...' : 'Edit'}
           </button>
         </div>
 
@@ -552,6 +555,7 @@ const Send = () => {
         onOpenChange={setShowCoverArtModal}
         onSelect={handleCoverArtSelect}
         currentSelection={formData.coverArt}
+        isUploadingCoverArt={isUploadingCoverArt}
       />
     </div>
   );
