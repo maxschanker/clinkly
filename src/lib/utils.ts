@@ -130,7 +130,7 @@ export function getCurrentSession(): string {
   return sessionId;
 }
 
-// Enhanced localStorage operations with metadata
+// Enhanced localStorage operations with metadata and backup storage
 export function saveTreatData(key: string, data: any, isPreview: boolean = false): void {
   try {
     const sessionId = getCurrentSession();
@@ -143,6 +143,13 @@ export function saveTreatData(key: string, data: any, isPreview: boolean = false
     };
     
     localStorage.setItem(key, JSON.stringify(metadata));
+    
+    // Also save with backup key for critical data
+    if (key === 'editData' || key === 'treatData' || key === 'currentTreat') {
+      const backupKey = `${key}_backup`;
+      localStorage.setItem(backupKey, JSON.stringify(metadata));
+    }
+    
     console.log('Saved treat data with metadata:', { key, sessionId, timestamp: metadata.timestamp, isPreview });
   } catch (error) {
     console.error('Failed to save treat data:', error);
@@ -151,7 +158,18 @@ export function saveTreatData(key: string, data: any, isPreview: boolean = false
 
 export function loadTreatData(key: string): any | null {
   try {
-    const stored = localStorage.getItem(key);
+    let stored = localStorage.getItem(key);
+    let backupKey = null;
+    
+    // If primary data not found, try backup
+    if (!stored && (key === 'editData' || key === 'treatData' || key === 'currentTreat')) {
+      backupKey = `${key}_backup`;
+      stored = localStorage.getItem(backupKey);
+      if (stored) {
+        console.log('Using backup data for key:', key);
+      }
+    }
+    
     if (!stored) {
       console.log('No data found for key:', key);
       return null;
@@ -165,14 +183,14 @@ export function loadTreatData(key: string): any | null {
     if (currentTime - metadata.timestamp > DATA_EXPIRY_TIME) {
       console.log('Data expired, removing:', { key, age: currentTime - metadata.timestamp });
       localStorage.removeItem(key);
+      if (backupKey) localStorage.removeItem(backupKey);
       return null;
     }
 
-    // Check session validity
+    // Relax session validation for better data persistence
     if (metadata.sessionId !== currentSession) {
-      console.log('Data from different session, removing:', { key, dataSession: metadata.sessionId, currentSession });
-      localStorage.removeItem(key);
-      return null;
+      console.log('Data from different session, but keeping for user experience:', { key, dataSession: metadata.sessionId, currentSession });
+      // Don't remove data - just log the session difference
     }
 
     console.log('Loaded fresh treat data:', { key, age: currentTime - metadata.timestamp, isPreview: metadata.isPreview });
@@ -201,9 +219,8 @@ export function cleanupStaleData(): void {
 
         const metadata: TreatDataWithMetadata = JSON.parse(stored);
         
-        // Remove expired or different session data
-        if (currentTime - metadata.timestamp > DATA_EXPIRY_TIME || 
-            metadata.sessionId !== currentSession) {
+        // Only remove expired data, keep data from different sessions for better UX
+        if (currentTime - metadata.timestamp > DATA_EXPIRY_TIME) {
           keysToRemove.push(key);
         }
       } catch {

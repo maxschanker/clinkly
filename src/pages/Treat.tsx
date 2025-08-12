@@ -30,20 +30,21 @@ const Treat = () => {
       console.log('Treat page loading, slug:', slug);
       setIsLoading(true);
       
-      // Use URL parameter to determine mode - simple and reliable
+      // Use URL parameter to determine mode - prioritize preview parameter
       const urlParams = new URLSearchParams(location.search);
-      const isPreviewMode = urlParams.get('preview') === 'true';
+      const isPreviewParam = urlParams.get('preview') === 'true';
       const previewData = loadTreatData('currentTreat');
       
       console.log('Preview detection logic:', {
-        isPreviewMode,
+        isPreviewParam,
         hasPreviewData: !!previewData,
-        slugMatch: previewData?.slug === slug
+        slugMatch: previewData?.slug === slug,
+        previewMetadata: previewData?._metadata
       });
       
       try {
-        // 1. If preview parameter is present, use cached preview data
-        if (isPreviewMode && previewData && previewData.slug === slug) {
+        // 1. Strong priority for preview mode - if preview param AND we have preview data
+        if (isPreviewParam && previewData && (previewData.slug === slug || previewData._metadata?.isPreview)) {
           console.log('✅ Using preview mode with cached data');
           console.log('🔍 TREAT DEBUG - previewData loaded:', previewData);
           console.log('🔍 TREAT DEBUG - previewData.background_color:', previewData.background_color);
@@ -85,8 +86,8 @@ const Treat = () => {
           setTreatData(mappedData);
           setIsPreviewMode(false);
           
-          // Clear preview data when successfully viewing live version
-          if (previewData && previewData.slug === slug) {
+          // Only clear preview data if we're not in preview mode
+          if (!isPreviewParam && previewData && previewData.slug === slug) {
             console.log('Clearing cached data for live view');
             localStorage.removeItem('currentTreat');
           }
@@ -98,10 +99,10 @@ const Treat = () => {
         console.error('Error loading treat:', error);
         
         // 3. Fallback to cached data if backend fails
-        if (previewData && previewData.slug === slug) {
+        if (previewData && (previewData.slug === slug || previewData._metadata?.isPreview)) {
           console.log('✅ Using cached data as fallback');
           setTreatData(previewData);
-          setIsPreviewMode(false);
+          setIsPreviewMode(!!previewData._metadata?.isPreview);
         } else {
           // 4. Fallback to URL params (backwards compatibility)
           const hasUrlData = urlParams.has('data') || urlParams.has('id');

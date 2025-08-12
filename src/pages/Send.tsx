@@ -73,8 +73,8 @@ const Send = () => {
         setExistingVoiceMemoUrl(editData.voiceMemoUrl);
       }
       
-      // Clear the edit data immediately after loading (fixed key)
-      localStorage.removeItem('editData');
+      // Don't clear edit data immediately - let user keep it for multiple edits
+      console.log('Edit data loaded successfully, keeping for user session');
       
       // Reset loading flag after state updates
       setTimeout(() => {
@@ -82,9 +82,9 @@ const Send = () => {
       }, 100);
     }
 
-    // Cleanup function to clear edit data when navigating away
+    // Cleanup function - only clear when actually navigating away intentionally
     return () => {
-      localStorage.removeItem('editData');
+      // Keep edit data for better user experience
     };
   }, []);
 
@@ -301,8 +301,6 @@ const Send = () => {
         <div className="max-w-6xl mx-auto">
           <button
             onClick={() => {
-              // Clear edit data when going home
-              localStorage.removeItem('editData');
               smartScrollToTop();
               navigate('/');
             }}
