@@ -107,9 +107,8 @@ function generateSessionId(): string {
 }
 
 // Constants for data freshness
-const DATA_EXPIRY_TIME = 2 * 60 * 60 * 1000; // 2 hours for better UX
+const DATA_EXPIRY_TIME = 30 * 60 * 1000; // 30 minutes
 const CURRENT_SESSION_KEY = 'clink_current_session';
-const STORAGE_VERSION = '1.0';
 
 // Enhanced treat data storage with metadata
 interface TreatDataWithMetadata {
@@ -134,25 +133,26 @@ export function getCurrentSession(): string {
 // Enhanced localStorage operations with metadata and backup storage
 export function saveTreatData(key: string, data: any, isPreview: boolean = false): void {
   try {
+    const sessionId = getCurrentSession();
     const metadata: TreatDataWithMetadata = {
       data,
       timestamp: Date.now(),
-      sessionId: getCurrentSession(),
-      version: STORAGE_VERSION,
+      sessionId,
+      version: '1.0',
       isPreview
     };
     
     localStorage.setItem(key, JSON.stringify(metadata));
     
-    // Create backup for ALL critical keys including editData
-    const criticalKeys = ['currentTreat', 'treatData', 'editData', 'previewData'];
-    if (criticalKeys.includes(key)) {
-      localStorage.setItem(`${key}_backup`, JSON.stringify(metadata));
+    // Also save with backup key for critical data
+    if (key === 'editData' || key === 'treatData' || key === 'currentTreat') {
+      const backupKey = `${key}_backup`;
+      localStorage.setItem(backupKey, JSON.stringify(metadata));
     }
     
-    console.log(`Saved ${key}:`, { isPreview, dataKeys: Object.keys(data || {}) });
+    console.log('Saved treat data with metadata:', { key, sessionId, timestamp: metadata.timestamp, isPreview });
   } catch (error) {
-    console.error(`Failed to save ${key}:`, error);
+    console.error('Failed to save treat data:', error);
   }
 }
 
@@ -208,16 +208,10 @@ export function cleanupStaleData(): void {
     const currentTime = Date.now();
     const currentSession = getCurrentSession();
     const keysToRemove: string[] = [];
-    
-    // Critical data that should never be automatically cleaned up
-    const protectedKeys = ['editData', 'currentTreat', 'previewData'];
 
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (!key || (!key.startsWith('treat_') && key !== 'treatData')) continue;
-      
-      // Protect critical keys from cleanup
-      if (protectedKeys.includes(key)) continue;
 
       try {
         const stored = localStorage.getItem(key);
@@ -253,31 +247,10 @@ export function clearAllTreatData(): void {
   try {
     const keysToRemove: string[] = [];
     
-    // Preserve critical edit data and current treat
-    const protectedKeys = ['editData', 'currentTreat'];
-    
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && (key.startsWith('treat_') || key === 'treatData')) {
-        // Don't clear protected keys unless they're expired
-        if (protectedKeys.includes(key)) {
-          try {
-            const stored = localStorage.getItem(key);
-            if (stored) {
-              const metadata: TreatDataWithMetadata = JSON.parse(stored);
-              const currentTime = Date.now();
-              // Only clear if very old (2 hours)
-              if (currentTime - metadata.timestamp > 7200000) {
-                keysToRemove.push(key);
-              }
-            }
-          } catch {
-            // If corrupted, remove it
-            keysToRemove.push(key);
-          }
-        } else {
-          keysToRemove.push(key);
-        }
+        keysToRemove.push(key);
       }
     }
 
