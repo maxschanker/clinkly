@@ -283,11 +283,14 @@ const Send = () => {
           title: "Upload successful",
           description: "Your image has been uploaded.",
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error('Upload failed:', error);
+        
+        // Show specific error message
+        const errorMessage = error.message || "Failed to upload your image. Please try again.";
         toast({
           title: "Upload failed",
-          description: "Failed to upload your image. Please try again.",
+          description: errorMessage,
           variant: "destructive"
         });
         return;
