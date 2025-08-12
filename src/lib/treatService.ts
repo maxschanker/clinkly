@@ -111,26 +111,14 @@ export async function getTreat(slug: string): Promise<GetTreatResult> {
 // Upload cover art
 export async function uploadCoverArt(file: File): Promise<{ file_url: string }> {
   try {
-    // Check if user is authenticated
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      throw new Error('You must be signed in to upload images');
-    }
-
     const formData = new FormData();
     formData.append('file', file);
-
-    console.log('Uploading cover art for authenticated user:', session.user.id);
 
     const { data, error } = await supabase.functions.invoke('upload-cover-art', {
       body: formData
     });
 
-    console.log('Upload response:', { data, error });
-
     if (error) {
-      console.error('Upload error details:', error);
       throw new Error(error.message || 'Failed to upload cover art');
     }
 
@@ -139,8 +127,8 @@ export async function uploadCoverArt(file: File): Promise<{ file_url: string }> 
     }
 
     return data;
-  } catch (error) {
-    console.error('Error uploading cover art:', error);
+  } catch (error: any) {
+    console.error('Cover art upload error:', error);
     throw error;
   }
 }

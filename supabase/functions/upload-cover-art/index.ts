@@ -27,30 +27,18 @@ serve(async (req) => {
       );
     }
 
-    // Get user from auth header
+    // Get user from auth header (optional for anonymous uploads)
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Authorization required' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+    let user = null;
+    
+    if (authHeader) {
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(
+        authHeader.replace('Bearer ', '')
       );
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid authorization' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      
+      if (!authError && authUser) {
+        user = authUser;
+      }
     }
 
     const formData = await req.formData();
@@ -92,7 +80,11 @@ serve(async (req) => {
 
     // Generate unique filename
     const fileExtension = file.name.split('.').pop();
-    const fileName = `${user.id}/${crypto.randomUUID()}.${fileExtension}`;
+    const timestamp = Date.now();
+    const randomId = crypto.randomUUID().slice(0, 8);
+    const fileName = user 
+      ? `${user.id}/${crypto.randomUUID()}.${fileExtension}`
+      : `anonymous/${timestamp}-${randomId}-cover-art.${fileExtension}`;
     
     // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer();
@@ -127,7 +119,7 @@ serve(async (req) => {
     const { data: uploadRecord, error: recordError } = await supabase
       .from('cover_art_uploads')
       .insert({
-        user_id: user.id,
+        user_id: user?.id || null,
         file_url: publicUrl,
         file_name: file.name,
         file_size: file.size,
@@ -141,7 +133,7 @@ serve(async (req) => {
       // Still return success since file was uploaded
     }
 
-    console.log('File uploaded successfully:', { fileName, userId: user.id });
+    console.log('File uploaded successfully:', { fileName, userId: user?.id || 'anonymous' });
 
     return new Response(
       JSON.stringify({ 

@@ -51,7 +51,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.upload-cover-art]
-verify_jwt = true
+verify_jwt = false
 
 [functions.upload-voice-memo]
 verify_jwt = false
