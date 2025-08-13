@@ -689,7 +689,7 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection, 
                       </div>
                     ) : tenorGifs.length > 0 ? (
                       <div className="space-y-4">
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-full overflow-hidden">
+                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-full overflow-hidden" style={{ contain: "layout" }}>
                           {tenorGifs.map((gif) => (
                             <div
                               key={gif.id}
@@ -701,12 +701,16 @@ export const CoverArtModal = ({ open, onOpenChange, onSelect, currentSelection, 
                               )}
                               onClick={() => onSelect(gif.media_formats?.gif?.url, 'gif')}
                             >
-                              <img
-                                src={gif.media_formats?.gif?.url || gif.media_formats?.mediumgif?.url || gif.media_formats?.tinygif?.url}
-                                alt={gif.content_description || gif.title}
-                                loading="lazy"
-                                className="w-full h-full object-cover"
-                              />
+                               <img
+                                 src={gif.media_formats?.gif?.url || gif.media_formats?.mediumgif?.url || gif.media_formats?.tinygif?.url}
+                                 alt={gif.content_description || gif.title}
+                                 loading="lazy"
+                                 className="w-full h-full object-cover"
+                                 style={{ 
+                                   contain: "layout",
+                                   willChange: "transform"
+                                 }}
+                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                                 <div className="absolute bottom-2 left-2">
                                   <p className="text-white/90 text-xs truncate max-w-32">{gif.title}</p>
