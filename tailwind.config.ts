@@ -22,6 +22,8 @@ export default {
 				'playfair': ['Playfair Display', 'serif'],
 				'dancing': ['Dancing Script', 'cursive'],
 				'arial': ['Arial', 'sans-serif'],
+				'inter': ['Inter', 'system-ui', 'sans-serif'],
+				'space': ['"Space Grotesk"', 'system-ui', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
@@ -85,19 +87,21 @@ export default {
 				'gradient-secondary': 'var(--gradient-secondary)', 
 				'gradient-background': 'var(--gradient-background)',
 				'gradient-card': 'var(--gradient-card)',
-				'gradient-hero': 'var(--gradient-hero)'
+				'gradient-hero': 'var(--gradient-hero)',
+				'gradient-sunset': 'var(--gradient-sunset)'
 			},
 			backgroundColor: {
-				'soft-lavender': 'var(--bg-soft-lavender)',
-				'pale-lilac': 'var(--bg-pale-lilac)',
+				'soft-peach': 'var(--bg-soft-peach)',
 				'warm-cream': 'var(--bg-warm-cream)',
-				'light-pink': 'var(--bg-light-pink)',
-				'cool-mist': 'var(--bg-cool-mist)'
+				'golden-mist': 'var(--bg-golden-mist)',
+				'coral-blush': 'var(--bg-coral-blush)',
+				'sunset-glow': 'var(--bg-sunset-glow)'
 			},
 			boxShadow: {
 				'soft': 'var(--shadow-soft)',
 				'glow': 'var(--shadow-glow)',
-				'card': 'var(--shadow-card)'
+				'card': 'var(--shadow-card)',
+				'warm': 'var(--shadow-warm)'
 			},
 			keyframes: {
 				'accordion-down': {
@@ -123,6 +127,28 @@ export default {
 				'bounce-gentle': {
 					'0%, 100%': { transform: 'translateY(0)' },
 					'50%': { transform: 'translateY(-5px)' }
+				},
+				'heart-beat': {
+					'0%, 100%': { transform: 'scale(1)' },
+					'25%': { transform: 'scale(1.1)' },
+					'50%': { transform: 'scale(1.05)' },
+					'75%': { transform: 'scale(1.15)' }
+				},
+				'wiggle': {
+					'0%, 100%': { transform: 'rotate(-3deg)' },
+					'50%': { transform: 'rotate(3deg)' }
+				},
+				'pulse-glow': {
+					'0%, 100%': { 
+						opacity: '0.8',
+						transform: 'scale(1)',
+						filter: 'brightness(1)'
+					},
+					'50%': { 
+						opacity: '1',
+						transform: 'scale(1.05)',
+						filter: 'brightness(1.2)'
+					}
 				}
 			},
 			animation: {
@@ -131,7 +157,10 @@ export default {
 				'sparkle': 'sparkle 2s ease-in-out infinite',
 				'float': 'float 3s ease-in-out infinite',
 				'shimmer': 'shimmer 2s linear infinite',
-				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite'
+				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
+				'heart-beat': 'heart-beat 1.5s ease-in-out infinite',
+				'wiggle': 'wiggle 1s ease-in-out infinite',
+				'pulse-glow': 'pulse-glow 2s ease-in-out infinite'
 			}
 		}
 	},

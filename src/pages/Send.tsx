@@ -309,123 +309,127 @@ const Send = () => {
     switch (colorId) {
       case "background": return "bg-gradient-background";
       case "hero": return "bg-gradient-hero";
-      case "soft-lavender": return "bg-soft-lavender";
-      case "pale-lilac": return "bg-pale-lilac";
+      case "sunset": return "bg-gradient-sunset";
+      case "soft-peach": return "bg-soft-peach";
       case "warm-cream": return "bg-warm-cream";
-      case "light-pink": return "bg-light-pink";
-      case "cool-mist": return "bg-cool-mist";
+      case "golden-mist": return "bg-golden-mist";
+      case "coral-blush": return "bg-coral-blush";
+      case "sunset-glow": return "bg-sunset-glow";
       default: return "bg-gradient-background";
     }
   };
 
 
   return (
-    <div className={`min-h-[100dvh] ${getThemeBackground(formData.backgroundColor)} touch-pan-y overscroll-none`}>
+    <div className={`min-h-[100dvh] ${getThemeBackground(formData.backgroundColor)} relative overflow-hidden`}>
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <div className="absolute top-20 right-16 w-3 h-3 bg-sparkle-1 rounded-full animate-pulse-glow"></div>
+        <div className="absolute bottom-32 left-20 w-2 h-2 bg-sparkle-2 rounded-full animate-sparkle animation-delay-1000"></div>
+        <div className="absolute top-1/2 right-1/3 w-1 h-1 bg-sparkle-3 rounded-full animate-float animation-delay-2000"></div>
+      </div>
+
       {/* Header */}
-      <header className="w-full p-4 pb-2 md:p-6 md:pb-2 relative z-10">
-        <div className="max-w-6xl mx-auto">
+      <header className="relative z-10 p-6 pb-4">
+        <div className="flex items-center justify-between">
           <button
             onClick={() => {
-              // Clear edit data when going home
               localStorage.removeItem('editData');
               smartScrollToTop();
               navigate('/');
             }}
-            className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-transform duration-200"
+            className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:scale-105 transition-all duration-300 font-space"
           >
             clink
           </button>
+          <div className="text-sm text-muted-foreground font-medium">
+            Create your vibe ✨
+          </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="max-w-2xl mx-auto px-6 py-2 pb-32">
-        {/* Header Input */}
-        <div className="mb-8">
-          <Input
-            ref={headerInputRef}
-            value={formData.headerText}
-            onChange={(e) => {
-              if (e.target.value.length <= 25) {
-                setFormData({...formData, headerText: e.target.value});
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && headerInputRef.current) {
-                headerInputRef.current.blur();
-              }
-            }}
-            placeholder="Header"
-            className={`w-full bg-transparent border-none outline-none placeholder:text-muted-foreground text-center resize-none leading-tight min-h-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${selectedFont?.class} ${
-              formData.headerText.length > 20 ? "text-2xl" : 
-              formData.headerText.length > 12 ? "text-4xl" : "text-5xl"
-            } font-bold h-auto py-2`}
-            maxLength={25}
-            enterKeyHint="done"
-          />
-        </div>
-
-        {/* Font Selection */}
-        <div className="mb-8">
-          <div className="flex gap-2 justify-center flex-wrap">
-            {fontOptions.map((font) => (
-              <button
-                key={font.id}
-                onClick={() => setFormData({...formData, headerFont: font.id})}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  formData.headerFont === font.id
-                    ? 'bg-primary text-primary-foreground shadow-button'
-                    : 'bg-card hover:bg-accent text-foreground border border-border'
-                }`}
-              >
-                <span className={font.class}>{font.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Cover Art */}
-        <div className="relative mb-8 rounded-3xl overflow-hidden shadow-card">
-          {formData.coverArtType === 'gif' ? (
-            <img
-              src={formData.coverArt}
-              alt="Cover art GIF"
-              className="w-full h-80 object-cover"
-            />
-          ) : (
-            <img
-              src={formData.coverArt}
-              alt="Cover art"
-              className="w-full h-80 object-cover"
-            />
-          )}
-          <button
-            onClick={() => setShowCoverArtModal(true)}
-            disabled={isUploadingCoverArt}
-            className="absolute bottom-4 right-4 bg-card/90 backdrop-blur-sm hover:bg-card text-foreground px-4 py-2 rounded-full flex items-center gap-2 transition-all shadow-soft disabled:opacity-50"
-          >
-            <Edit size={16} />
-            {isUploadingCoverArt ? 'Uploading...' : 'Edit'}
-          </button>
-        </div>
-
-        {/* Voice Memo & Background Color Section */}
-        <div className="mb-8 space-y-6">
-          <BackgroundColorPicker
-            selectedColor={formData.backgroundColor}
-            onColorChange={(color) => setFormData({...formData, backgroundColor: color})}
-          />
+      {/* Scrapbook Layout */}
+      <div className="relative z-10 px-4 pb-32">
+        <div className="max-w-lg mx-auto space-y-6">
           
-          <CompactVoiceMemoRecorder 
-            onVoiceMemoChange={setVoiceMemoBlob}
-            existingUrl={existingVoiceMemoUrl}
-          />
-        </div>
+          {/* Hero Cover Art Card */}
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-primary rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
+            <div className="relative bg-white/10 backdrop-blur-sm rounded-3xl p-1 border border-white/20">
+              <div className="relative rounded-3xl overflow-hidden">
+                {formData.coverArtType === 'gif' ? (
+                  <img
+                    src={formData.coverArt}
+                    alt="Cover art GIF"
+                    className="w-full h-64 object-cover"
+                  />
+                ) : (
+                  <img
+                    src={formData.coverArt}
+                    alt="Cover art"
+                    className="w-full h-64 object-cover"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                
+                {/* Header Text Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Input
+                    ref={headerInputRef}
+                    value={formData.headerText}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 25) {
+                        setFormData({...formData, headerText: e.target.value});
+                      }
+                    }}
+                    placeholder="Add your headline..."
+                    className={`bg-transparent border-none text-white text-center placeholder:text-white/70 focus-visible:ring-0 ${selectedFont?.class} ${
+                      formData.headerText.length > 20 ? "text-2xl" : 
+                      formData.headerText.length > 12 ? "text-3xl" : "text-4xl"
+                    } font-bold shadow-[0_0_20px_rgba(0,0,0,0.8)]`}
+                    maxLength={25}
+                  />
+                </div>
 
-        {/* Sweet Message Section */}
-        <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Message</h2>
-          <div className="relative">
+                {/* Edit Button */}
+                <button
+                  onClick={() => setShowCoverArtModal(true)}
+                  disabled={isUploadingCoverArt}
+                  className="absolute bottom-4 right-4 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-3 py-2 rounded-full flex items-center gap-2 transition-all font-medium disabled:opacity-50"
+                >
+                  <Edit size={16} />
+                  {isUploadingCoverArt ? 'Uploading...' : 'Edit'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Font Style Selector */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+            <div className="text-sm font-medium text-muted-foreground mb-3">Text Style</div>
+            <div className="flex gap-2 flex-wrap">
+              {fontOptions.map((font) => (
+                <button
+                  key={font.id}
+                  onClick={() => setFormData({...formData, headerFont: font.id})}
+                  className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                    formData.headerFont === font.id
+                      ? 'bg-gradient-primary text-white shadow-warm'
+                      : 'bg-white/20 hover:bg-white/30 text-foreground'
+                  }`}
+                >
+                  <span className={font.class}>{font.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Message Card */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="text-2xl">💭</div>
+              <div className="text-lg font-bold text-foreground">Your message</div>
+            </div>
             <Textarea
               ref={messageTextareaRef}
               value={formData.message}
@@ -434,17 +438,11 @@ const Send = () => {
                   setFormData({...formData, message: e.target.value});
                 }
               }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && recipientInputRef.current) {
-                  recipientInputRef.current.focus();
-                }
-              }}
-              placeholder="Hope you have a good week! ❣️"
-              className="w-full min-h-[120px] text-lg resize-none border-2 border-border rounded-2xl p-6 bg-card focus:border-primary focus:ring-2 focus:ring-primary/20"
+              placeholder="Hope you have the best day ever! Can't wait to see you ✨"
+              className="w-full min-h-[100px] text-base bg-white/20 border border-white/30 rounded-xl p-4 placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none"
               maxLength={300}
-              enterKeyHint="next"
             />
-            <div className={`text-sm mt-2 text-right ${
+            <div className={`text-xs mt-2 text-right ${
               formData.message.length >= 280 ? 'text-destructive' : 
               formData.message.length >= 250 ? 'text-yellow-600' : 
               'text-muted-foreground'
@@ -452,99 +450,136 @@ const Send = () => {
               {formData.message.length}/300
             </div>
           </div>
-        </div>
 
-        {/* Gift Section */}
-        <div className="space-y-6 mb-8">
-          <h2 className="text-xl font-bold">Gift details</h2>
-          
-          <div className="space-y-4">
-            <div>
-              <Label className="text-lg font-medium mb-2 block">🎁 To:</Label>
-              <Input
-                ref={recipientInputRef}
-                type="text"
-                value={formData.recipientName}
-                onChange={(e) => setFormData({...formData, recipientName: e.target.value})}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && senderInputRef.current) {
-                    senderInputRef.current.focus();
-                  }
-                }}
-                placeholder="Their name"
-                className="w-full h-12 text-lg border-2 rounded-2xl"
-                enterKeyHint="next"
-              />
-            </div>
-            
-            <div>
-              <Label className="text-lg font-medium mb-2 block">💌 From:</Label>
-              <Input
-                ref={senderInputRef}
-                type="text"
-                value={formData.senderName}
-                onChange={(e) => setFormData({...formData, senderName: e.target.value})}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && senderInputRef.current) {
-                    senderInputRef.current.blur();
-                  }
-                }}
-                placeholder="Your name"
-                className="w-full h-12 text-lg border-2 rounded-2xl"
-                enterKeyHint="done"
+          {/* Interactive Elements Row */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Voice Memo */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+              <div className="text-center mb-3">
+                <div className="text-2xl mb-1 animate-pulse-glow">🎵</div>
+                <div className="text-sm font-medium text-foreground">Voice note</div>
+              </div>
+              <CompactVoiceMemoRecorder 
+                onVoiceMemoChange={setVoiceMemoBlob}
+                existingUrl={existingVoiceMemoUrl}
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <Label className="text-lg font-medium">💸 Add a little cash?</Label>
+            {/* Background Picker */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+              <div className="text-center mb-3">
+                <div className="text-2xl mb-1">🎨</div>
+                <div className="text-sm font-medium text-foreground">Background</div>
+              </div>
+              <BackgroundColorPicker
+                selectedColor={formData.backgroundColor}
+                onColorChange={(color) => setFormData({...formData, backgroundColor: color})}
+              />
+            </div>
+          </div>
+
+          {/* Recipient Details Card */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="text-2xl">💌</div>
+              <div className="text-lg font-bold text-foreground">Send to</div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground mb-2 block">🎁 To</Label>
+                <Input
+                  ref={recipientInputRef}
+                  value={formData.recipientName}
+                  onChange={(e) => setFormData({...formData, recipientName: e.target.value})}
+                  placeholder="Their name"
+                  className="w-full h-12 text-base bg-white/20 border border-white/30 rounded-xl px-4 placeholder:text-muted-foreground/70 focus:border-primary"
+                />
+              </div>
+              
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground mb-2 block">✨ From</Label>
+                <Input
+                  ref={senderInputRef}
+                  value={formData.senderName}
+                  onChange={(e) => setFormData({...formData, senderName: e.target.value})}
+                  placeholder="Your name"
+                  className="w-full h-12 text-base bg-white/20 border border-white/30 rounded-xl px-4 placeholder:text-muted-foreground/70 focus:border-primary"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Cash Option Card */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="text-2xl animate-heart-beat">💝</div>
+                <div className="text-lg font-bold text-foreground">Add some love</div>
+              </div>
               <Switch
                 checked={addCash}
                 onCheckedChange={setAddCash}
               />
             </div>
-
+            
             {addCash && (
-              <div ref={amountFieldRef}>
-                <Label className="text-lg font-medium mb-2 block">💲 Venmo Amount</Label>
+              <div ref={amountFieldRef} className="space-y-3">
+                <div className="text-sm text-muted-foreground">Perfect for coffee, lunch, or just because ✨</div>
+                
+                {/* Quick Amount Buttons */}
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  {[5, 10, 20].map((amount) => (
+                    <button
+                      key={amount}
+                      onClick={() => setFormData({...formData, amount: amount.toString()})}
+                      className={`py-2 px-3 rounded-xl text-sm font-medium transition-all ${
+                        formData.amount === amount.toString()
+                          ? 'bg-gradient-primary text-white'
+                          : 'bg-white/20 hover:bg-white/30 text-foreground'
+                      }`}
+                    >
+                      ${amount}
+                    </button>
+                  ))}
+                </div>
+                
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-lg font-medium text-foreground pointer-events-none">
-                    $
-                  </div>
+                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-foreground font-medium">$</div>
                   <Input
                     ref={amountInputRef}
                     type="number"
                     value={formData.amount}
                     onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && amountInputRef.current) {
-                        amountInputRef.current.blur();
-                      }
-                    }}
                     placeholder="0"
-                    className="w-full h-12 text-lg border-2 rounded-2xl pl-8"
+                    className="w-full h-12 text-base bg-white/20 border border-white/30 rounded-xl pl-8 pr-4 placeholder:text-muted-foreground/70 focus:border-primary"
                     min="1"
                     max="500"
-                    enterKeyHint="done"
                   />
                 </div>
               </div>
             )}
           </div>
         </div>
-        
-        {/* Scroll boundary spacer */}
-        <div className="h-8"></div>
       </div>
 
-      {/* Sticky Save Button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border">
-        <div className="max-w-2xl mx-auto p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
+      {/* Floating Action Button */}
+      <div className="fixed bottom-6 left-4 right-4 z-50">
+        <div className="max-w-lg mx-auto">
           <Button
             onClick={handleSave}
             disabled={isLoading}
-            className="w-full h-14 text-lg font-bold rounded-2xl bg-gradient-primary hover:shadow-glow transition-all duration-300 border-0 disabled:opacity-50"
+            className="w-full h-16 text-lg font-bold rounded-2xl bg-gradient-primary text-white hover:shadow-warm transition-all duration-500 transform hover:scale-105 shadow-warm disabled:opacity-50 border-2 border-white/20"
           >
-            {isLoading ? 'Creating...' : 'Save'}
+            {isLoading ? (
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                Creating your clink...
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-2">
+                Send this clink ✨
+              </div>
+            )}
           </Button>
         </div>
       </div>
