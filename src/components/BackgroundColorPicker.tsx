@@ -6,12 +6,12 @@ interface BackgroundColorPickerProps {
 }
 
 const colorOptions = [
-  { id: "background", name: "Classic", gradient: "bg-gradient-background" },
-  { id: "sunset", name: "Sunset", gradient: "bg-gradient-sunset" },
-  { id: "soft-peach", name: "Peach", gradient: "bg-soft-peach" },
-  { id: "warm-cream", name: "Cream", gradient: "bg-warm-cream" },
-  { id: "golden-mist", name: "Golden", gradient: "bg-golden-mist" },
-  { id: "coral-blush", name: "Coral", gradient: "bg-coral-blush" },
+  { id: "background", name: "Light Background", gradient: "bg-gradient-background" },
+  { id: "soft-lavender", name: "Soft Lavender", gradient: "bg-soft-lavender" },
+  { id: "pale-lilac", name: "Pale Lilac", gradient: "bg-pale-lilac" },
+  { id: "warm-cream", name: "Warm Cream", gradient: "bg-warm-cream" },
+  { id: "light-pink", name: "Light Pink Blush", gradient: "bg-light-pink" },
+  { id: "cool-mist", name: "Cool Mist Blue", gradient: "bg-cool-mist" },
 ];
 
 export function BackgroundColorPicker({ selectedColor, onColorChange }: BackgroundColorPickerProps) {
