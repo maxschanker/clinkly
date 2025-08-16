@@ -2,69 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-/* OnMe Design System - Gen Z vibes with sparkles and gradients */
-
 @layer base {
+  /**
+   * Tailwind CSS theme
+   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
+   * A different format will require also updating the theme in tailwind.config.ts.
+  */
   :root {
-    /* Modern pink-to-orange palette */
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 222.2 84% 4.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    /* Primary pink-to-orange gradient colors */
-    --primary: 14 100% 57%;
-    --primary-foreground: 0 0% 98%;
-    --primary-glow: 330 100% 71%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
 
-    /* Soft secondary */
-    --secondary: 210 40% 98%;
-    --secondary-foreground: 222.2 84% 4.9%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted: 210 40% 98%;
+    --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    /* Light accent */
-    --accent: 210 40% 98%;
-    --accent-foreground: 222.2 84% 4.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 14 100% 57%;
+    --ring: 222.2 84% 4.9%;
 
-    /* Beautiful pink-to-orange gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(330 100% 71%), hsl(14 100% 57%));
-    --gradient-secondary: linear-gradient(135deg, hsl(14 100% 57%), hsl(30 100% 60%));
-    --gradient-background: linear-gradient(180deg, hsl(0 0% 100%), hsl(14 100% 98%));
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 100% / 0.8), hsl(14 100% 97% / 0.3));
-    --gradient-feature: linear-gradient(135deg, hsl(330 100% 96%), hsl(14 100% 96%));
-    
-    /* Background color options - solid colors */
-    --bg-soft-lavender: #FFF0F5;
-    --bg-pale-lilac: #FFE8F0;
-    --bg-warm-cream: #FFF8F2;
-    --bg-light-pink: #FFEFF7;
-    --bg-cool-mist: #F0F8FF;
-    
-    /* Sparkle effects in pink-orange tones */
-    --sparkle-1: 330 100% 71%;
-    --sparkle-2: 14 100% 57%;
-    --sparkle-3: 350 95% 65%;
-    
-    /* Elegant pink-orange shadows */
-    --shadow-soft: 0 4px 20px rgba(255, 107, 0, 0.12);
-    --shadow-glow: 0 0 40px rgba(255, 107, 0, 0.25);
-    --shadow-card: 0 8px 32px rgba(255, 107, 0, 0.1);
-    --shadow-button: 0 4px 16px rgba(255, 107, 0, 0.2);
-
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -81,6 +54,22 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Clink Brand Colors - Vibrant Gen Z Palette */
+    --clink-primary: 270 91% 65%;
+    --clink-secondary: 340 85% 65%;
+    --clink-accent: 45 93% 65%;
+    --clink-success: 142 71% 45%;
+    --clink-bg: 270 20% 98%;
+    --clink-surface: 0 0% 100%;
+    --clink-text: 270 15% 15%;
+    --clink-text-light: 270 10% 50%;
+    --clink-purple: 270 91% 65%;
+    --clink-pink: 340 85% 65%;
+    --clink-yellow: 45 93% 65%;
+    --clink-green: 142 71% 45%;
+    --clink-blue: 215 88% 65%;
+    --clink-orange: 25 95% 65%;
   }
 
   .dark {
@@ -93,9 +82,8 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 14 100% 57%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --primary-glow: 330 100% 71%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -111,24 +99,7 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 14 100% 57%;
-
-    /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(330 100% 71%), hsl(14 100% 57%));
-    --gradient-background: linear-gradient(135deg, hsl(222.2 84% 4.9%), hsl(14 50% 8%));
-    --gradient-card: linear-gradient(135deg, hsl(222.2 84% 8% / 0.3), hsl(14 50% 12% / 0.1));
-    --gradient-feature: linear-gradient(135deg, hsl(330 50% 15%), hsl(14 50% 15%));
-
-    /* Dark sparkle colors */
-    --sparkle-1: 330 100% 71%;
-    --sparkle-2: 14 100% 57%;
-    --sparkle-3: 350 95% 65%;
-
-    /* Dark shadows */
-    --shadow-soft: 0 4px 20px rgba(255, 107, 0, 0.08);
-    --shadow-glow: 0 0 40px rgba(255, 107, 0, 0.15);
-    --shadow-card: 0 8px 32px rgba(255, 107, 0, 0.05);
-    --shadow-button: 0 4px 16px rgba(255, 107, 0, 0.1);
+    --ring: 212.7 26.8% 83.9%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -137,6 +108,22 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Clink Brand Colors - Dark Mode */
+    --clink-primary: 270 91% 65%;
+    --clink-secondary: 340 85% 65%;
+    --clink-accent: 45 93% 65%;
+    --clink-success: 142 71% 45%;
+    --clink-bg: 270 15% 8%;
+    --clink-surface: 270 10% 12%;
+    --clink-text: 270 20% 95%;
+    --clink-text-light: 270 15% 70%;
+    --clink-purple: 270 91% 65%;
+    --clink-pink: 340 85% 65%;
+    --clink-yellow: 45 93% 65%;
+    --clink-green: 142 71% 45%;
+    --clink-blue: 215 88% 65%;
+    --clink-orange: 25 95% 65%;
   }
 }
 
@@ -145,51 +132,89 @@
     @apply border-border;
   }
 
-  html {
-    /* Prevent bounce/rubber band scrolling */
-    overscroll-behavior-y: contain;
-    scroll-behavior: smooth;
-    /* Prevent horizontal scroll issues */
-    overflow-x: hidden;
-    /* iOS smooth scrolling */
-    -webkit-overflow-scrolling: touch;
-  }
-
   body {
     @apply bg-background text-foreground;
-    /* Prevent bounce/rubber band scrolling */
-    overscroll-behavior-y: contain;
-    /* Prevent horizontal scroll issues */
-    overflow-x: hidden;
-    /* iOS smooth scrolling */
-    -webkit-overflow-scrolling: touch;
-    /* Ensure proper mobile viewport */
-    min-height: 100vh;
-    min-height: 100dvh; /* Dynamic viewport height for mobile */
   }
+}
 
-  /* Optimize scroll containers for mobile */
-  .scroll-container {
-    overscroll-behavior-y: contain;
-    -webkit-overflow-scrolling: touch;
+/* Custom animations for micro-interactions */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
   }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 
-  /* Prevent scroll interference with fixed elements */
-  .fixed-bottom-safe {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
   }
+  to {
+    transform: rotate(360deg);
+  }
+}
 
-  /* Touch and scroll optimizations */
-  .touch-pan-y {
-    touch-action: pan-y;
-    will-change: scroll-position;
+@keyframes wiggle {
+  0%, 7% {
+    transform: rotateZ(0);
   }
+  15% {
+    transform: rotateZ(-15deg);
+  }
+  20% {
+    transform: rotateZ(10deg);
+  }
+  25% {
+    transform: rotateZ(-10deg);
+  }
+  30% {
+    transform: rotateZ(6deg);
+  }
+  35% {
+    transform: rotateZ(-4deg);
+  }
+  40%, 100% {
+    transform: rotateZ(0);
+  }
+}
 
-  .overscroll-none {
-    overscroll-behavior: none;
-  }
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
 
-  .overscroll-contain {
-    overscroll-behavior-y: contain;
-  }
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+.animate-wiggle {
+  animation: wiggle 1s ease-in-out;
+}
+
+/* Haptic feedback simulation */
+.haptic-light {
+  transition: transform 0.1s ease;
+}
+
+.haptic-light:active {
+  transform: scale(0.98);
+}
+
+.haptic-medium {
+  transition: transform 0.15s ease;
+}
+
+.haptic-medium:active {
+  transform: scale(0.95);
+}
+
+.haptic-heavy {
+  transition: transform 0.2s ease;
+}
+
+.haptic-heavy:active {
+  transform: scale(0.92);
 }
