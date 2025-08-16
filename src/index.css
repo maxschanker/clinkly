@@ -2,42 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
+/* OnMe Design System - Gen Z vibes with sparkles and gradients */
+
 @layer base {
-  /**
-   * Tailwind CSS theme
-   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
-   * A different format will require also updating the theme in tailwind.config.ts.
-  */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Beautiful purple/lavender palette */
+    --background: 263 30% 98%;
+    --foreground: 262 15% 25%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 262 15% 25%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 262 15% 25%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary purple gradient colors */
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 263 90% 70%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Soft lavender secondary */
+    --secondary: 263 40% 94%;
+    --secondary-foreground: 262 15% 25%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 263 25% 92%;
+    --muted-foreground: 262 10% 55%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Light lavender accent */
+    --accent: 264 95% 80%;
+    --accent-foreground: 262 15% 25%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 263 30% 88%;
+    --input: 263 25% 92%;
+    --ring: 262 83% 58%;
 
-    --radius: 0.5rem;
+    /* Beautiful purple gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%), hsl(263 90% 70%));
+    --gradient-secondary: linear-gradient(135deg, hsl(263 90% 70%), hsl(264 95% 80%));
+    --gradient-background: linear-gradient(180deg, hsl(263 30% 98%), hsl(264 40% 96%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(263 20% 96%));
+    --gradient-hero: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(263 90% 70%) 50%, hsl(264 95% 80%) 100%);
+    
+    /* Background color options - solid colors */
+    --bg-soft-lavender: #F5F0FF;
+    --bg-pale-lilac: #F3E8FF;
+    --bg-warm-cream: #FFF8F2;
+    --bg-light-pink: #FFEFF7;
+    --bg-cool-mist: #F0F8FF;
+    
+    /* Sparkle effects in purple tones */
+    --sparkle-1: 262 83% 58%;
+    --sparkle-2: 263 90% 70%;
+    --sparkle-3: 264 95% 80%;
+    
+    /* Elegant purple shadows */
+    --shadow-soft: 0 4px 20px rgba(124, 58, 237, 0.12);
+    --shadow-glow: 0 0 40px rgba(124, 58, 237, 0.25);
+    --shadow-card: 0 8px 32px rgba(124, 58, 237, 0.1);
+    --shadow-button: 0 4px 16px rgba(124, 58, 237, 0.2);
+
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -54,22 +81,6 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
-
-    /* Clink Brand Colors - Vibrant Gen Z Palette */
-    --clink-primary: 270 91% 65%;
-    --clink-secondary: 340 85% 65%;
-    --clink-accent: 45 93% 65%;
-    --clink-success: 142 71% 45%;
-    --clink-bg: 270 20% 98%;
-    --clink-surface: 0 0% 100%;
-    --clink-text: 270 15% 15%;
-    --clink-text-light: 270 10% 50%;
-    --clink-purple: 270 91% 65%;
-    --clink-pink: 340 85% 65%;
-    --clink-yellow: 45 93% 65%;
-    --clink-green: 142 71% 45%;
-    --clink-blue: 215 88% 65%;
-    --clink-orange: 25 95% 65%;
   }
 
   .dark {
@@ -108,22 +119,6 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-
-    /* Clink Brand Colors - Dark Mode */
-    --clink-primary: 270 91% 65%;
-    --clink-secondary: 340 85% 65%;
-    --clink-accent: 45 93% 65%;
-    --clink-success: 142 71% 45%;
-    --clink-bg: 270 15% 8%;
-    --clink-surface: 270 10% 12%;
-    --clink-text: 270 20% 95%;
-    --clink-text-light: 270 15% 70%;
-    --clink-purple: 270 91% 65%;
-    --clink-pink: 340 85% 65%;
-    --clink-yellow: 45 93% 65%;
-    --clink-green: 142 71% 45%;
-    --clink-blue: 215 88% 65%;
-    --clink-orange: 25 95% 65%;
   }
 }
 
@@ -132,89 +127,51 @@
     @apply border-border;
   }
 
+  html {
+    /* Prevent bounce/rubber band scrolling */
+    overscroll-behavior-y: contain;
+    scroll-behavior: smooth;
+    /* Prevent horizontal scroll issues */
+    overflow-x: hidden;
+    /* iOS smooth scrolling */
+    -webkit-overflow-scrolling: touch;
+  }
+
   body {
     @apply bg-background text-foreground;
+    /* Prevent bounce/rubber band scrolling */
+    overscroll-behavior-y: contain;
+    /* Prevent horizontal scroll issues */
+    overflow-x: hidden;
+    /* iOS smooth scrolling */
+    -webkit-overflow-scrolling: touch;
+    /* Ensure proper mobile viewport */
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
   }
-}
 
-/* Custom animations for micro-interactions */
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
+  /* Optimize scroll containers for mobile */
+  .scroll-container {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
   }
-  to {
-    transform: translateY(0);
-    opacity: 1;
+
+  /* Prevent scroll interference with fixed elements */
+  .fixed-bottom-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
-}
 
-@keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
+  /* Touch and scroll optimizations */
+  .touch-pan-y {
+    touch-action: pan-y;
+    will-change: scroll-position;
   }
-  to {
-    transform: rotate(360deg);
+
+  .overscroll-none {
+    overscroll-behavior: none;
   }
-}
 
-@keyframes wiggle {
-  0%, 7% {
-    transform: rotateZ(0);
+  .overscroll-contain {
+    overscroll-behavior-y: contain;
   }
-  15% {
-    transform: rotateZ(-15deg);
-  }
-  20% {
-    transform: rotateZ(10deg);
-  }
-  25% {
-    transform: rotateZ(-10deg);
-  }
-  30% {
-    transform: rotateZ(6deg);
-  }
-  35% {
-    transform: rotateZ(-4deg);
-  }
-  40%, 100% {
-    transform: rotateZ(0);
-  }
-}
-
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
-}
-
-.animate-spin-slow {
-  animation: spin-slow 3s linear infinite;
-}
-
-.animate-wiggle {
-  animation: wiggle 1s ease-in-out;
-}
-
-/* Haptic feedback simulation */
-.haptic-light {
-  transition: transform 0.1s ease;
-}
-
-.haptic-light:active {
-  transform: scale(0.98);
-}
-
-.haptic-medium {
-  transition: transform 0.15s ease;
-}
-
-.haptic-medium:active {
-  transform: scale(0.95);
-}
-
-.haptic-heavy {
-  transition: transform 0.2s ease;
-}
-
-.haptic-heavy:active {
-  transform: scale(0.92);
 }
