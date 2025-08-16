@@ -85,7 +85,7 @@ export default {
 				'gradient-secondary': 'var(--gradient-secondary)', 
 				'gradient-background': 'var(--gradient-background)',
 				'gradient-card': 'var(--gradient-card)',
-				'gradient-hero': 'var(--gradient-hero)'
+				'gradient-feature': 'var(--gradient-feature)'
 			},
 			backgroundColor: {
 				'soft-lavender': 'var(--bg-soft-lavender)',
@@ -97,7 +97,8 @@ export default {
 			boxShadow: {
 				'soft': 'var(--shadow-soft)',
 				'glow': 'var(--shadow-glow)',
-				'card': 'var(--shadow-card)'
+				'card': 'var(--shadow-card)',
+				'button': 'var(--shadow-button)'
 			},
 			keyframes: {
 				'accordion-down': {
