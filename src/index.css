@@ -6,63 +6,41 @@
 
 @layer base {
   :root {
-    /* Modern pink-to-orange palette */
+    /* Builder.io purple-blue color scheme */
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-
-    /* Primary pink-to-orange gradient colors */
-    --primary: 14 100% 57%;
-    --primary-foreground: 0 0% 98%;
-    --primary-glow: 330 100% 71%;
-
-    /* Soft secondary */
-    --secondary: 210 40% 98%;
-    --secondary-foreground: 222.2 84% 4.9%;
-
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 265 89% 78%; /* Purple primary from Builder.io */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 230 25% 18%; /* Dark blue-gray secondary */
+    --secondary-foreground: 0 0% 100%;
     --muted: 210 40% 98%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
-    /* Light accent */
-    --accent: 210 40% 98%;
-    --accent-foreground: 222.2 84% 4.9%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
+    --accent: 265 89% 78%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 14 100% 57%;
+    --ring: 265 89% 78%;
 
-    /* Beautiful pink-to-orange gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(330 100% 71%), hsl(14 100% 57%));
-    --gradient-secondary: linear-gradient(135deg, hsl(14 100% 57%), hsl(30 100% 60%));
-    --gradient-background: linear-gradient(180deg, hsl(0 0% 100%), hsl(14 100% 98%));
-    --gradient-card: linear-gradient(135deg, hsl(0 0% 100% / 0.8), hsl(14 100% 97% / 0.3));
-    --gradient-feature: linear-gradient(135deg, hsl(330 100% 96%), hsl(14 100% 96%));
+    /* Builder.io gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(265, 89%, 78%), hsl(245, 89%, 88%));
+    --gradient-background: linear-gradient(180deg, hsl(0, 0%, 100%), hsl(265, 20%, 98%));
+    --gradient-card: linear-gradient(135deg, hsl(265, 30%, 95%), hsl(265, 20%, 98%));
+    --gradient-button: linear-gradient(135deg, hsl(265, 89%, 78%), hsl(245, 89%, 85%));
     
-    /* Background color options - solid colors */
-    --bg-soft-lavender: #FFF0F5;
-    --bg-pale-lilac: #FFE8F0;
-    --bg-warm-cream: #FFF8F2;
-    --bg-light-pink: #FFEFF7;
-    --bg-cool-mist: #F0F8FF;
+    /* Builder.io text colors */
+    --text-primary: hsl(230, 25%, 18%);
+    --text-secondary: hsl(215, 16%, 47%);
+    --text-muted: hsl(215, 16%, 65%);
     
-    /* Sparkle effects in pink-orange tones */
-    --sparkle-1: 330 100% 71%;
-    --sparkle-2: 14 100% 57%;
-    --sparkle-3: 350 95% 65%;
-    
-    /* Elegant pink-orange shadows */
-    --shadow-soft: 0 4px 20px rgba(255, 107, 0, 0.12);
-    --shadow-glow: 0 0 40px rgba(255, 107, 0, 0.25);
-    --shadow-card: 0 8px 32px rgba(255, 107, 0, 0.1);
-    --shadow-button: 0 4px 16px rgba(255, 107, 0, 0.2);
+    /* Builder.io shadows */
+    --shadow-button: 0 4px 14px -3px rgba(139, 92, 246, 0.3);
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
 
     --radius: 0.75rem;
 
@@ -84,51 +62,40 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 230 25% 18%;
     --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
+    --card: 230 25% 18%;
     --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
+    --popover: 230 25% 18%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 14 100% 57%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --primary-glow: 330 100% 71%;
-
+    --primary: 265 89% 78%;
+    --primary-foreground: 230 25% 18%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
+    --accent: 265 89% 78%;
+    --accent-foreground: 230 25% 18%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 14 100% 57%;
+    --ring: 265 89% 78%;
 
     /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(330 100% 71%), hsl(14 100% 57%));
-    --gradient-background: linear-gradient(135deg, hsl(222.2 84% 4.9%), hsl(14 50% 8%));
-    --gradient-card: linear-gradient(135deg, hsl(222.2 84% 8% / 0.3), hsl(14 50% 12% / 0.1));
-    --gradient-feature: linear-gradient(135deg, hsl(330 50% 15%), hsl(14 50% 15%));
-
-    /* Dark sparkle colors */
-    --sparkle-1: 330 100% 71%;
-    --sparkle-2: 14 100% 57%;
-    --sparkle-3: 350 95% 65%;
-
+    --gradient-primary: linear-gradient(135deg, hsl(265, 89%, 78%), hsl(245, 89%, 88%));
+    --gradient-background: linear-gradient(180deg, hsl(230, 25%, 18%), hsl(217, 33%, 10%));
+    --gradient-card: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05));
+    --gradient-button: linear-gradient(135deg, hsl(265, 89%, 78%), hsl(245, 89%, 85%));
+    
+    /* Dark text colors */
+    --text-primary: hsl(210, 40%, 98%);
+    --text-secondary: hsl(215, 20%, 65%);
+    --text-muted: hsl(215, 16%, 47%);
+    
     /* Dark shadows */
-    --shadow-soft: 0 4px 20px rgba(255, 107, 0, 0.08);
-    --shadow-glow: 0 0 40px rgba(255, 107, 0, 0.15);
-    --shadow-card: 0 8px 32px rgba(255, 107, 0, 0.05);
-    --shadow-button: 0 4px 16px rgba(255, 107, 0, 0.1);
+    --shadow-button: 0 4px 14px -3px rgba(139, 92, 246, 0.5);
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
