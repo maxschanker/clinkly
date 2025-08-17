@@ -21,48 +21,49 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+
     steps:
       - name: Checkout Lovable repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Clone Builder repo
-        run: |
-          git clone --depth 1 --branch "${{ inputs.builder_ref }}" "https://github.com/${{ inputs.builder_repo }}.git" /tmp/builder
-          ls -la /tmp/builder
+      # safer than shell clone
+      - name: Checkout Builder repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.builder_repo }}
+          ref: ${{ inputs.builder_ref }}
+          path: builder-src
+          fetch-depth: 1
 
       - name: Prepare target folder
         run: |
           mkdir -p "${{ inputs.target_path }}"
-          rm -rf "${{ inputs.target_path }}/*"
+          rm -rf "${{ inputs.target_path }}"/* || true
 
       - name: Copy UI artifacts from Builder
         run: |
           shopt -s dotglob || true
-          # Copy client and public if they exist
-          if [ -d /tmp/builder/client ]; then cp -R /tmp/builder/client "${{ inputs.target_path }}/client"; fi
-          if [ -d /tmp/builder/public ]; then cp -R /tmp/builder/public "${{ inputs.target_path }}/public"; fi
-          # Bring over helpful config and handoff notes without overwriting your root config
-          if [ -f /tmp/builder/tailwind.config.ts ]; then cp /tmp/builder/tailwind.config.ts "${{ inputs.target_path }}/tailwind.config.builder.ts"; fi
-          if [ -f /tmp/builder/postcss.config.js ]; then cp /tmp/builder/postcss.config.js "${{ inputs.target_path }}/postcss.config.builder.js"; fi
-          if [ -f /tmp/builder/components.json ]; then cp /tmp/builder/components.json "${{ inputs.target_path }}/components.json"; fi
-          if [ -f /tmp/builder/LOVABLE_HANDOFF.md ]; then cp /tmp/builder/LOVABLE_HANDOFF.md "${{ inputs.target_path }}/LOVABLE_HANDOFF.md"; fi
+          if [ -d builder-src/client ]; then cp -R builder-src/client "${{ inputs.target_path }}/client"; fi
+          if [ -d builder-src/public ]; then cp -R builder-src/public "${{ inputs.target_path }}/public"; fi
+          if [ -f builder-src/tailwind.config.ts ]; then cp builder-src/tailwind.config.ts "${{ inputs.target_path }}/tailwind.config.builder.ts"; fi
+          if [ -f builder-src/postcss.config.js ]; then cp builder-src/postcss.config.js "${{ inputs.target_path }}/postcss.config.builder.js"; fi
+          if [ -f builder-src/components.json ]; then cp builder-src/components.json "${{ inputs.target_path }}/components.json"; fi
+          if [ -f builder-src/LOVABLE_HANDOFF.md ]; then cp builder-src/LOVABLE_HANDOFF.md "${{ inputs.target_path }}/LOVABLE_HANDOFF.md"; fi
+          echo "Imported files:"
+          ls -la "${{ inputs.target_path }}" || true
 
-      - name: Create pull request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          branch: chore/import-builder-ui
-          title: "chore(ui): import Builder UI into repo"
-          body: |
-            This PR vendors the Builder UI into `${{ inputs.target_path }}` so we can adopt it without any external fetch.
-            Imported structure (if present in Builder):
-            - `client/` (components, pages)
-            - `public/` (fonts, images)
-            - `tailwind.config.builder.ts`, `postcss.config.builder.js`
-            - `LOVABLE_HANDOFF.md` (handoff notes)
-
-            Next steps after merge:
-            1) Extend our Tailwind/CSS theme with tokens from `vendor/builder-ui/tailwind.config.builder.ts`.
-            2) Re-skin `src/ui/*` primitives to match Builder.
-            3) Replace page shells using `vendor/builder-ui/client` as reference, wiring our existing handlers.
-          commit-message: "chore(ui): import Builder UI for adoption"
-          labels: ui,builder,automation
+      # ✅ Directly create a branch and push it (avoid PR action push issues)
+      - name: Commit & push branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b chore/import-builder-ui
+          git add "${{ inputs.target_path }}"
+          # if nothing changed, don't fail
+          if git diff --cached --quiet; then
+            echo "No changes to commit"; exit 0
+          fi
+          git commit -m "chore(ui): import Builder UI"
+          git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:chore/import-builder-ui
